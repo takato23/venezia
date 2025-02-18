@@ -1,0 +1,1920 @@
+{
+  "providers": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "type",
+        "type": "VARCHAR(20)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(100)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "lastname",
+        "type": "VARCHAR(100)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "business_name",
+        "type": "VARCHAR(200)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "cuit",
+        "type": "VARCHAR(13)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "phone",
+        "type": "VARCHAR(20)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "address",
+        "type": "VARCHAR(200)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "email",
+        "type": "VARCHAR(120)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "payment_methods",
+        "type": "VARCHAR(200)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "business_hours",
+        "type": "VARCHAR(200)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "notes",
+        "type": "TEXT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "is_active",
+        "type": "BOOLEAN",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [],
+    "indexes": [
+      {
+        "name": "sqlite_autoindex_providers_1",
+        "unique": true
+      }
+    ]
+  },
+  "provider_category": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(50)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [],
+    "indexes": [
+      {
+        "name": "sqlite_autoindex_provider_category_1",
+        "unique": true
+      }
+    ]
+  },
+  "stores": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(100)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "address",
+        "type": "VARCHAR(200)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "phone",
+        "type": "VARCHAR(20)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "email",
+        "type": "VARCHAR(120)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "latitude",
+        "type": "FLOAT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "longitude",
+        "type": "FLOAT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [],
+    "indexes": []
+  },
+  "product_categories": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(100)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "description",
+        "type": "TEXT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [],
+    "indexes": []
+  },
+  "delivery_addresses": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "customer_name",
+        "type": "VARCHAR(100)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "phone",
+        "type": "VARCHAR(20)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "address",
+        "type": "VARCHAR(200)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "landmark",
+        "type": "VARCHAR(200)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "latitude",
+        "type": "FLOAT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "longitude",
+        "type": "FLOAT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "notes",
+        "type": "TEXT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [],
+    "indexes": []
+  },
+  "delivery_statuses": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(50)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "description",
+        "type": "VARCHAR(200)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "color_code",
+        "type": "VARCHAR(7)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "order",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [],
+    "indexes": []
+  },
+  "users": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "username",
+        "type": "VARCHAR(80)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "email",
+        "type": "VARCHAR(120)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "password_hash",
+        "type": "VARCHAR(128)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "is_active",
+        "type": "BOOLEAN",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [],
+    "indexes": [
+      {
+        "name": "sqlite_autoindex_users_2",
+        "unique": true
+      },
+      {
+        "name": "sqlite_autoindex_users_1",
+        "unique": true
+      }
+    ]
+  },
+  "provider_categories": {
+    "columns": [
+      {
+        "name": "provider_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "category_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      }
+    ],
+    "foreign_keys": [
+      {
+        "from": "category_id",
+        "to_table": "provider_category",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      },
+      {
+        "from": "provider_id",
+        "to_table": "providers",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "sqlite_autoindex_provider_categories_1",
+        "unique": true
+      }
+    ]
+  },
+  "sales": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "store_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "total_amount",
+        "type": "FLOAT",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "payment_method",
+        "type": "VARCHAR(50)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "is_delivery",
+        "type": "BOOLEAN",
+        "notnull": false,
+        "default_value": "0",
+        "is_primary_key": false
+      },
+      {
+        "name": "payment_status",
+        "type": "VARCHAR(20)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_preference_id",
+        "type": "VARCHAR(100)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_payment_id",
+        "type": "VARCHAR(100)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_payment_link",
+        "type": "VARCHAR(500)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_qr_link",
+        "type": "VARCHAR(500)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_status",
+        "type": "VARCHAR(50)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_payment_type",
+        "type": "VARCHAR(50)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_payment_method",
+        "type": "VARCHAR(50)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_card_last_four",
+        "type": "VARCHAR(4)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_rejection_reason",
+        "type": "VARCHAR(200)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_approved_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_last_updated",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [
+      {
+        "from": "store_id",
+        "to_table": "stores",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      }
+    ],
+    "indexes": []
+  },
+  "ingredients": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "supplier_id",
+        "type": "INTEGER",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(100)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "unit",
+        "type": "VARCHAR(20)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "cost_per_unit",
+        "type": "FLOAT",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "current_stock",
+        "type": "FLOAT",
+        "notnull": false,
+        "default_value": "0",
+        "is_primary_key": false
+      },
+      {
+        "name": "minimum_stock",
+        "type": "FLOAT",
+        "notnull": false,
+        "default_value": "0",
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [
+      {
+        "from": "supplier_id",
+        "to_table": "providers",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      }
+    ],
+    "indexes": []
+  },
+  "production_cost": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "production_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "ingredient",
+        "type": "VARCHAR(100)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "quantity",
+        "type": "FLOAT",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "unit_cost",
+        "type": "FLOAT",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "total_cost",
+        "type": "FLOAT",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "date",
+        "type": "DATETIME",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [
+      {
+        "from": "production_id",
+        "to_table": "productions",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      }
+    ],
+    "indexes": []
+  },
+  "sale_items": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "sale_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "product_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "quantity",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "unit_price",
+        "type": "FLOAT",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "total_price",
+        "type": "FLOAT",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "flavors",
+        "type": "TEXT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [
+      {
+        "from": "product_id",
+        "to_table": "products",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      },
+      {
+        "from": "sale_id",
+        "to_table": "sales",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      }
+    ],
+    "indexes": []
+  },
+  "delivery_orders": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "sale_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "address_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "current_status_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_preference_id",
+        "type": "VARCHAR(100)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_payment_id",
+        "type": "VARCHAR(100)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_payment_link",
+        "type": "VARCHAR(500)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_qr_link",
+        "type": "VARCHAR(500)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_status",
+        "type": "VARCHAR(50)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_payment_type",
+        "type": "VARCHAR(50)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_payment_method",
+        "type": "VARCHAR(50)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_card_last_four",
+        "type": "VARCHAR(4)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_rejection_reason",
+        "type": "VARCHAR(200)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_approved_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "mp_last_updated",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "delivery_notes",
+        "type": "TEXT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "store_latitude",
+        "type": "FLOAT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "store_longitude",
+        "type": "FLOAT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "distance_km",
+        "type": "FLOAT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [
+      {
+        "from": "current_status_id",
+        "to_table": "delivery_statuses",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      },
+      {
+        "from": "address_id",
+        "to_table": "delivery_addresses",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      },
+      {
+        "from": "sale_id",
+        "to_table": "sales",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      }
+    ],
+    "indexes": []
+  },
+  "delivery_status_history": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "delivery_order_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "status_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "notes",
+        "type": "TEXT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "created_by",
+        "type": "VARCHAR(100)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [
+      {
+        "from": "status_id",
+        "to_table": "delivery_statuses",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      },
+      {
+        "from": "delivery_order_id",
+        "to_table": "delivery_orders",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      }
+    ],
+    "indexes": []
+  },
+  "alembic_version": {
+    "columns": [
+      {
+        "name": "version_num",
+        "type": "VARCHAR(32)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      }
+    ],
+    "foreign_keys": [],
+    "indexes": [
+      {
+        "name": "sqlite_autoindex_alembic_version_1",
+        "unique": true
+      }
+    ]
+  },
+  "general_minimums": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "product_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "quantity",
+        "type": "FLOAT",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [
+      {
+        "from": "product_id",
+        "to_table": "products",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "sqlite_autoindex_general_minimums_1",
+        "unique": true
+      }
+    ]
+  },
+  "stock_history": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "store_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "product_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "quantity_change",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "reason",
+        "type": "VARCHAR(200)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "timestamp",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [
+      {
+        "from": "product_id",
+        "to_table": "products",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      },
+      {
+        "from": "store_id",
+        "to_table": "stores",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      }
+    ],
+    "indexes": []
+  },
+  "ingredient_transactions": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "ingredient_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "production_id",
+        "type": "INTEGER",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "user_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "quantity",
+        "type": "FLOAT",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "transaction_type",
+        "type": "VARCHAR(20)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "unit_cost",
+        "type": "FLOAT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "timestamp",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "notes",
+        "type": "VARCHAR(255)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [
+      {
+        "from": "user_id",
+        "to_table": "users",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      },
+      {
+        "from": "production_id",
+        "to_table": "productions",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      },
+      {
+        "from": "ingredient_id",
+        "to_table": "ingredients",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      }
+    ],
+    "indexes": []
+  },
+  "recipes": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "product_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "type",
+        "type": "VARCHAR(50)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(100)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "instructions",
+        "type": "TEXT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [
+      {
+        "from": "product_id",
+        "to_table": "products",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      }
+    ],
+    "indexes": []
+  },
+  "recipe_ingredients": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "recipe_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "ingredient_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "quantity",
+        "type": "FLOAT",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "notes",
+        "type": "TEXT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [
+      {
+        "from": "recipe_id",
+        "to_table": "recipes",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      },
+      {
+        "from": "ingredient_id",
+        "to_table": "ingredients",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      }
+    ],
+    "indexes": []
+  },
+  "stocks": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "store_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "product_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "quantity",
+        "type": "FLOAT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "minimum_quantity",
+        "type": "FLOAT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [
+      {
+        "from": "store_id",
+        "to_table": "stores",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      },
+      {
+        "from": "product_id",
+        "to_table": "products",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      }
+    ],
+    "indexes": []
+  },
+  "production_order_statuses": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(50)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "description",
+        "type": "VARCHAR(200)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "color_code",
+        "type": "VARCHAR(7)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "order",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [],
+    "indexes": []
+  },
+  "production_order_history": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "order_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "status_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "notes",
+        "type": "TEXT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [
+      {
+        "from": "status_id",
+        "to_table": "production_order_statuses",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      },
+      {
+        "from": "order_id",
+        "to_table": "production_orders",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      }
+    ],
+    "indexes": []
+  },
+  "products": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "category_id",
+        "type": "INTEGER",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR(100)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "description",
+        "type": "TEXT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "price",
+        "type": "FLOAT",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "sales_format",
+        "type": "VARCHAR(50)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "active",
+        "type": "BOOLEAN",
+        "notnull": false,
+        "default_value": "'1'",
+        "is_primary_key": false
+      },
+      {
+        "name": "track_stock",
+        "type": "BOOLEAN",
+        "notnull": false,
+        "default_value": "1",
+        "is_primary_key": false
+      },
+      {
+        "name": "weight_kg",
+        "type": "FLOAT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [
+      {
+        "from": "category_id",
+        "to_table": "product_categories",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      }
+    ],
+    "indexes": []
+  },
+  "productions": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "batch_number",
+        "type": "VARCHAR(50)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "flavor",
+        "type": "VARCHAR(100)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "quantity",
+        "type": "FLOAT",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "production_date",
+        "type": "DATETIME",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "operator",
+        "type": "VARCHAR(100)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "notes",
+        "type": "TEXT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "production_cost",
+        "type": "FLOAT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "end_time",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "assigned_store_id",
+        "type": "INTEGER",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "assigned_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "success_status",
+        "type": "VARCHAR(10)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [
+      {
+        "from": "assigned_store_id",
+        "to_table": "stores",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "sqlite_autoindex_productions_1",
+        "unique": true
+      }
+    ]
+  },
+  "production_orders": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": true
+      },
+      {
+        "name": "order_number",
+        "type": "VARCHAR(50)",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "product_id",
+        "type": "INTEGER",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "quantity",
+        "type": "FLOAT",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "unit",
+        "type": "VARCHAR(10)",
+        "notnull": true,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "notes",
+        "type": "TEXT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "priority",
+        "type": "INTEGER",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "due_date",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "status_id",
+        "type": "INTEGER",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "created_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "updated_at",
+        "type": "DATETIME",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "progress",
+        "type": "FLOAT",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      },
+      {
+        "name": "production_id",
+        "type": "INTEGER",
+        "notnull": false,
+        "default_value": null,
+        "is_primary_key": false
+      }
+    ],
+    "foreign_keys": [
+      {
+        "from": "status_id",
+        "to_table": "production_order_statuses",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      },
+      {
+        "from": "product_id",
+        "to_table": "products",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      },
+      {
+        "from": "production_id",
+        "to_table": "productions",
+        "to_column": "id",
+        "on_update": "NO ACTION",
+        "on_delete": "NO ACTION"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "sqlite_autoindex_production_orders_1",
+        "unique": true
+      }
+    ]
+  }
+}

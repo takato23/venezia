@@ -1,0 +1,442 @@
+{% extends "base.html" %}
+
+{% block title %}Productos{% endblock %}
+
+{% block head %}
+{{ super() }}
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Custom JS -->
+<script src="{{ url_for('static', filename='js/products.js') }}"></script>
+<script>
+function openEditProductModal(button) {
+    const productId = button.getAttribute('data-product-id');
+    const productName = button.getAttribute('data-product-name');
+    const productCategory = button.getAttribute('data-product-category');
+    const productPrice = button.getAttribute('data-product-price');
+    const productWeight = button.getAttribute('data-product-weight');
+    const productFlavors = button.getAttribute('data-product-max-flavors');
+    const productStock = button.getAttribute('data-product-track-stock') === '1';
+    const productActive = button.getAttribute('data-product-active') === '1';
+
+    // Populate the edit form
+    document.getElementById('edit_id').value = productId;
+    document.getElementById('edit_name').value = productName;
+    document.getElementById('edit_category_id').value = productCategory;
+    document.getElementById('edit_price').value = productPrice;
+    document.getElementById('edit_weight_kg').value = productWeight || '';
+    document.getElementById('edit_max_flavors').value = productFlavors || '';
+    document.getElementById('edit_track_stock').checked = productStock;
+    document.getElementById('edit_active').checked = productActive;
+
+    $('#editProductModal').modal('show');
+    updateEditSalesFormat();
+}
+
+function deleteProduct(id, name) {
+    console.log('Delete product called:', { id, name });
+    
+    Swal.fire({
+        title: '¿Está seguro?',
+        text: `¿Desea eliminar el producto "${name}"?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            console.log('Confirmed delete for:', id);
+            
+            fetch(`/delete_product/${id}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Delete response:', data);
+                if (data.success) {
+                    Swal.fire('¡Eliminado!', 'El producto ha sido eliminado.', 'success')
+                    .then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire('Error', data.error || 'Error al eliminar el producto', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Delete error:', error);
+                Swal.fire('Error', 'Error al eliminar el producto', 'error');
+            });
+        }
+    });
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Gestión de Productos</h2>
+    <div class="mb-4">
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addProductModal">
+            <i class="fas fa-plus"></i> Agregar Producto
+        </button>
+        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addCategoryModal">
+            <i class="fas fa-plus"></i> Agregar Categoría
+        </button>
+        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#manageCategoriesModal">
+            <i class="fas fa-edit"></i> Editar Categorías
+        </button>
+    </div>
+
+    {% for category_name, data in category_products.items() %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">{{ category_name }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Precio</th>
+                            <th>Peso (kg)</th>
+                            <th>Máx. Sabores</th>
+                            <th>Control Stock</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in data.products %}
+                        <tr>
+                            <td>{{ product.name }}</td>
+                            <td>${{ "%.2f"|format(product.price) }}</td>
+                            <td>{{ "%.2f"|format(product.weight_kg) if product.weight_kg else '-' }}</td>
+                            <td>{{ product.max_flavors if product.max_flavors else '-' }}</td>
+                            <td>
+                                <span class="badge {% if product.track_stock %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {{ 'Sí' if product.track_stock else 'No' }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge {% if product.active %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ 'Activo' if product.active else 'Inactivo' }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-primary edit-product" 
+                                            data-product-id="{{ product.id }}"
+                                            data-product-name="{{ product.name }}"
+                                            data-product-price="{{ product.price }}"
+                                            data-product-weight="{{ product.weight_kg or '' }}"
+                                            data-product-max-flavors="{{ product.max_flavors or '' }}"
+                                            data-product-track-stock="{{ '1' if product.track_stock else '0' }}"
+                                            data-product-active="{{ '1' if product.active else '0' }}"
+                                            data-product-category="{{ data.id }}"
+                                            onclick="openEditProductModal(this)">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteProduct('{{ product.id }}', '{{ product.name }}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Add Product Modal -->
+<div class="modal fade" id="addProductModal" tabindex="-1" role="dialog" aria-labelledby="addProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addProductModalLabel">Agregar Producto</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addProductForm" method="POST" action="{{ url_for('add_product') }}">
+                    <div class="form-group">
+                        <label for="name">Nombre</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="category_id">Categoría</label>
+                        <select class="form-control" id="category_id" name="category_id" required onchange="updateSalesFormat()">
+                            {% for category in categories %}
+                            <option value="{{ category.id }}" data-name="{{ category.name }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="price">Precio</label>
+                        <input type="number" step="0.01" class="form-control" id="price" name="price" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sales_format">Formato de Venta</label>
+                        <select class="form-control" id="sales_format" name="sales_format" required>
+                            <option value="KG">Kilogramo</option>
+                            <option value="UNIT">Unidad</option>
+                        </select>
+                    </div>
+                    <div class="form-group weight-input">
+                        <label for="weight_kg">Peso (kg)</label>
+                        <input type="number" step="0.01" class="form-control" id="weight_kg" name="weight_kg">
+                        <small class="form-text text-muted">Solo para productos por unidad</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="max_flavors">Máx. Sabores</label>
+                        <input type="number" class="form-control" id="max_flavors" name="max_flavors">
+                    </div>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="track_stock" name="track_stock">
+                        <label class="form-check-label" for="track_stock">Control Stock</label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="active" name="active" checked>
+                        <label class="form-check-label" for="active">Activo</label>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Product Modal -->
+<div class="modal fade" id="editProductModal" tabindex="-1" role="dialog" aria-labelledby="editProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProductModalLabel">Editar Producto</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editProductForm">
+                    <input type="hidden" id="edit_id" name="id">
+                    <div class="form-group">
+                        <label for="edit_name">Nombre</label>
+                        <input type="text" class="form-control" id="edit_name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_category_id">Categoría</label>
+                        <select class="form-control" id="edit_category_id" name="category_id" required onchange="updateEditSalesFormat()">
+                            {% for category_name, data in category_products.items() %}
+                            <option value="{{ data.id }}">{{ category_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_price">Precio</label>
+                        <input type="number" step="0.01" class="form-control" id="edit_price" name="price" required>
+                    </div>
+                    <div class="form-group weight-input">
+                        <label for="edit_weight_kg">Peso (kg)</label>
+                        <input type="number" step="0.01" class="form-control" id="edit_weight_kg" name="weight_kg">
+                        <small class="form-text text-muted">Solo para productos por unidad</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_max_flavors">Máx. Sabores</label>
+                        <input type="number" min="0" class="form-control" id="edit_max_flavors" name="max_flavors">
+                        <small class="form-text text-muted">Dejar vacío si no aplica</small>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="edit_track_stock" name="track_stock">
+                        <label class="form-check-label" for="edit_track_stock">Control de Stock</label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="edit_active" name="active">
+                        <label class="form-check-label" for="edit_active">Activo</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="submit" form="editProductForm" class="btn btn-primary">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Category Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" role="dialog" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCategoryModalLabel">Agregar Categoría</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="addCategoryForm" action="{{ url_for('add_category') }}" method="POST">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="categoryName">Nombre</label>
+                        <input type="text" class="form-control" id="categoryName" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="categoryDescription">Descripción</label>
+                        <textarea class="form-control" id="categoryDescription" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Manage Categories Modal -->
+<div class="modal fade" id="manageCategoriesModal" tabindex="-1" role="dialog" aria-labelledby="manageCategoriesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="manageCategoriesModalLabel">Gestionar Categorías</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category_name, data in category_products.items() %}
+                            <tr>
+                                <td>{{ category_name }}</td>
+                                <td>{{ data.category.description or '-' }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-primary edit-category"
+                                            data-category-id="{{ data.category.id }}"
+                                            data-category-name="{{ category_name }}"
+                                            data-category-description="{{ data.category.description or '' }}"
+                                            onclick="openEditCategoryModal(this)">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Category Modal -->
+<div class="modal fade" id="editCategoryModal" tabindex="-1" role="dialog" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editCategoryModalLabel">Editar Categoría</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editCategoryForm">
+                    <div class="form-group">
+                        <label for="edit_category_name">Nombre</label>
+                        <input type="text" class="form-control" id="edit_category_name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_category_description">Descripción</label>
+                        <textarea class="form-control" id="edit_category_description" name="description" rows="3"></textarea>
+                    </div>
+                    <input type="hidden" id="edit_category_id" name="category_id">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="submitEditCategory()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openEditCategoryModal(button) {
+    const categoryId = button.dataset.categoryId;
+    const categoryName = button.dataset.categoryName;
+    const categoryDescription = button.dataset.categoryDescription;
+    
+    document.getElementById('edit_category_id').value = categoryId;
+    document.getElementById('edit_category_name').value = categoryName;
+    document.getElementById('edit_category_description').value = categoryDescription;
+    
+    $('#manageCategoriesModal').modal('hide');
+    $('#editCategoryModal').modal('show');
+}
+
+function submitEditCategory() {
+    const form = document.getElementById('editCategoryForm');
+    const categoryId = document.getElementById('edit_category_id').value;
+    
+    fetch(`/edit_category/${categoryId}`, {
+        method: 'POST',
+        body: new FormData(form)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            $('#editCategoryModal').modal('hide');
+            Swal.fire('¡Éxito!', 'Categoría actualizada correctamente', 'success')
+            .then(() => {
+                window.location.reload();
+            });
+        } else {
+            Swal.fire('Error', data.error || 'Error al actualizar la categoría', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Error', 'Error al actualizar la categoría', 'error');
+    });
+}
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Handle edit category button click
+    $('.edit-category').click(function() {
+        var id = $(this).data('id');
+        var name = $(this).data('name');
+        var description = $(this).data('description');
+        
+        $('#editCategoryId').val(id);
+        $('#editCategoryName').val(name);
+        $('#editCategoryDescription').val(description);
+        $('#editCategoryForm').attr('action', "{{ url_for('edit_category', category_id=0) }}".replace('0', id));
+    });
+});
+</script>
+{% endblock %}

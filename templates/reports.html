@@ -1,0 +1,533 @@
+{% extends "base.html" %}
+
+{% block title %}Reportes - Sistema de Gestión de Helados{% endblock %}
+
+{% block extra_css %}
+<!-- Chart.js -->
+<link rel="stylesheet" href="{{ url_for('static', filename='adminlte/plugins/chart.js/Chart.min.css') }}">
+<!-- DateRangePicker -->
+<link rel="stylesheet" href="{{ url_for('static', filename='adminlte/plugins/daterangepicker/daterangepicker.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs mb-4" id="reportTabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="stock-tab" data-toggle="tab" href="#stock" role="tab">
+                <i class="fas fa-boxes mr-1"></i>Reporte de Stock
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="sales-tab" data-toggle="tab" href="#sales" role="tab">
+                <i class="fas fa-cash-register mr-1"></i>Reporte de Ventas
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="stock-analytics-tab" data-toggle="tab" href="#stock-analytics" role="tab">
+                <i class="fas fa-chart-line mr-1"></i>Análisis de Stock
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="production-tab" data-toggle="tab" href="#production" role="tab">
+                <i class="fas fa-industry mr-1"></i>Análisis de Producción
+            </a>
+        </li>
+    </ul>
+
+    <!-- Tab content -->
+    <div class="tab-content" id="reportTabsContent">
+        <!-- Stock Reports Tab -->
+        <div class="tab-pane fade show active" id="stock" role="tabpanel">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Filtros de Stock</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="store-filter" class="form-label">Tienda</label>
+                                <select class="form-select" id="store-filter">
+                                    <option value="">Todas las tiendas</option>
+                                    {% for store in stores %}
+                                    <option value="{{ store.id }}">{{ store.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="flavor-filter" class="form-label">Sabor</label>
+                                <select class="form-select" id="flavor-filter">
+                                    <option value="">Todos los sabores</option>
+                                    {% for flavor in flavors %}
+                                    <option value="{{ flavor }}">{{ flavor }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="status-filter" class="form-label">Estado</label>
+                                <select class="form-select" id="status-filter">
+                                    <option value="">Todos</option>
+                                    <option value="low">Bajo stock</option>
+                                    <option value="ok">Stock OK</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Reporte de Stock</h5>
+                    <button class="btn btn-sm btn-success" id="export-stock-excel">
+                        <i class="fas fa-file-excel mr-1"></i> Exportar a Excel
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table" id="stock-table">
+                            <thead>
+                                <tr>
+                                    <th>Tienda</th>
+                                    <th>Sabor</th>
+                                    <th>Stock Actual</th>
+                                    <th>Stock Mínimo</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Filled by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sales Reports Tab -->
+        <div class="tab-pane fade" id="sales" role="tabpanel">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Filtros de Ventas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Rango de Fechas</label>
+                                <input type="text" class="form-control" id="sales-daterange">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Tienda</label>
+                                <select class="form-control" id="sales-store-filter">
+                                    <option value="">Todas las Tiendas</option>
+                                    {% for store in stores %}
+                                    <option value="{{ store.id }}">{{ store.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Método de Pago</label>
+                                <select class="form-control" id="payment-method-filter">
+                                    <option value="">Todos</option>
+                                    <option value="cash">Efectivo</option>
+                                    <option value="card">Tarjeta</option>
+                                    <option value="transfer">Transferencia</option>
+                                    <option value="mercadopago">MercadoPago</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Estado de Pago</label>
+                                <select class="form-control" id="payment-status-filter">
+                                    <option value="">Todos</option>
+                                    <option value="completed">Completado</option>
+                                    <option value="pending">Pendiente</option>
+                                    <option value="failed">Fallido</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Sales Summary Cards -->
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-info">
+                        <div class="inner">
+                            <h3 id="total-sales">0</h3>
+                            <p>Ventas Totales</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3 id="total-amount">$0</h3>
+                            <p>Monto Total</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-warning">
+                        <div class="inner">
+                            <h3 id="avg-sale">$0</h3>
+                            <p>Venta Promedio</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-danger">
+                        <div class="inner">
+                            <h3 id="delivery-sales">0</h3>
+                            <p>Ventas con Delivery</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-truck"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sales Charts -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Ventas por Día</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="salesByDayChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Ventas por Método de Pago</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="salesByPaymentChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sales Table -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Detalle de Ventas</h5>
+                    <button class="btn btn-sm btn-success" id="export-sales-excel">
+                        <i class="fas fa-file-excel mr-1"></i> Exportar a Excel
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="sales-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 30px"></th>
+                                    <th>ID</th>
+                                    <th>Fecha</th>
+                                    <th>Tienda</th>
+                                    <th>Total</th>
+                                    <th>Método de Pago</th>
+                                    <th>Estado</th>
+                                    <th>Tipo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Filled by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stock Analytics Tab -->
+        <div class="tab-pane fade" id="stock-analytics" role="tabpanel">
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-filter mr-1"></i>
+                                Filtros de Análisis
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Tienda</label>
+                                        <select id="stock-analytics-store" class="form-control">
+                                            <option value="">Todas las Tiendas</option>
+                                            {% for store in stores %}
+                                            <option value="{{ store.id }}" {% if selected_store_id == store.id %}selected{% endif %}>
+                                                {{ store.name }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Producto</label>
+                                        <select id="stock-analytics-product" class="form-control">
+                                            <option value="">Todos los Productos</option>
+                                            {% for product in products %}
+                                            <option value="{{ product.id }}" {% if selected_product_id == product.id %}selected{% endif %}>
+                                                {{ product.name }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Período</label>
+                                        <select id="stock-analytics-period" class="form-control">
+                                            <option value="7" {% if days == 7 %}selected{% endif %}>Última Semana</option>
+                                            <option value="30" {% if days == 30 %}selected{% endif %}>Último Mes</option>
+                                            <option value="90" {% if days == 90 %}selected{% endif %}>Últimos 3 Meses</option>
+                                            <option value="180" {% if days == 180 %}selected{% endif %}>Últimos 6 Meses</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>&nbsp;</label>
+                                        <button type="button" id="apply-stock-analytics" class="btn btn-primary btn-block">
+                                            <i class="fas fa-search mr-1"></i> Aplicar Filtros
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stock Level Trends -->
+            <div class="row">
+                <!-- Stock Trends Chart -->
+                <div class="col-md-12 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-chart-line mr-1"></i>
+                                Tendencias de Stock
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="stockTrendsChart" width="400" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <!-- Stock Predictions Table -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-clock mr-1"></i>
+                                Predicciones de Stock
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="stock-predictions-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Tienda</th>
+                                            <th>Producto</th>
+                                            <th>Stock Actual</th>
+                                            <th>Días hasta agotamiento</th>
+                                            <th>Fecha estimada</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Filled by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            
+                <!-- Depletion Rates -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-tachometer-alt mr-1"></i>
+                                Tasas de Agotamiento
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="depletionRatesChart" width="400" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Production Analytics Tab -->
+        <div class="tab-pane fade" id="production" role="tabpanel">
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-filter mr-1"></i>
+                                Filtros de Análisis
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <form method="get" class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Período</label>
+                                        <select name="days" class="form-control" onchange="this.form.submit()">
+                                            <option value="7" {% if days == 7 %}selected{% endif %}>Última Semana</option>
+                                            <option value="30" {% if days == 30 %}selected{% endif %}>Último Mes</option>
+                                            <option value="90" {% if days == 90 %}selected{% endif %}>Últimos 3 Meses</option>
+                                            <option value="180" {% if days == 180 %}selected{% endif %}>Últimos 6 Meses</option>
+                                            <option value="365" {% if days == 365 %}selected{% endif %}>Último Año</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Top Flavors -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-chart-pie mr-1"></i>
+                                Sabores Más Producidos
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="topFlavorsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Production Volume Trend -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-chart-line mr-1"></i>
+                                Tendencia de Volumen de Producción
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="productionTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Seasonal Analysis -->
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-calendar-alt mr-1"></i>
+                                Análisis Estacional
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="seasonalChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Popular Combinations -->
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-layer-group mr-1"></i>
+                                Combinaciones Populares
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Combinación</th>
+                                            <th>Cantidad</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for combo in popular_combinations %}
+                                        <tr>
+                                            <td>{{ combo.combination }}</td>
+                                            <td>{{ combo.count }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sale Details Modal -->
+<div class="modal fade" id="saleDetailsModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <!-- Content filled by JavaScript -->
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js -->
+<script src="{{ url_for('static', filename='adminlte/plugins/chart.js/Chart.min.js') }}"></script>
+<!-- DateRangePicker -->
+<script src="{{ url_for('static', filename='adminlte/plugins/moment/moment.min.js') }}"></script>
+<script src="{{ url_for('static', filename='adminlte/plugins/daterangepicker/daterangepicker.js') }}"></script>
+<!-- SheetJS (for Excel export) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+<!-- Reports JS -->
+<script src="{{ url_for('static', filename='js/reports.js') }}"></script>
+{% endblock %}
