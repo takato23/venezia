@@ -1,0 +1,417 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Checkout - Venezia Web Shop</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/webshop.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/toastify-js@1.12.0/src/toastify.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js@1.12.0/src/toastify.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Finalizar Compra</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Checkout Type Selection -->
+                    <div class="mb-4">
+                        <h5>¿Cómo deseas continuar?</h5>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="checkoutType" id="loginCheckout" value="login">
+                            <label class="form-check-label" for="loginCheckout">
+                                Ya tengo una cuenta
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="checkoutType" id="guestCheckout" value="guest" checked>
+                            <label class="form-check-label" for="guestCheckout">
+                                Continuar como invitado
+                            </label>
+                        </div>
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="radio" name="checkoutType" id="registerCheckout" value="register">
+                            <label class="form-check-label" for="registerCheckout">
+                                Registrarse
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Login Form (Initially Hidden) -->
+                    <form id="loginForm" style="display: none;">
+                        <div class="mb-3">
+                            <label for="loginEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="loginEmail" name="loginEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="loginPassword" class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" id="loginPassword" name="loginPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary mb-3">Iniciar Sesión</button>
+                    </form>
+
+                    <!-- Guest Form (Initially Hidden) -->
+                    <div id="guestForm" style="display: none;">
+                    </div>
+
+                    <!-- Registration Form (Initially Hidden) -->
+                    <form id="registerForm" style="display: none;">
+                        <div class="mb-3">
+                            <label for="regEmail" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="regEmail" name="email">
+                        </div>
+                        <div class="mb-3">
+                            <label for="regPassword" class="form-label">Contraseña *</label>
+                            <input type="password" class="form-control" id="regPassword" name="password">
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">Confirmar Contraseña *</label>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Registrarse</button>
+                    </form>
+
+                    <!-- Common Information Form -->
+                    <form id="commonInfoForm" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="firstName" class="form-label">Nombre *</label>
+                                <input type="text" class="form-control" id="firstName" name="firstName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="lastName" class="form-label">Apellido *</label>
+                                <input type="text" class="form-control" id="lastName" name="lastName" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Teléfono *</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Dirección de Entrega *</label>
+                            <input type="text" class="form-control" id="address" name="address" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="instructions" class="form-label">Instrucciones de Entrega</label>
+                            <textarea class="form-control" id="instructions" name="instructions" rows="3" 
+                                    placeholder="Ej: Timbre 2B, dejar en portería, etc."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg w-100">Finalizar Compra</button>
+                    </form>
+
+                    <!-- Checkout Form -->
+                    <form id="checkoutForm" style="display: none;">
+                        <button type="submit" class="btn btn-primary">Confirmar Pedido</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Resumen del Pedido</h4>
+                </div>
+                <div class="card-body">
+                    <div id="cartItems">
+                        <!-- Cart items will be loaded here -->
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <strong>Total:</strong>
+                        <strong id="cartTotal"></strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkoutForm = document.getElementById('checkoutForm');
+    const checkoutTypeInputs = document.querySelectorAll('input[name="checkoutType"]');
+    const loginForm = document.getElementById('loginForm');
+    const guestForm = document.getElementById('guestForm');
+    const registerForm = document.getElementById('registerForm');
+    const commonInfoForm = document.getElementById('commonInfoForm');
+
+    // Get the initial selected type
+    const selectedType = document.querySelector('input[name="checkoutType"]:checked').value;
+
+    function toggleForms(type) {
+        // Hide all forms first
+        loginForm.style.display = 'none';
+        guestForm.style.display = 'none';
+        registerForm.style.display = 'none';
+        commonInfoForm.style.display = 'none';
+
+        // Show the selected form
+        switch (type) {
+            case 'login':
+                loginForm.style.display = 'block';
+                break;
+            case 'guest':
+                guestForm.style.display = 'block';
+                commonInfoForm.style.display = 'block';
+                break;
+            case 'register':
+                registerForm.style.display = 'block';
+                commonInfoForm.style.display = 'block';
+                break;
+        }
+        
+        // Toggle required attributes for registration fields
+        const registrationInputs = registerForm.querySelectorAll('input');
+        registrationInputs.forEach(input => {
+            input.required = type === 'register';
+        });
+    }
+
+    // Add change event listener to radio buttons
+    checkoutTypeInputs.forEach(input => {
+        input.addEventListener('change', (e) => {
+            toggleForms(e.target.value);
+        });
+    });
+
+    // Show initial forms based on default selection
+    toggleForms(selectedType);
+
+    // Handle login form submission
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        
+        try {
+            const response = await fetch('/webshop/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            });
+            
+            if (response.ok) {
+                const userData = await response.json();
+                // Fill common info form with user data
+                document.getElementById('firstName').value = userData.first_name;
+                document.getElementById('lastName').value = userData.last_name;
+                document.getElementById('phone').value = userData.phone;
+                document.getElementById('address').value = userData.address;
+                
+                // Show the common info form and hide the login form
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('commonInfoForm').style.display = 'block';
+                
+                // Disable editing of the filled fields
+                document.getElementById('firstName').readOnly = true;
+                document.getElementById('lastName').readOnly = true;
+                document.getElementById('phone').readOnly = true;
+                document.getElementById('address').readOnly = true;
+                
+                showSuccess('Inicio de sesión exitoso');
+            } else {
+                const error = await response.json();
+                showError(error.error);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showError('Error al iniciar sesión');
+        }
+    });
+
+    // Handle registration button click
+    registerForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Get values from both forms
+        const registerData = {
+            email: document.getElementById('regEmail').value,
+            password: document.getElementById('regPassword').value,
+            confirmPassword: document.getElementById('confirmPassword').value,
+            first_name: document.getElementById('firstName').value,
+            last_name: document.getElementById('lastName').value,
+            phone: document.getElementById('phone').value,
+            address: document.getElementById('address').value
+        };
+        
+        // Validate password confirmation
+        if (registerData.password !== registerData.confirmPassword) {
+            showError('Las contraseñas no coinciden');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/webshop/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(registerData)
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                showSuccess(data.message);
+                // Hide register form and show checkout form
+                registerForm.style.display = 'none';
+                checkoutForm.style.display = 'block';
+            } else {
+                showError(data.error);
+            }
+        } catch (error) {
+            showError('Error al registrar usuario');
+            console.error('Error:', error);
+        }
+    });
+
+    // Handle common info form submission (checkout)
+    document.getElementById('commonInfoForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Create FormData object
+        const formData = new FormData();
+        
+        // Add form fields
+        formData.append('checkoutType', selectedType);
+        formData.append('firstName', document.getElementById('firstName').value);
+        formData.append('lastName', document.getElementById('lastName').value);
+        formData.append('phone', document.getElementById('phone').value);
+        formData.append('address', document.getElementById('address').value);
+        formData.append('instructions', document.getElementById('instructions').value);
+        
+        // If registering, add registration fields
+        if (selectedType === 'register') {
+            formData.append('email', document.getElementById('regEmail').value);
+            formData.append('password', document.getElementById('regPassword').value);
+        }
+        
+        try {
+            const response = await fetch('/webshop/checkout', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                // Redirect to order confirmation page
+                window.location.href = `/webshop/order-confirmation/${data.orderId}`;
+            } else {
+                const error = await response.json();
+                showError(error.error);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showError('Error al procesar el pedido');
+        }
+    });
+
+    // Handle form submission
+    checkoutForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(commonInfoForm);
+        const checkoutType = document.querySelector('input[name="checkoutType"]:checked').value;
+        
+        // Add registration data if registering
+        if (checkoutType === 'register') {
+            formData.append('email', document.getElementById('regEmail').value);
+            formData.append('password', document.getElementById('regPassword').value);
+        }
+
+        try {
+            const response = await fetch('/webshop/checkout', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                // Handle successful checkout
+                window.location.href = '/webshop/order-confirmation/' + result.orderId;
+            } else {
+                // Handle errors
+                const error = await response.json();
+                showError(error.error || 'Error al procesar el pedido');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showError('Error al procesar el pedido');
+        }
+    });
+
+    // Load cart items
+    loadCartItems();
+});
+
+function showError(message) {
+    Toastify({
+        text: message,
+        duration: 3000,
+        close: true,
+        gravity: "top",
+        position: "right",
+        backgroundColor: "#dc3545",
+    }).showToast();
+}
+
+function showSuccess(message) {
+    Toastify({
+        text: message,
+        duration: 3000,
+        close: true,
+        gravity: "top",
+        position: "right",
+        backgroundColor: "#28a745",
+    }).showToast();
+}
+
+async function loadCartItems() {
+    try {
+        const response = await fetch('/webshop/api/cart');
+        const data = await response.json();
+        
+        const cartItems = document.getElementById('cartItems');
+        const cartTotal = document.getElementById('cartTotal');
+        
+        if (data.cart.length === 0) {
+            cartItems.innerHTML = '<p class="text-center text-muted">El carrito está vacío</p>';
+            cartTotal.textContent = '$0';
+            return;
+        }
+        
+        let html = '<ul class="list-group list-group-flush">';
+        let total = 0;
+        
+        data.cart.forEach(item => {
+            total += item.price * item.quantity;
+            html += `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">${item.name}</h6>
+                        <small class="text-muted">$${item.price.toLocaleString()}</small>
+                        ${item.quantity > 1 ? `<small class="text-muted"> x ${item.quantity}</small>` : ''}
+                    </div>
+                </li>
+            `;
+        });
+        
+        html += '</ul>';
+        cartItems.innerHTML = html;
+        cartTotal.textContent = '$' + total.toLocaleString();
+        
+    } catch (error) {
+        console.error('Error loading cart:', error);
+        showError('Error al cargar el carrito');
+    }
+}
+</script>
+{% endblock %}

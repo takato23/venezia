@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Ver Receta - Sistema de Gestión de Helados{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>{{ recipe.name }}</h2>
+                <div>
+                    <a href="{{ url_for('edit_recipe', recipe_id=recipe.id) }}" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> Editar
+                    </a>
+                    <a href="{{ url_for('recipes') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Detalles de la Receta</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Información General</h5>
+                            <dl class="row">
+                                <dt class="col-sm-4">Producto:</dt>
+                                <dd class="col-sm-8">{{ recipe.product.name if recipe.product else 'Sin Producto' }}</dd>
+                                
+                                <dt class="col-sm-4">Tipo:</dt>
+                                <dd class="col-sm-8">{{ recipe.type }}</dd>
+                                
+                                <dt class="col-sm-4">Tamaño de Lote:</dt>
+                                <dd class="col-sm-8">{{ recipe.batch_size }} kg</dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <h5>Ingredientes</h5>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Ingrediente</th>
+                                        <th>Cantidad</th>
+                                        <th>Unidad</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for ri in recipe.ingredients %}
+                                    <tr>
+                                        <td>{{ ri.ingredient.name }}</td>
+                                        <td>{{ ri.quantity }}</td>
+                                        <td>{{ ri.ingredient.unit }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h5>Instrucciones de Preparación</h5>
+                            <p class="text-justify">{{ recipe.instructions }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Información Adicional</h3>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-6">Creado:</dt>
+                        <dd class="col-sm-6">{{ recipe.created_at.strftime('%Y-%m-%d') }}</dd>
+                        
+                        <dt class="col-sm-6">Actualizado:</dt>
+                        <dd class="col-sm-6">{{ recipe.updated_at.strftime('%Y-%m-%d') }}</dd>
+                        
+                        <dt class="col-sm-6">Estado:</dt>
+                        <dd class="col-sm-6">
+                            {% if recipe.can_produce %}
+                                <span class="badge badge-success">Disponible</span>
+                            {% else %}
+                                <span class="badge badge-danger">Faltan Ingredientes</span>
+                            {% endif %}
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

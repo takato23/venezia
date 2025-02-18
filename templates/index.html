@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Sistema de Gestión de Helados{% endblock %}
+
+{% block extra_css %}
+<!-- Chart.js -->
+<link rel="stylesheet" href="{{ url_for('static', filename='adminlte/plugins/chart.js/Chart.min.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Quick Stats -->
+<div class="row">
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3>{{ "%.1f"|format(total_production) }} kg</h3>
+                <p>Producción Total</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-ice-cream"></i>
+            </div>
+            <a href="{{ url_for('production') }}" class="small-box-footer">
+                Más información <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>{{ total_stores }}</h3>
+                <p>Tiendas Activas</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-store"></i>
+            </div>
+            <a href="{{ url_for('stores') }}" class="small-box-footer">
+                Más información <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3>{{ total_flavors }}</h3>
+                <p>Sabores Disponibles</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-list"></i>
+            </div>
+            <a href="{{ url_for('reports') }}" class="small-box-footer">
+                Más información <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-danger">
+            <div class="inner">
+                <h3>{{ low_stock_count }}</h3>
+                <p>Alertas de Stock Bajo</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <a href="#low-stock" class="small-box-footer">
+                Ver alertas <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Production Chart & Recent Activity -->
+<div class="row">
+    <!-- Production Trend -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-chart-line mr-1"></i>
+                    Tendencia de Producción (Últimos 7 días)
+                </h3>
+            </div>
+            <div class="card-body">
+                <canvas id="productionChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-history mr-1"></i>
+                    Actividad Reciente
+                </h3>
+            </div>
+            <div class="card-body p-0">
+                <ul class="products-list product-list-in-card pl-2 pr-2">
+                    {% for prod in recent_productions %}
+                    <li class="item">
+                        <div class="product-info">
+                            <a href="javascript:void(0)" class="product-title">
+                                {{ prod.flavor }}
+                                <span class="badge badge-info float-right">{{ "%.1f"|format(prod.quantity) }} kg</span>
+                            </a>
+                            <span class="product-description">
+                                Lote: {{ prod.batch_number }} - {{ prod.production_date.strftime('%Y-%m-%d %H:%M') }}
+                            </span>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="card-footer text-center">
+                <a href="{{ url_for('production') }}" class="uppercase">Ver Toda la Producción</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Store Performance & Stock Alerts -->
+<div class="row">
+    <!-- Store Performance -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-store mr-1"></i>
+                    Rendimiento de Tiendas
+                </h3>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>Tienda</th>
+                            <th>Sabores</th>
+                            <th>Stock Total</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for store in store_stats %}
+                        <tr>
+                            <td>{{ store.name }}</td>
+                            <td>{{ store.flavors_count }}</td>
+                            <td>{{ "%.1f"|format(store.total_stock) }} kg</td>
+                            <td>
+                                {% if store.total_stock > 100 %}
+                                <span class="badge bg-success">Óptimo</span>
+                                {% elif store.total_stock > 50 %}
+                                <span class="badge bg-warning">Regular</span>
+                                {% else %}
+                                <span class="badge bg-danger">Bajo</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Low Stock Alerts -->
+    <div class="col-lg-4">
+        <div class="card" id="low-stock">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-exclamation-circle mr-1"></i>
+                    Alertas de Stock Bajo
+                </h3>
+            </div>
+            <div class="card-body p-0">
+                <ul class="products-list product-list-in-card pl-2 pr-2">
+                    {% for alert in low_stock_alerts %}
+                    <li class="item">
+                        <div class="product-info">
+                            <a href="javascript:void(0)" class="product-title">
+                                {{ alert.name }}
+                                <span class="badge bg-danger float-right">{{ "%.1f"|format(alert.current_quantity) }} kg</span>
+                            </a>
+                            <span class="product-description">
+                                {{ alert.flavor }} (Mínimo: {{ "%.1f"|format(alert.minimum_quantity) }} kg)
+                            </span>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js -->
+<script src="{{ url_for('static', filename='adminlte/plugins/chart.js/Chart.min.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Production Chart
+    var ctx = document.getElementById('productionChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [{% for day in daily_production %}'{{ day.date }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Producción Diaria (kg)',
+                data: [{% for day in daily_production %}{{ day.total }}{% if not loop.last %}, {% endif %}{% endfor %}],
+                borderColor: '#17a2b8',
+                tension: 0.1,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value + ' kg';
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

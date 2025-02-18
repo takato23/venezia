@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+
+{% block title %}Agregar Ingrediente - Sistema de Gestión de Helados{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<style>
+    .ui-autocomplete {
+        max-height: 200px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        z-index: 9999;
+    }
+    .ui-menu-item {
+        padding: 8px 10px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .ui-menu-item:hover {
+        background: #f8f9fa;
+        cursor: pointer;
+    }
+    .provider-info {
+        font-size: 0.9em;
+    }
+    .provider-name {
+        font-weight: bold;
+    }
+    .provider-details {
+        color: #666;
+        font-size: 0.85em;
+    }
+    .select2-container--default .select2-selection--single {
+        height: calc(1.5em + .75rem + 2px);
+        padding: .375rem .75rem;
+        border: 1px solid #ced4da;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 1.5;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2>Agregar Nuevo Ingrediente</h2>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('add_ingredient') }}">
+                        <div class="form-group">
+                            <label for="name">Nombre del Ingrediente</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="unit">Unidad de Medida</label>
+                                <select class="form-control" id="unit" name="unit" required>
+                                    <option value="kg">Kilogramos (kg)</option>
+                                    <option value="g">Gramos (g)</option>
+                                    <option value="l">Litros (l)</option>
+                                    <option value="ml">Mililitros (ml)</option>
+                                    <option value="unidad">Unidad</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="current_stock">Stock Inicial</label>
+                                <input type="number" step="0.01" class="form-control" id="current_stock" 
+                                       name="current_stock" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="minimum_stock">Stock Mínimo</label>
+                                <input type="number" step="0.01" class="form-control" id="minimum_stock" 
+                                       name="minimum_stock" required>
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="cost_per_unit">Costo por Unidad ($)</label>
+                                <input type="number" step="0.01" class="form-control" id="cost_per_unit" 
+                                       name="cost_per_unit" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="provider_search">Proveedor</label>
+                            <input type="text" class="form-control" id="provider_search" 
+                                   placeholder="Buscar por nombre, teléfono o CUIT..." required>
+                            <input type="hidden" id="supplier_id" name="supplier_id" required>
+                            <small id="selected_provider_info" class="form-text text-muted"></small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="notes">Notas Adicionales</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Guardar Ingrediente
+                            </button>
+                            <a href="{{ url_for('ingredients') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Instrucciones</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-info-circle text-info"></i> Complete todos los campos requeridos.</li>
+                        <li><i class="fas fa-exclamation-triangle text-warning"></i> El stock mínimo ayuda a gestionar el inventario.</li>
+                        <li><i class="fas fa-dollar-sign text-success"></i> El costo por unidad debe incluir impuestos.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(document).ready(function() {
+    $("#provider_search").autocomplete({
+        source: function(request, response) {
+            $.ajax({
+                url: "{{ url_for('search_providers') }}",
+                dataType: "json",
+                data: {
+                    term: request.term
+                },
+                success: function(data) {
+                    response(data.map(function(item) {
+                        return {
+                            label: item.name,
+                            value: item.name,
+                            id: item.id,
+                            cuit: item.cuit,
+                            phone: item.phone
+                        };
+                    }));
+                }
+            });
+        },
+        minLength: 2,
+        select: function(event, ui) {
+            $("#supplier_id").val(ui.item.id);
+            $("#selected_provider_info").html(
+                `<div class="provider-info mt-2">
+                    <div class="provider-name">${ui.item.label}</div>
+                    <div class="provider-details">
+                        CUIT: ${ui.item.cuit || 'No disponible'} | 
+                        Tel: ${ui.item.phone || 'No disponible'}
+                    </div>
+                </div>`
+            );
+            return true;
+        }
+    }).autocomplete("instance")._renderItem = function(ul, item) {
+        return $("<li>")
+            .append(`<div>
+                        <div class="provider-name">${item.label}</div>
+                        <div class="provider-details">
+                            CUIT: ${item.cuit || 'No disponible'} | 
+                            Tel: ${item.phone || 'No disponible'}
+                        </div>
+                    </div>`)
+            .appendTo(ul);
+    };
+
+    // Clear hidden input when search field is cleared
+    $("#provider_search").on('input', function() {
+        if (!$(this).val()) {
+            $("#supplier_id").val('');
+            $("#selected_provider_info").empty();
+        }
+    });
+
+    // Form validation
+    $("form").on('submit', function(e) {
+        if (!$("#supplier_id").val()) {
+            e.preventDefault();
+            alert("Por favor seleccione un proveedor válido de la lista");
+        }
+    });
+});
+</script>
+{% endblock %}

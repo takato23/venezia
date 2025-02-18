@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sistema de Gestión de Helados{% endblock %}</title>
+    
+    <!-- Preload logo -->
+    <link rel="preload" href="{{ url_for('static', filename='images/venezialogo.png') }}" as="image">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/venezialogo.png') }}">
+    
+<!-- Styles -->
+<!-- Google Font: Source Sans Pro -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<!-- Bootstrap 4 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+
+<!-- Theme style -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/css/adminlte.min.css">
+    <style>
+        #sidebar {
+            min-height: 100vh;
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding-top: 0;
+            background-color: #343a40;
+            color: white;
+            z-index: 1030;
+        }
+        
+        .logo-container {
+            padding: 20px;
+            text-align: center;
+            background-color: #2c3136;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .logo-container img {
+            max-width: 180px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            will-change: transform;
+            transform: translateZ(0);
+        }
+        
+        #content {
+            margin-left: 250px;
+            padding: 20px;
+            width: calc(100% - 250px);
+            min-height: 100vh;
+            background-color: #f4f6f9;
+        }
+        
+        .nav-link {
+            color: #c2c7d0;
+            padding: 0.5rem 1rem;
+            position: relative;
+        }
+        
+        .nav-link:hover {
+            color: #ffffff;
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .nav-link.active {
+            color: #ffffff;
+            background-color: #007bff;
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Fix modal stacking */
+        .modal-backdrop {
+            z-index: 1040;
+        }
+        
+        .modal {
+            z-index: 1050;
+        }
+        
+        /* Ensure modals are always on top of the sidebar */
+        .modal-dialog {
+            margin: 1.75rem auto;
+        }
+        
+        /* Fix modal scrolling */
+        .modal-open {
+            overflow: hidden;
+            padding-right: 0 !important;
+        }
+        
+        body.modal-open {
+            overflow: hidden;
+        }
+        
+        /* Fix multiple modal backdrops */
+        .modal-backdrop.fade.show:nth-child(n+2) {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            #sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            #content {
+                margin-left: 0;
+                width: 100%;
+            }
+            .logo-container img {
+                max-width: 150px;
+            }
+        }
+    </style>
+    {% block head %}{% endblock %}
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <nav id="sidebar">
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='images/venezialogo.png') }}" 
+                     alt="Venezia Logo" 
+                     loading="eager"
+                     decoding="async"
+                     fetchpriority="high">
+            </div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'production' %}active{% endif %}" href="{{ url_for('production') }}">
+                        <i class="fas fa-industry"></i> Producción
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'production_orders' %}active{% endif %}" href="{{ url_for('production_orders') }}">
+                        <i class="fas fa-clipboard-list"></i> Órdenes de Producción
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'ingredients' %}active{% endif %}" href="{{ url_for('ingredients') }}">
+                        <i class="fas fa-flask"></i> Ingredientes
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'recipes' %}active{% endif %}" href="{{ url_for('recipes') }}">
+                        <i class="fas fa-book"></i> Recetas
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'ingredient_transactions' %}active{% endif %}" href="{{ url_for('ingredient_transactions') }}">
+                        <i class="fas fa-exchange-alt"></i> Transacciones
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'providers' %}active{% endif %}" href="{{ url_for('providers') }}">
+                        <i class="fas fa-truck"></i> Proveedores
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'stores' %}active{% endif %}" href="{{ url_for('stores') }}">
+                        <i class="fas fa-store"></i> Tiendas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'products' %}active{% endif %}" href="{{ url_for('products') }}">
+                        <i class="fas fa-cart-plus"></i> Productos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'assign_batch' %}active{% endif %}" href="{{ url_for('assign_batch') }}">
+                        <i class="fas fa-qrcode"></i> Asignar Lote
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'edit_store_stock' %}active{% endif %}" href="{{ url_for('edit_store_stock') }}">
+                        <i class="fas fa-boxes"></i> Stock
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'pos' %}active{% endif %}" href="{{ url_for('pos') }}">
+                        <i class="bi bi-cash-register"></i> Punto de Venta
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'reports' %}active{% endif %}" href="{{ url_for('reports') }}">
+                        <i class="fas fa-chart-bar"></i> Reportes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('deliveries') }}">
+                        <i class="fas fa-motorcycle"></i> Entregas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('web_users.web_users') }}" class="nav-link">
+                        <i class="nav-icon fas fa-users"></i>
+                        <p>Usuarios Web</p>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Page Content -->
+        <div id="content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+<!-- REQUIRED SCRIPTS -->
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+<!-- AdminLTE App -->
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2.0/dist/js/adminlte.min.js"></script>
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% block extra_js %}{% endblock %}
+
+ <!-- Google Maps -->
+ <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDmKmFQFPEMa_4EAkTDzzkyt7jzkWZoVBk&libraries=places"></script>
+  {% block scripts %}{% endblock %}
+
+</body>
+</html>

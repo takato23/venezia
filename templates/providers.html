@@ -1,0 +1,463 @@
+{% extends 'base.html' %}
+
+{% block title %}Proveedores - Sistema de Gestión de Helados{% endblock %}
+
+{% block head %}
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% endblock %}
+
+{% block content %}
+<section class="content">
+    <div class="container-fluid">
+        <!-- Content Header -->
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Proveedores</h1>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="GET" class="row g-3">
+                            <div class="col-md-3">
+                                <select class="form-control" name="type">
+                                    <option value="all">Todos los tipos</option>
+                                    <option value="person">Persona</option>
+                                    <option value="company">Empresa</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-control" name="status">
+                                    <option value="all">Todos los estados</option>
+                                    <option value="active">Activo</option>
+                                    <option value="inactive">Inactivo</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-control" name="category">
+                                    <option value="all">Todas las categorías</option>
+                                    {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="search" placeholder="Buscar...">
+                                    <button class="btn btn-outline-secondary" type="submit">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Provider List -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Lista de Proveedores</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-primary" onclick="showAddProviderModal()">
+                        <i class="fas fa-plus"></i> Nuevo Proveedor
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Nombre/Razón Social</th>
+                                <th>CUIT</th>
+                                <th>Teléfono</th>
+                                <th>Categorías</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for provider in providers %}
+                            <tr>
+                                <td>{{ 'Persona' if provider.type == 'person' else 'Empresa' }}</td>
+                                <td>{{ provider.full_name }}</td>
+                                <td>{{ provider.cuit }}</td>
+                                <td>
+                                    <a href="{{ provider.whatsapp_link }}" target="_blank">
+                                        {{ provider.formatted_phone }}
+                                        <i class="fab fa-whatsapp text-success"></i>
+                                    </a>
+                                </td>
+                                <td>
+                                    {% for category in provider.categories %}
+                                    <span class="badge badge-info">{{ category.name }}</span>
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    <span class="badge badge-{{ 'success' if provider.is_active else 'danger' }}">
+                                        {{ 'Activo' if provider.is_active else 'Inactivo' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-info" onclick="viewProvider({{ provider.id }})">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-warning" onclick="editProvider({{ provider.id }})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm {{ 'btn-danger' if provider.is_active else 'btn-success' }}" onclick="toggleProviderStatus({{ provider.id }}, {{ provider.is_active|tojson }})">
+                                            <i class="fas {{ 'fa-times' if provider.is_active else 'fa-check' }}"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteProvider({{ provider.id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showAddProviderModal() {
+    Swal.fire({
+        title: 'Nuevo Proveedor',
+        html: `
+            <form id="addProviderForm">
+                <div class="form-group">
+                    <label>Tipo</label>
+                    <select class="form-control" name="type" onchange="toggleNameFields()">
+                        <option value="person">Persona</option>
+                        <option value="company">Empresa</option>
+                    </select>
+                </div>
+                
+                <div id="personFields">
+                    <div class="form-group">
+                        <label>Nombre</label>
+                        <input type="text" class="form-control" name="first_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Apellido</label>
+                        <input type="text" class="form-control" name="last_name" required>
+                    </div>
+                </div>
+                
+                <div id="companyFields" style="display: none;">
+                    <div class="form-group">
+                        <label>Nombre de la Empresa</label>
+                        <input type="text" class="form-control" name="company_name">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>CUIT</label>
+                    <input type="text" class="form-control" name="cuit" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" class="form-control" name="email" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" required>
+                    <small class="form-text text-muted">Formato requerido: ejemplo@dominio.com</small>
+                </div>
+                
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="tel" class="form-control" name="phone" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Dirección</label>
+                    <input type="text" class="form-control" name="address" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Categorías</label>
+                    <div class="checkbox-group">
+                        {% for category in categories %}
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="categories" value="{{ category.id }}" id="add_cat_{{ category.id }}">
+                            <label class="form-check-label" for="add_cat_{{ category.id }}">{{ category.name }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </form>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Guardar',
+        cancelButtonText: 'Cancelar',
+        width: '600px',
+        preConfirm: () => {
+            const formData = new FormData(document.getElementById('addProviderForm'));
+            return fetch('/api/providers/add', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    return data;
+                }
+                throw new Error(data.message || 'Error al agregar proveedor');
+            })
+            .catch(error => {
+                Swal.showValidationMessage(error.message);
+            });
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire('¡Éxito!', 'Proveedor agregado correctamente', 'success')
+            .then(() => {
+                window.location.reload();
+            });
+        }
+    });
+}
+
+function toggleNameFields() {
+    const type = document.querySelector('select[name="type"]').value;
+    const personFields = document.getElementById('personFields');
+    const companyFields = document.getElementById('companyFields');
+    
+    if (type === 'person') {
+        personFields.style.display = 'block';
+        companyFields.style.display = 'none';
+    } else {
+        personFields.style.display = 'none';
+        companyFields.style.display = 'block';
+    }
+}
+
+function viewProvider(id) {
+    fetch(`/api/providers/${id}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            Swal.fire({
+                title: 'Detalles del Proveedor',
+                html: `
+                    <div class="text-left">
+                        <p><strong>Tipo:</strong> ${data.provider.type === 'person' ? 'Persona' : 'Empresa'}</p>
+                        <p><strong>Nombre:</strong> ${data.provider.name}</p>
+                        <p><strong>CUIT:</strong> ${data.provider.cuit}</p>
+                        <p><strong>Email:</strong> ${data.provider.email}</p>
+                        <p><strong>Teléfono:</strong> ${data.provider.phone}</p>
+                        <p><strong>Dirección:</strong> ${data.provider.address}</p>
+                        <p><strong>Categorías:</strong> ${data.provider.categories.join(', ')}</p>
+                        <p><strong>Notas:</strong> ${data.provider.notes || '-'}</p>
+                    </div>
+                `,
+                width: '600px'
+            });
+        } else {
+            Swal.fire('Error', data.message, 'error');
+        }
+    });
+}
+
+function editProvider(id) {
+    fetch(`/api/providers/${id}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const provider = data.provider;
+            Swal.fire({
+                title: 'Editar Proveedor',
+                html: `
+                    <form id="editProviderForm">
+                        <input type="hidden" name="id" value="${provider.id}">
+                        <div class="form-group">
+                            <label>Tipo</label>
+                            <select class="form-control" name="type" onchange="toggleEditNameFields()" ${provider.type === 'company' ? 'selected' : ''}>
+                                <option value="person" ${provider.type === 'person' ? 'selected' : ''}>Persona</option>
+                                <option value="company" ${provider.type === 'company' ? 'selected' : ''}>Empresa</option>
+                            </select>
+                        </div>
+                        
+                        <div id="editPersonFields" style="${provider.type === 'person' ? '' : 'display: none;'}">
+                            <div class="form-group">
+                                <label>Nombre</label>
+                                <input type="text" class="form-control" name="first_name" value="${provider.first_name || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Apellido</label>
+                                <input type="text" class="form-control" name="last_name" value="${provider.last_name || ''}" required>
+                            </div>
+                        </div>
+                        
+                        <div id="editCompanyFields" style="${provider.type === 'company' ? '' : 'display: none;'}">
+                            <div class="form-group">
+                                <label>Nombre de la Empresa</label>
+                                <input type="text" class="form-control" name="company_name" value="${provider.company_name || ''}" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>CUIT</label>
+                            <input type="text" class="form-control" name="cuit" value="${provider.cuit}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" class="form-control" name="email" value="${provider.email}" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" required>
+                            <small class="form-text text-muted">Formato requerido: ejemplo@dominio.com</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Teléfono</label>
+                            <input type="tel" class="form-control" name="phone" value="${provider.phone}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Dirección</label>
+                            <input type="text" class="form-control" name="address" value="${provider.address}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Categorías</label>
+                            <div class="checkbox-group">
+                                {% for category in categories %}
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" name="categories" value="{{ category.id }}" 
+                                           id="edit_cat_{{ category.id }}" ${provider.categories.includes({{ category.id }}) ? 'checked' : ''}>
+                                    <label class="form-check-label" for="edit_cat_{{ category.id }}">{{ category.name }}</label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </form>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Guardar',
+                cancelButtonText: 'Cancelar',
+                width: '600px',
+                preConfirm: () => {
+                    const formData = new FormData(document.getElementById('editProviderForm'));
+                    return fetch('/api/providers/edit', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            return data;
+                        }
+                        throw new Error(data.message || 'Error al editar proveedor');
+                    })
+                    .catch(error => {
+                        Swal.showValidationMessage(error.message);
+                    });
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire('¡Éxito!', 'Proveedor actualizado correctamente', 'success')
+                    .then(() => {
+                        window.location.reload();
+                    });
+                }
+            });
+        } else {
+            Swal.fire('Error', data.message || 'Error al cargar el proveedor', 'error');
+        }
+    })
+    .catch(error => {
+        Swal.fire('Error', 'Error al cargar el proveedor', 'error');
+    });
+}
+
+function toggleEditNameFields() {
+    const type = document.querySelector('#editProviderForm [name="type"]').value;
+    const personFields = document.getElementById('editPersonFields');
+    const companyFields = document.getElementById('editCompanyFields');
+    
+    if (type === 'person') {
+        personFields.style.display = '';
+        companyFields.style.display = 'none';
+        document.querySelector('#editProviderForm [name="first_name"]').required = true;
+        document.querySelector('#editProviderForm [name="last_name"]').required = true;
+        document.querySelector('#editProviderForm [name="company_name"]').required = false;
+    } else {
+        personFields.style.display = 'none';
+        companyFields.style.display = '';
+        document.querySelector('#editProviderForm [name="first_name"]').required = false;
+        document.querySelector('#editProviderForm [name="last_name"]').required = false;
+        document.querySelector('#editProviderForm [name="company_name"]').required = true;
+    }
+}
+
+function deleteProvider(id) {
+    Swal.fire({
+        title: '¿Está seguro?',
+        text: "Esta acción no se puede deshacer",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/api/providers/delete/${id}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    Swal.fire('¡Eliminado!', 'El proveedor ha sido eliminado.', 'success')
+                    .then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            });
+        }
+    });
+}
+
+function toggleProviderStatus(id, currentStatus) {
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    Swal.fire({
+        title: '¿Cambiar estado?',
+        text: `¿Está seguro que desea cambiar el estado del proveedor a ${newStatus === 'active' ? 'activo' : 'inactivo'}?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, cambiar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/api/providers/toggle_status/${id}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    Swal.fire('¡Éxito!', 'Estado actualizado correctamente', 'success')
+                    .then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            });
+        }
+    });
+}
+</script>
+{% endblock %}

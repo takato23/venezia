@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Delivery Tracking</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Order Details -->
+                    <div class="mb-4">
+                        <h4>Order #{{ delivery_order.id }}</h4>
+                        <p><strong>Customer:</strong> {{ delivery_order.address.customer_name }}</p>
+                        <p><strong>Address:</strong> {{ delivery_order.address.address }}</p>
+                        <p><strong>Phone:</strong> {{ delivery_order.address.phone }}</p>
+                        {% if delivery_order.delivery_notes %}
+                        <p><strong>Notes:</strong> {{ delivery_order.delivery_notes }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Current Status -->
+                    <div class="alert" style="background-color: {{ delivery_order.current_status.color_code }}; color: white;">
+                        <h5 class="mb-0">Current Status: {{ delivery_order.current_status.name }}</h5>
+                        <p class="mb-0">{{ delivery_order.current_status.description }}</p>
+                    </div>
+
+                    <!-- Status Update Form -->
+                    <form id="statusUpdateForm" class="mb-4">
+                        <input type="hidden" name="order_id" value="{{ delivery_order.id }}">
+                        <div class="form-group">
+                            <label for="status">Update Status</label>
+                            <select class="form-control" id="status" name="status_id" required>
+                                <option value="">Select Status</option>
+                                {% for status in statuses %}
+                                <option value="{{ status.id }}" 
+                                        {% if status.id == delivery_order.current_status.id %}selected{% endif %}>
+                                    {{ status.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="notes">Notes</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Status</button>
+                    </form>
+
+                    <!-- Status History -->
+                    <h5>Status History</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Status</th>
+                                    <th>Date/Time</th>
+                                    <th>Notes</th>
+                                    <th>Updated By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for history in delivery_order.status_history|sort(attribute='created_at', reverse=true) %}
+                                <tr>
+                                    <td>
+                                        <span class="badge" style="background-color: {{ history.status.color_code }}">
+                                            {{ history.status.name }}
+                                        </span>
+                                    </td>
+                                    <td>{{ history.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    <td>{{ history.notes or '' }}</td>
+                                    <td>{{ history.created_by }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Map -->
+                    {% if delivery_order.address.latitude and delivery_order.address.longitude %}
+                    <div id="map" style="height: 300px;" class="mb-3"></div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+document.getElementById('statusUpdateForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        order_id: this.order_id.value,
+        status_id: this.status_id.value,
+        notes: this.notes.value,
+        created_by: 'staff'  // You might want to get this from the logged-in user
+    };
+
+    fetch('/api/delivery/update_status', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            location.reload();  // Reload the page to show updated status
+        } else {
+            alert('Error updating status: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error updating status');
+    });
+});
+</script>
+
+<!-- Google Maps JavaScript -->
+{% if delivery_order.address.latitude and delivery_order.address.longitude %}
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config['GOOGLE_MAPS_API_KEY'] }}&libraries=places"></script>
+<script>
+function initMap() {
+    const deliveryLocation = {
+        lat: {{ delivery_order.address.latitude }},
+        lng: {{ delivery_order.address.longitude }}
+    };
+
+    const map = new google.maps.Map(document.getElementById('map'), {
+        center: deliveryLocation,
+        zoom: 15
+    });
+
+    const marker = new google.maps.Marker({
+        position: deliveryLocation,
+        map: map,
+        title: 'Delivery Location'
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initMap);
+</script>
+{% endif %}
+{% endblock %}
+{% endblock %}

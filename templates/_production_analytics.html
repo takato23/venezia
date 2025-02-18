@@ -1,0 +1,172 @@
+<!-- Production Analytics Content -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Filtros de Producción</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Producto</label>
+                            <select name="product_id" class="form-control">
+                                <option value="">Todos los Productos</option>
+                                {% for product in products %}
+                                <option value="{{ product.id }}" {% if selected_product_id == product.id %}selected{% endif %}>
+                                    {{ product.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Período</label>
+                            <select name="days" class="form-control">
+                                <option value="7" {% if days == 7 %}selected{% endif %}>Última Semana</option>
+                                <option value="30" {% if days == 30 %}selected{% endif %}>Último Mes</option>
+                                <option value="90" {% if days == 90 %}selected{% endif %}>Últimos 3 Meses</option>
+                                <option value="180" {% if days == 180 %}selected{% endif %}>Últimos 6 Meses</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <i class="fas fa-search mr-1"></i> Aplicar Filtros
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Production Summary Cards -->
+<div class="row">
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3 id="total-production">0</h3>
+                <p>Producción Total (kg)</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-industry"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3 id="avg-batch-size">0</h3>
+                <p>Tamaño Promedio de Lote (kg)</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-weight"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3 id="total-batches">0</h3>
+                <p>Total de Lotes</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-boxes"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-danger">
+            <div class="inner">
+                <h3 id="efficiency-rate">0%</h3>
+                <p>Tasa de Eficiencia</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Production Trends -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Producción por Día</h3>
+            </div>
+            <div class="card-body">
+                <canvas id="productionTrendsChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Distribución por Producto</h3>
+            </div>
+            <div class="card-body">
+                <canvas id="productionDistributionChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Production Efficiency -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Eficiencia de Producción</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Total Producido (kg)</th>
+                                <th>Tiempo Promedio (hrs)</th>
+                                <th>Costo por kg</th>
+                                <th>Eficiencia</th>
+                                <th>Tendencia</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productionEfficiencyTable">
+                            <!-- Filled by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cost Analysis -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Costos de Producción</h3>
+            </div>
+            <div class="card-body">
+                <canvas id="productionCostsChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Margen por Producto</h3>
+            </div>
+            <div class="card-body">
+                <canvas id="productionMarginsChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>

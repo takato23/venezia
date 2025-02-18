@@ -1,0 +1,484 @@
+{% extends "base.html" %}
+
+{% block title %}Pagos Pendientes{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .pending-payment-card {
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        margin-bottom: 1.5rem;
+    }
+    
+    .pending-payment-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .payment-status {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.8rem;
+        border-radius: 9999px;
+        font-weight: 500;
+    }
+    
+    .status-pending {
+        background-color: #fef3c7;
+        color: #d97706;
+    }
+    
+    .status-overdue {
+        background-color: #fecaca;
+        color: #dc2626;
+    }
+    
+    .payment-amount {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+    
+    .days-remaining {
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+    
+    .days-overdue {
+        color: #dc2626;
+    }
+    
+    @media (max-width: 992px) {
+        .pending-payment-card {
+            font-size: 2.5rem;
+        }
+        
+        .payment-status {
+            font-size: 2rem;
+            padding: 0.8rem 1.6rem;
+        }
+        
+        .payment-amount {
+            font-size: 3rem;
+        }
+        
+        .days-remaining {
+            font-size: 2rem;
+        }
+        
+        .btn {
+            font-size: 2.5rem;
+            padding: 1rem 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row align-items-center mb-4">
+        <div class="col">
+            <h2 class="mb-0">Pagos Pendientes</h2>
+        </div>
+        <div class="col-auto">
+            <button type="button" class="btn btn-primary" id="exportPendingBtn">
+                <i class="fas fa-file-export"></i> Exportar
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Total Pendiente</h6>
+                    <h3 class="card-title mb-0" id="totalPending">$0.00</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Vencidos</h6>
+                    <h3 class="card-title mb-0" id="totalOverdue">$0.00</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Por Vencer</h6>
+                    <h3 class="card-title mb-0" id="totalUpcoming">$0.00</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="clientFilter">Cliente</label>
+                <select class="form-control" id="clientFilter">
+                    <option value="">Todos</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="statusFilter">Estado</label>
+                <select class="form-control" id="statusFilter">
+                    <option value="">Todos</option>
+                    <option value="pending">Pendiente</option>
+                    <option value="overdue">Vencido</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="amountFilter">Monto</label>
+                <select class="form-control" id="amountFilter">
+                    <option value="">Todos</option>
+                    <option value="0-1000">$0 - $1,000</option>
+                    <option value="1000-5000">$1,000 - $5,000</option>
+                    <option value="5000+">$5,000+</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Payments List -->
+    <div class="row" id="pendingPaymentsContainer">
+        <!-- Payments will be dynamically inserted here -->
+    </div>
+</div>
+
+<!-- Payment Template -->
+<template id="paymentTemplate">
+    <div class="col-md-6 mb-4">
+        <div class="card pending-payment-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 class="card-title mb-0">Factura #<span class="payment-number"></span></h5>
+                    <span class="payment-status"></span>
+                </div>
+                <div class="mb-2">
+                    <strong>Cliente:</strong> <span class="client-name"></span>
+                </div>
+                <div class="mb-2">
+                    <strong>Fecha Vencimiento:</strong> <span class="due-date"></span>
+                </div>
+                <div class="mb-2 days-remaining"></div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="payment-amount"></span>
+                    <div>
+                        <button class="btn btn-outline-primary view-payment">
+                            <i class="fas fa-eye"></i> Ver
+                        </button>
+                        <button class="btn btn-outline-success record-payment">
+                            <i class="fas fa-money-bill"></i> Registrar Pago
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Record Payment Modal -->
+<div class="modal fade" id="recordPaymentModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Registrar Pago</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="recordPaymentForm">
+                    <div class="form-group">
+                        <label for="paymentAmount">Monto</label>
+                        <input type="number" class="form-control" id="paymentAmount" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="paymentMethod">Método de Pago</label>
+                        <select class="form-control" id="paymentMethod" required>
+                            <option value="cash">Efectivo</option>
+                            <option value="transfer">Transferencia</option>
+                            <option value="card">Tarjeta</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="paymentDate">Fecha</label>
+                        <input type="date" class="form-control" id="paymentDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="paymentNotes">Notas</label>
+                        <textarea class="form-control" id="paymentNotes" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="savePaymentBtn">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize variables
+        const pendingPaymentsContainer = document.getElementById('pendingPaymentsContainer');
+        const paymentTemplate = document.getElementById('paymentTemplate');
+        const clientFilter = document.getElementById('clientFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        const amountFilter = document.getElementById('amountFilter');
+        const exportPendingBtn = document.getElementById('exportPendingBtn');
+        
+        // Load initial data
+        loadPendingPayments();
+        loadClients();
+        
+        // Add event listeners
+        clientFilter.addEventListener('change', loadPendingPayments);
+        statusFilter.addEventListener('change', loadPendingPayments);
+        amountFilter.addEventListener('change', loadPendingPayments);
+        exportPendingBtn.addEventListener('click', exportPendingPayments);
+        
+        async function loadPendingPayments() {
+            try {
+                const client = clientFilter.value;
+                const status = statusFilter.value;
+                const amount = amountFilter.value;
+                
+                let url = '/api/billing/pending/';
+                const params = new URLSearchParams();
+                if (client) params.append('client', client);
+                if (status) params.append('status', status);
+                if (amount) params.append('amount', amount);
+                if (params.toString()) url += '?' + params.toString();
+                
+                const response = await fetch(url);
+                const payments = await response.json();
+                
+                // Update summary cards
+                updateSummaryCards(payments);
+                
+                // Clear container
+                pendingPaymentsContainer.innerHTML = '';
+                
+                // Add payments
+                payments.forEach(payment => {
+                    const paymentElement = createPaymentElement(payment);
+                    pendingPaymentsContainer.appendChild(paymentElement);
+                });
+            } catch (error) {
+                console.error('Error loading pending payments:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al cargar los pagos pendientes',
+                    position: 'center'
+                });
+            }
+        }
+        
+        async function loadClients() {
+            try {
+                const response = await fetch('/api/clients/');
+                const clients = await response.json();
+                
+                // Clear and populate client filter
+                clientFilter.innerHTML = '<option value="">Todos</option>';
+                clients.forEach(client => {
+                    const option = document.createElement('option');
+                    option.value = client.id;
+                    option.textContent = client.name;
+                    clientFilter.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading clients:', error);
+            }
+        }
+        
+        function createPaymentElement(payment) {
+            const template = paymentTemplate.content.cloneNode(true);
+            const paymentCard = template.querySelector('.pending-payment-card');
+            
+            // Set payment data
+            paymentCard.querySelector('.payment-number').textContent = payment.invoice_number;
+            paymentCard.querySelector('.client-name').textContent = payment.client_name;
+            paymentCard.querySelector('.due-date').textContent = 
+                new Date(payment.due_date).toLocaleDateString();
+            paymentCard.querySelector('.payment-amount').textContent = 
+                new Intl.NumberFormat('es-AR', { 
+                    style: 'currency', 
+                    currency: 'ARS' 
+                }).format(payment.amount);
+            
+            // Set status and days remaining/overdue
+            const statusBadge = paymentCard.querySelector('.payment-status');
+            const daysRemaining = paymentCard.querySelector('.days-remaining');
+            const today = new Date();
+            const dueDate = new Date(payment.due_date);
+            const diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 0) {
+                statusBadge.textContent = 'Vencido';
+                statusBadge.classList.add('status-overdue');
+                daysRemaining.textContent = `${Math.abs(diffDays)} días vencido`;
+                daysRemaining.classList.add('days-overdue');
+            } else {
+                statusBadge.textContent = 'Pendiente';
+                statusBadge.classList.add('status-pending');
+                daysRemaining.textContent = `${diffDays} días restantes`;
+            }
+            
+            // Add event listeners
+            paymentCard.querySelector('.view-payment').addEventListener('click', () => {
+                viewPayment(payment.id);
+            });
+            
+            paymentCard.querySelector('.record-payment').addEventListener('click', () => {
+                showRecordPaymentModal(payment);
+            });
+            
+            return paymentCard;
+        }
+        
+        function updateSummaryCards(payments) {
+            const today = new Date();
+            let totalPending = 0;
+            let totalOverdue = 0;
+            let totalUpcoming = 0;
+            
+            payments.forEach(payment => {
+                const amount = parseFloat(payment.amount);
+                const dueDate = new Date(payment.due_date);
+                
+                if (dueDate < today) {
+                    totalOverdue += amount;
+                } else {
+                    totalUpcoming += amount;
+                }
+                totalPending += amount;
+            });
+            
+            // Update summary cards
+            document.getElementById('totalPending').textContent = 
+                new Intl.NumberFormat('es-AR', { 
+                    style: 'currency', 
+                    currency: 'ARS' 
+                }).format(totalPending);
+            
+            document.getElementById('totalOverdue').textContent = 
+                new Intl.NumberFormat('es-AR', { 
+                    style: 'currency', 
+                    currency: 'ARS' 
+                }).format(totalOverdue);
+            
+            document.getElementById('totalUpcoming').textContent = 
+                new Intl.NumberFormat('es-AR', { 
+                    style: 'currency', 
+                    currency: 'ARS' 
+                }).format(totalUpcoming);
+        }
+        
+        function showRecordPaymentModal(payment) {
+            const modal = $('#recordPaymentModal');
+            const form = document.getElementById('recordPaymentForm');
+            const amountInput = document.getElementById('paymentAmount');
+            const dateInput = document.getElementById('paymentDate');
+            
+            // Set default values
+            amountInput.value = payment.amount;
+            dateInput.value = new Date().toISOString().split('T')[0];
+            
+            // Show modal
+            modal.modal('show');
+            
+            // Handle save
+            document.getElementById('savePaymentBtn').onclick = async () => {
+                if (form.checkValidity()) {
+                    try {
+                        const response = await fetch(`/api/billing/payments/${payment.id}/record`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                amount: amountInput.value,
+                                method: document.getElementById('paymentMethod').value,
+                                date: dateInput.value,
+                                notes: document.getElementById('paymentNotes').value
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            modal.modal('hide');
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Éxito',
+                                text: 'Pago registrado correctamente',
+                                position: 'center'
+                            });
+                            loadPendingPayments();
+                        } else {
+                            throw new Error('Error recording payment');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error al registrar el pago',
+                            position: 'center'
+                        });
+                    }
+                } else {
+                    form.reportValidity();
+                }
+            };
+        }
+        
+        async function viewPayment(id) {
+            // Implement view payment functionality
+        }
+        
+        async function exportPendingPayments() {
+            try {
+                const response = await fetch('/api/billing/pending/export', {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'pagos_pendientes.xlsx';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    a.remove();
+                } else {
+                    throw new Error('Error exporting pending payments');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al exportar los pagos pendientes',
+                    position: 'center'
+                });
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+
+{% block title %}Tiendas - Sistema de Gestión de Helados{% endblock %}
+
+{% block head %}
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDmKmFQFPEMa_4EAkTDzzkyt7jzkWZoVBk&libraries=places"></script>
+
+<style>
+    .content-wrapper {
+        margin-left: 250px !important;
+        padding: 20px;
+    }
+    .store-map {
+        height: 200px;
+        width: 100%;
+        margin: 10px 0;
+        border-radius: 8px;
+    }
+    .store-card {
+        margin-bottom: 20px;
+        min-width: 300px;
+    }
+    
+    .store-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+        padding: 15px;
+    }
+
+    .store-card .card {
+        height: 100%;
+        transition: transform 0.2s;
+    }
+
+    .store-card .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .stock-table {
+        font-size: 0.9rem;
+    }
+
+    .stock-table th {
+        background-color: #f8f9fa;
+        position: sticky;
+        top: 0;
+    }
+
+    .table-container {
+        max-height: 300px;
+        overflow-y: auto;
+        margin-top: 15px;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .store-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .store-name {
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0;">
+    <div class="content">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Tiendas</h2>
+                <a href="{{ url_for('add_store') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Agregar Tienda
+                </a>
+            </div>
+
+            <div class="store-grid">
+                {% for store in stores %}
+                <div class="store-card col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="store-header">
+                            <h4 class="store-name mb-0">{{ store.name }}</h4>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted mb-3">
+                                <i class="fas fa-map-marker-alt"></i> {{ store.address }}
+                            </p>
+                            
+                            <!-- Map container -->
+                            <div id="map-{{ store.id }}" class="store-map"></div>
+
+                            <div class="store-summary mb-3">
+                                {% set low_stock = namespace(count=0) %}
+                                {% for stock in store.stocks %}
+                                    {% if stock.quantity < stock.minimum %}
+                                        {% set low_stock.count = low_stock.count + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if low_stock.count > 0 %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    {{ low_stock.count }} sabores con bajo stock
+                                </div>
+                                {% else %}
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle"></i>
+                                    Todos los stocks OK
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="stock-table table table-sm table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Sabor</th>
+                                            <th>Stock</th>
+                                            <th>Mínimo</th>
+                                            <th>Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for stock in store.stocks %}
+                                        <tr>
+                                            <td>{{ stock.flavor }}</td>
+                                            <td>{{ "%.1f"|format(stock.quantity or 0) }} kg</td>
+                                            <td>{{ "%.1f"|format(stock.minimum or 0) }} kg</td>
+                                            <td>
+                                                {% if stock.quantity < stock.minimum %}
+                                                <span class="badge bg-danger">Bajo</span>
+                                                {% else %}
+                                                <span class="badge bg-success">OK</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="text-end">
+                                <a href="{{ url_for('edit_store', store_id=store.id) }}" 
+                                   class="btn btn-secondary me-2">
+                                    <i class="fas fa-edit"></i> Editar Tienda
+                                </a>
+                                <a href="{{ url_for('edit_store_stock', store_id=store.id) }}" 
+                                   class="btn btn-primary me-2">
+                                    <i class="fas fa-edit"></i> Editar Stock
+                                </a>
+                                <button type="button" class="btn btn-danger" 
+                                        onclick="confirmDeleteStore('{{ store.id }}', '{{ store.name }}')">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Store Modal -->
+<div class="modal fade" id="deleteStoreModal" tabindex="-1" aria-labelledby="deleteStoreModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteStoreModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>¿Está seguro que desea eliminar la tienda "<span id="deleteStoreName"></span>"?</p>
+                <p class="text-danger">Esta acción no se puede deshacer.</p>
+                <form id="deleteStoreForm">
+                    <input type="hidden" id="deleteStoreId">
+                    <div class="form-group">
+                        <label for="deletePassword">Contraseña de Administrador:</label>
+                        <input type="password" class="form-control" id="deletePassword" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" onclick="deleteStore()">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function initMaps() {
+    {% for store in stores %}
+    (function() {
+        const storeLocation = { 
+            lat: {{ store.latitude }}, 
+            lng: {{ store.longitude }}
+        };
+        
+        const map = new google.maps.Map(document.getElementById("map-{{ store.id }}"), {
+            center: storeLocation,
+            zoom: 15,
+            disableDefaultUI: true,
+            zoomControl: true,
+            mapTypeControl: false,
+            streetViewControl: false
+        });
+
+        const marker = new google.maps.Marker({
+            position: storeLocation,
+            map: map,
+            title: "{{ store.name }}"
+        });
+    })();
+    {% endfor %}
+}
+
+// Initialize maps when page loads
+window.onload = initMaps;
+
+// Store deletion functions
+function confirmDeleteStore(storeId, storeName) {
+    document.getElementById('deleteStoreId').value = storeId;
+    document.getElementById('deleteStoreName').textContent = storeName;
+    document.getElementById('deletePassword').value = '';
+    $('#deleteStoreModal').modal('show');
+}
+
+function deleteStore() {
+    const storeId = document.getElementById('deleteStoreId').value;
+    const password = document.getElementById('deletePassword').value;
+    const correctPassword = 'W0lv3r1n33!!';
+
+    if (password !== correctPassword) {
+        Swal.fire({
+            title: 'Error',
+            text: 'Contraseña incorrecta',
+            icon: 'error'
+        });
+        return;
+    }
+
+    fetch(`/delete_store/${storeId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password: password })
+    })
+    .then(response => response.json())
+    .then(data => {
+        $('#deleteStoreModal').modal('hide');
+        if (data.success) {
+            Swal.fire({
+                title: '¡Éxito!',
+                text: 'Tienda eliminada correctamente',
+                icon: 'success'
+            }).then(() => {
+                window.location.reload();
+            });
+        } else {
+            Swal.fire({
+                title: 'Error',
+                text: data.error || 'Error al eliminar la tienda',
+                icon: 'error'
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        $('#deleteStoreModal').modal('hide');
+        Swal.fire({
+            title: 'Error',
+            text: 'Error al eliminar la tienda',
+            icon: 'error'
+        });
+    });
+}
+</script>
+{% endblock %}
