@@ -1,0 +1,46 @@
+Current Migration Status and Issues
+====================================
+
+Problem Description:
+------------------
+We are working on fixing database migration issues in the Venezia application. The main problems are:
+1. Table names need to be consistently plural (e.g., 'store' to 'stores')
+2. Foreign key constraints need to be updated to reference the new table names
+3. We're encountering errors when trying to modify existing tables and constraints
+
+Current State:
+-------------
+1. Models have been updated to use plural table names (__tablename__ = 'stores', etc.)
+2. Previous migration attempts failed with errors:
+   - "table already exists" when trying to create new tables
+   - "no such constraint" when trying to modify foreign keys
+3. Latest migration file (fix_table_names.py) attempts to:
+   - Drop and recreate foreign key constraints
+   - Update table references
+
+Database Tables That Need Updates:
+--------------------------------
+- stores (from store)
+- sales (from sale)
+- products (from product)
+- product_categories (from product_category)
+- providers (from provider)
+- recipes (from recipe)
+- ingredients (from ingredient)
+- users (from user)
+- productions (from production)
+- delivery_orders (from delivery_order)
+- delivery_statuses (from delivery_status)
+- delivery_addresses (from delivery_address)
+
+Next Steps Needed:
+----------------
+1. Verify current database schema and existing constraints
+2. Create a clean migration that will:
+   a. Handle existing data
+   b. Update table names if needed
+   c. Update foreign key constraints
+3. Test migration with both upgrade and downgrade paths
+4. Ensure all application features still work after migration
+
+Note: The database is SQLite, which has limitations on ALTER TABLE operations. We may need to use batch_alter_table or create temporary tables for some operations.
