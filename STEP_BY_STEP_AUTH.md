@@ -167,3 +167,22 @@ Si todo salió bien, ahora tienes:
 2. Personalizar las plantillas de email
 3. Agregar autenticación con Google/GitHub
 4. Implementar recuperación de contraseña
+
+## 🔑 Variables de Entorno Adicionales
+
+Si estás usando las funcionalidades de Stores (tiendas) y administración, agrega estas variables a tu `.env`:
+
+```env
+# Google Maps API (para mostrar ubicaciones de tiendas)
+VITE_GOOGLE_MAPS_API_KEY=tu_api_key_de_google_maps
+
+# Contraseña de administrador inicial
+VITE_ADMIN_PASSWORD=tu_contraseña_segura_aqui
+```
+
+### Para obtener Google Maps API Key:
+1. Ve a [Google Cloud Console](https://console.cloud.google.com/)
+2. Crea un nuevo proyecto o selecciona uno existente
+3. Habilita "Maps JavaScript API"
+4. Crea credenciales (API Key)
+5. Restringe la API key a tu dominio para seguridad
