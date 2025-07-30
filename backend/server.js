@@ -52,12 +52,28 @@ setNotificationService(notificationService);
 const ScheduledNotifications = require('./services/scheduledNotifications');
 const scheduledNotifications = new ScheduledNotifications();
 
-// Middleware
+// Import performance middleware
+const { 
+  requestTiming, 
+  cacheControl, 
+  compressionMiddleware,
+  endpointRateLimit 
+} = require('./middleware/performance');
+
+// Performance middleware
+app.use(compressionMiddleware);
+app.use(requestTiming);
+app.use(cacheControl());
+
+// Security middleware
 app.use(cors({
   origin: config.isDevelopment ? true : config.ALLOWED_ORIGINS,
   credentials: true
 }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+
+// Rate limiting
+app.use(endpointRateLimit());
 
 // Initialize database
 (async () => {
