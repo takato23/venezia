@@ -12,18 +12,11 @@ const getModels = () => {
       Customer: require('../models/Customer.supabase'),
       Product: require('../models/Product.supabase'),
       CashFlow: require('../models/CashFlow.supabase'),
-      // These models need to be created for Supabase
-      // For now, we'll use empty placeholders
-      Provider: { 
-        getAll: async () => [], 
-        create: async () => ({}),
-        update: async () => ({}),
-        delete: async () => ({})
-      },
-      Sale: { 
-        create: async () => ({}),
-        getAll: async () => []
-      },
+      Provider: require('../models/Provider.supabase'),
+      Sale: require('../models/Sale.supabase'),
+      Ingredient: require('../models/Ingredient.supabase'),
+      Recipe: require('../models/Recipe.supabase'),
+      User: require('../models/User.supabase')
     };
   } else {
     console.log('📊 Using SQLite as database');
@@ -31,8 +24,11 @@ const getModels = () => {
       Customer: require('../models/Customer'),
       Product: require('../models/Product'),
       CashFlow: require('../models/CashFlow'),
-      // Provider: require('../models/Provider'),
-      // Sale: require('../models/Sale'),
+      Provider: require('../models/Provider'),
+      Sale: require('../models/Sale'),
+      Ingredient: require('../models/Ingredient'),
+      Recipe: require('../models/Recipe'),
+      User: require('../models/User')
     };
   }
 };
