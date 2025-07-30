@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const securityConfig = require('../config/security');
 require('dotenv').config();
 
 const authMiddleware = (req, res, next) => {
@@ -9,21 +10,35 @@ const authMiddleware = (req, res, next) => {
   if (!token) {
     return res.status(401).json({
       success: false,
-      message: 'No autorizado - Token no proporcionado'
+      message: 'No autorizado - Token no proporcionado',
+      code: 'NO_TOKEN'
     });
   }
 
   try {
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default_secret');
+    // Verify token using secure configuration
+    const decoded = jwt.verify(token, securityConfig.JWT_SECRET);
     
-    // Add user to request
-    req.user = decoded;
+    // Enhanced user data validation
+    if (!decoded.id || !decoded.email) {
+      throw new Error('Invalid token payload');
+    }
+    
+    // Add user to request with additional security context
+    req.user = {
+      ...decoded,
+      authenticated: true,
+      authMethod: 'jwt'
+    };
+    
     next();
   } catch (error) {
+    console.warn(`🔒 Auth failed: ${error.message} for IP: ${req.ip}`);
+    
     res.status(401).json({
       success: false,
-      message: 'Token inválido o expirado'
+      message: 'Token inválido o expirado',
+      code: error.name === 'TokenExpiredError' ? 'TOKEN_EXPIRED' : 'INVALID_TOKEN'
     });
   }
 };
@@ -55,10 +70,19 @@ const optionalAuth = (req, res, next) => {
 
   if (token) {
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default_secret');
-      req.user = decoded;
+      const decoded = jwt.verify(token, securityConfig.JWT_SECRET);
+      
+      // Validate token payload
+      if (decoded.id && decoded.email) {
+        req.user = {
+          ...decoded,
+          authenticated: true,
+          authMethod: 'jwt-optional'
+        };
+      }
     } catch (error) {
       // Invalid token, but continue without user
+      console.warn(`🔒 Optional auth failed: ${error.message} for IP: ${req.ip}`);
     }
   }
 
