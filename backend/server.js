@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
-require('dotenv').config();
+const config = require('./config/environment');
 const { initializeDatabase, models, USE_SUPABASE } = require('./config/database');
 const { seedDatabase } = require('./database/seed');
 
@@ -33,7 +33,7 @@ const io = new Server(server, {
     methods: ['GET', 'POST']
   }
 });
-const PORT = process.env.PORT || 5002;
+const PORT = config.PORT || 5001;
 
 // Import and initialize services
 const AlertService = USE_SUPABASE 
@@ -53,7 +53,10 @@ const ScheduledNotifications = require('./services/scheduledNotifications');
 const scheduledNotifications = new ScheduledNotifications();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: config.isDevelopment ? true : config.ALLOWED_ORIGINS,
+  credentials: true
+}));
 app.use(express.json());
 
 // Initialize database
