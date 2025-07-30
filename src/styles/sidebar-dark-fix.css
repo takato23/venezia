@@ -1,0 +1,104 @@
+/* ===============================================
+   SIDEBAR DARK MODE FIX - CONSISTENCY PATCH
+   =============================================== */
+
+/* Fix para el sidebar en modo oscuro */
+.dark .gelato-card {
+  background: linear-gradient(180deg, #1f2937 0%, #111827 100%) !important;
+  border-color: rgba(251, 146, 60, 0.2) !important;
+}
+
+/* Override del estilo inline del sidebar */
+.dark aside[style*="linear-gradient"] {
+  background: linear-gradient(180deg, #1f2937 0%, #111827 100%) !important;
+}
+
+/* Ajustar el color del borde lateral */
+.dark .border-r-primary-300,
+.dark .dark\:border-r-primary-600 {
+  border-right-color: rgba(251, 146, 60, 0.2) !important;
+}
+
+/* Mejorar el contraste del texto en el sidebar oscuro */
+.dark aside .text-venezia-800,
+.dark aside .dark\:text-venezia-100 {
+  color: #e5e7eb !important;
+}
+
+.dark aside .text-venezia-600,
+.dark aside .dark\:text-venezia-400 {
+  color: #9ca3af !important;
+}
+
+/* Ajustar los iconos en modo oscuro */
+.dark aside svg {
+  color: #d1d5db !important;
+}
+
+.dark aside .sidebar-item:hover svg,
+.dark aside .active svg {
+  color: var(--venezia-primary-refined) !important;
+}
+
+/* Mejorar el hover en modo oscuro */
+.dark aside .sidebar-item:hover {
+  background: rgba(251, 146, 60, 0.1) !important;
+}
+
+.dark aside .sidebar-item.active {
+  background: rgba(251, 146, 60, 0.15) !important;
+}
+
+/* Fix para el botón de collapse */
+.dark aside button[aria-label*="Colapsar"],
+.dark aside button[aria-label*="Expandir"] {
+  background: rgba(55, 65, 81, 0.8) !important;
+  border-color: rgba(251, 146, 60, 0.2) !important;
+}
+
+.dark aside button[aria-label*="Colapsar"]:hover,
+.dark aside button[aria-label*="Expandir"]:hover {
+  background: rgba(75, 85, 99, 0.9) !important;
+}
+
+/* Fix para el divisor del header */
+.dark aside .border-b {
+  border-bottom-color: rgba(75, 85, 99, 0.5) !important;
+}
+
+/* Asegurar que los botones scoop mantengan sus colores */
+.dark aside .scoop-button {
+  /* Los botones scoop mantienen sus colores vibrantes incluso en modo oscuro */
+  opacity: 0.95;
+}
+
+/* Fix para el overlay en móvil */
+.dark .bg-black\/50 {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Mejorar la legibilidad de los enlaces del sidebar */
+.dark aside a {
+  color: #d1d5db !important;
+  transition: all 0.2s ease;
+}
+
+.dark aside a:hover {
+  color: #f3f4f6 !important;
+}
+
+.dark aside a.active {
+  color: var(--venezia-primary-refined) !important;
+  font-weight: 600;
+}
+
+/* Fix específico para NavLink activos */
+.dark aside .active {
+  color: var(--venezia-primary-refined) !important;
+}
+
+/* Asegurar consistencia con el resto de la app */
+.dark aside {
+  background-color: #1f2937 !important;
+  color: #e5e7eb !important;
+}

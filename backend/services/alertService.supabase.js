@@ -1,5 +1,14 @@
 const cron = require('node-cron');
-const { supabase } = require('../config/supabase');
+
+// Only import Supabase if we're actually using it
+let supabase;
+try {
+  const supabaseConfig = require('../config/supabase');
+  supabase = supabaseConfig.supabase;
+} catch (error) {
+  console.error('Failed to load Supabase configuration:', error);
+  process.exit(1);
+}
 
 class AlertServiceSupabase {
   constructor(io) {

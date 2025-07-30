@@ -1,0 +1,84 @@
+### 🔄 Project Awareness & Context
+- **Check `roadmap.md`** for the comprehensive development plan and feature status.
+- **Refer to `TASK.md`** for current sprint priorities and day-to-day task tracking.
+- **Use consistent naming conventions, file structure, and architecture patterns** as documented in app_analysis.md.
+
+### 🧱 Code Structure & Modularity
+- **Never create a file longer than 500 lines of code.** If a file approaches this limit, refactor by splitting it into route blueprints or helper files.
+- **Organize code into clearly separated modules**, grouped by feature or responsibility, using Flask blueprints.
+- **Use clear, consistent imports** (prefer importing from extensions.py for Flask extensions).
+- **Maintain separation between models and routes** to ensure clean architecture.
+
+### 🧪 Testing & Reliability
+- **Create unit tests for new features** (routes, models, functions, etc.).
+- **After updating any logic**, check whether existing functionality might be affected.
+- **Tests should live in a `/tests` folder** mirroring the main app structure.
+  - Include at least:
+    - 1 test for expected use
+    - 1 edge case
+    - 1 failure case
+
+### ✅ Task Completion
+- **Update task status in `TASK.md`** as you make progress.
+- **Mark completed tasks in `roadmap.md`** by changing ⬜ to ✅.
+- Add new sub-tasks or discovered issues to TASK.md under the appropriate section.
+
+### 📎 Style & Conventions
+- **Use Python** as the primary language.
+- **Follow Flask patterns** for route definitions, error handling, and blueprints.
+- **Follow PEP8**, use type hints, and maintain consistent formatting.
+- **Use SQLAlchemy ORM** for database interactions as established in the codebase.
+- **Use Jinja2 templates** with consistent layouts and blocks.
+- Write **docstrings for every function** using the Google style:
+  ```python
+  def example():
+      """
+      Brief summary.
+
+      Args:
+          param1 (type): Description.
+
+      Returns:
+          type: Description.
+      """
+  ```
+
+### 🔧 Technology Stack
+- **Backend**: Flask (Python)
+- **Database**: SQLite with SQLAlchemy ORM
+- **Frontend**: HTML, CSS, JavaScript, Jinja2 Templates
+- **Authentication**: Flask-Login
+- **Session Management**: Flask-Session
+- **Maps Integration**: Google Maps JavaScript API
+- **Payment Processing**: MercadoPago (in progress)
+
+### 🌐 Multi-store Considerations
+- **Always consider multi-store impacts** when modifying stock, products, or sales functionality.
+- **Ensure store-specific data isolation** where appropriate.
+- **Use store_id where required** for queries that should be store-specific.
+
+### 📱 Responsive Design
+- **Ensure all new UI elements are mobile-responsive**.
+- **Test UI changes on both desktop and mobile viewports**.
+- **Use responsive Bootstrap classes** for layout and components.
+
+### 📚 Documentation & Explainability
+- **Update documentation files** when adding features or making significant changes:
+  - app_analysis.md for architectural changes and component documentation
+  - roadmap.md for completed features and milestone tracking
+  - TASK.md for current sprint updates
+- **Comment non-obvious code** and ensure everything is understandable to a mid-level developer.
+- When writing complex logic, **add inline comments** explaining the rationale.
+
+### 🔒 Security Considerations
+- **Always validate and sanitize user inputs**.
+- **Use parameterized queries** for all database operations.
+- **Follow secure payment handling practices** with MercadoPago integration.
+- **Implement CSRF protection** for forms and API endpoints.
+
+### 🧠 AI Behavior Rules
+- **Never assume missing context. Ask questions if uncertain.**
+- **Never hallucinate libraries or functions** – only use what's already in the project.
+- **Always confirm file paths and module names** exist before referencing them in code.
+- **Never delete or overwrite existing core functionality** unless explicitly instructed.
+- **Check database model relationships** before making schema changes.

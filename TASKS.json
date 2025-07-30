@@ -1,0 +1,15 @@
+[
+  {
+    "id": "T-001",
+    "title": "Arreglar manejo de errores en api.js",
+    "status": "pending",
+    "paths": [
+      "src/api.js"
+    ],
+    "risk": "medium",
+    "budget": {
+      "iterations": 1,
+      "seconds": 600
+    }
+  }
+]

@@ -1,0 +1,79 @@
+/* Focus Mode Styles */
+.focus-mode {
+  /* Hide distracting elements in focus mode */
+}
+
+.focus-mode .sidebar {
+  transform: translateX(-100%);
+}
+
+.focus-mode .mobile-navigation {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.focus-mode .header {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.focus-mode.dark .header {
+  background: rgba(17, 24, 39, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.focus-mode main {
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+}
+
+.focus-mode .content-area {
+  max-width: none;
+  padding: 2rem;
+  margin: 0 auto;
+}
+
+/* Smooth transitions for focus mode */
+.sidebar,
+.mobile-navigation,
+.header,
+main {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Focus mode indicator */
+.focus-mode::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  z-index: 9999;
+  animation: focus-pulse 2s ease-in-out infinite;
+}
+
+@keyframes focus-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* Enhanced readability in focus mode */
+.focus-mode .text-content {
+  line-height: 1.7;
+  font-size: 1.05em;
+}
+
+.focus-mode .card,
+.focus-mode .modal {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Center content in focus mode */
+.focus-mode .page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}

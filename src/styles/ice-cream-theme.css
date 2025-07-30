@@ -1,0 +1,313 @@
+/* ===============================================
+   VENEZIA ICE CREAM THEME - ENHANCED DESIGN SYSTEM
+   =============================================== */
+
+/* 1. Ice Cream Component Styles */
+.gelato-card {
+  @apply bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-venezia-200 dark:border-gray-700;
+  @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+  background: linear-gradient(145deg, #ffffff 0%, #fffbf7 100%);
+  overflow: hidden;
+  position: relative;
+}
+
+.dark .gelato-card {
+  background: linear-gradient(145deg, #1f2937 0%, #111827 100%);
+}
+
+.gelato-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--flavor-strawberry), var(--flavor-mint), var(--flavor-caramel));
+  border-radius: 1rem 1rem 0 0;
+}
+
+/* 2. Ice Cream Scoop Buttons */
+.scoop-button {
+  @apply relative overflow-hidden rounded-2xl font-medium transition-all duration-300;
+  @apply transform hover:scale-105 active:scale-95;
+  background: linear-gradient(135deg, var(--flavor-caramel) 0%, #f59e0b 100%);
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+.scoop-button:hover {
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+  animation: flavor-pulse 1.5s ease-in-out;
+}
+
+.scoop-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+}
+
+.scoop-button:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* 3. Flavor-specific Button Variants */
+.scoop-strawberry {
+  background: linear-gradient(135deg, var(--flavor-strawberry) 0%, #db2777 100%);
+  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+}
+
+.scoop-mint {
+  background: linear-gradient(135deg, var(--flavor-mint) 0%, #0d9488 100%);
+  box-shadow: 0 4px 15px rgba(20, 184, 166, 0.3);
+}
+
+.scoop-chocolate {
+  background: linear-gradient(135deg, var(--flavor-chocolate) 0%, #292524 100%);
+  box-shadow: 0 4px 15px rgba(67, 48, 43, 0.3);
+}
+
+.scoop-pistachio {
+  background: linear-gradient(135deg, var(--flavor-pistachio) 0%, #65a30d 100%);
+  box-shadow: 0 4px 15px rgba(132, 204, 22, 0.3);
+}
+
+/* 4. Ice Cream Cone Navigation Indicator */
+.cone-indicator {
+  position: relative;
+  width: 4px;
+  height: 32px;
+  background: linear-gradient(to bottom, #d97706 0%, #92400e 100%);
+  border-radius: 0 0 2px 2px;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.cone-indicator::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: -6px;
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(135deg, var(--flavor-strawberry) 0%, var(--flavor-caramel) 100%);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(236, 72, 153, 0.3);
+}
+
+/* 5. Frosted Glass Overlays */
+.frost-overlay {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 251, 247, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark .frost-overlay {
+  background: rgba(31, 41, 55, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 6. Melting Input Fields */
+.gelato-input {
+  @apply w-full px-4 py-3 text-sm bg-white dark:bg-gray-800 border-2 border-venezia-200 dark:border-gray-600;
+  @apply rounded-2xl transition-all duration-300 focus:outline-none;
+  @apply focus:border-primary-400 focus:shadow-lg focus:-translate-y-0.5;
+  background: linear-gradient(145deg, #ffffff 0%, #fffbf7 100%);
+}
+
+.dark .gelato-input {
+  background: linear-gradient(145deg, #374151 0%, #1f2937 100%);
+}
+
+.gelato-input:focus {
+  box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.1), 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* 7. Temperature Gauge Styles */
+.temp-gauge {
+  position: relative;
+  height: 8px;
+  background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #14b8a6 100%);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.temp-indicator {
+  position: absolute;
+  top: -2px;
+  width: 12px;
+  height: 12px;
+  background: white;
+  border: 2px solid var(--flavor-mint);
+  border-radius: 50%;
+  transform: translateX(-50%);
+  transition: left 0.3s ease;
+  box-shadow: 0 2px 8px rgba(20, 184, 166, 0.4);
+}
+
+/* 8. Scooped Pagination */
+.scoop-pagination {
+  @apply flex items-center gap-2;
+}
+
+.scoop-page {
+  @apply w-10 h-10 rounded-full border-2 border-primary-200 bg-white dark:bg-gray-800;
+  @apply flex items-center justify-center text-sm font-medium transition-all duration-300;
+  @apply hover:bg-primary-50 hover:border-primary-300 hover:scale-110;
+}
+
+.scoop-page.active {
+  @apply bg-primary-500 border-primary-500 text-white;
+  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+  animation: scoop-bounce 0.6s ease-in-out;
+}
+
+/* 9. Flavor Tags */
+.flavor-tag {
+  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
+  @apply transition-all duration-200 hover:scale-105;
+}
+
+.flavor-vanilla { @apply bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200; }
+.flavor-strawberry { @apply bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200; }
+.flavor-chocolate { @apply bg-amber-100 text-amber-900 dark:bg-amber-900 dark:text-amber-200; }
+.flavor-mint { @apply bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200; }
+.flavor-pistachio { @apply bg-lime-100 text-lime-800 dark:bg-lime-900 dark:text-lime-200; }
+
+/* 10. Loading Swirl Animation */
+.swirl-loader {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(236, 72, 153, 0.1);
+  border-left: 4px solid var(--flavor-strawberry);
+  border-radius: 50%;
+  animation: swirl 1s linear infinite;
+  position: relative;
+}
+
+.swirl-loader::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  border: 2px solid transparent;
+  border-right: 2px solid var(--flavor-mint);
+  border-radius: 50%;
+  animation: swirl 1.5s linear infinite reverse;
+}
+
+/* 11. Ice Cream Metrics Cards */
+.metric-gelato {
+  @apply relative overflow-hidden;
+  background: linear-gradient(135deg, #ffffff 0%, #fffbf7 100%);
+}
+
+.dark .metric-gelato {
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+}
+
+.metric-gelato::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--flavor-strawberry), var(--flavor-mint));
+}
+
+.metric-scoop {
+  @apply w-12 h-12 rounded-full flex items-center justify-center;
+  background: linear-gradient(135deg, var(--flavor-caramel) 0%, #f59e0b 100%);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+/* 12. Seasonal Theme Variations */
+.summer-theme {
+  --seasonal-primary: var(--flavor-strawberry);
+  --seasonal-bg: linear-gradient(135deg, #fef7ed 0%, #fed7aa 100%);
+  --seasonal-accent: var(--flavor-mint);
+}
+
+.winter-theme {
+  --seasonal-primary: var(--flavor-chocolate);
+  --seasonal-bg: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+  --seasonal-accent: var(--flavor-caramel);
+}
+
+/* 13. Notification Scoops */
+.toast-scoop {
+  @apply rounded-2xl p-4 shadow-xl border-l-4;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.toast-success {
+  @apply border-l-mint-500 bg-mint-50 dark:bg-mint-900/20;
+  background: rgba(240, 253, 250, 0.9);
+}
+
+.toast-error {
+  @apply border-l-primary-500 bg-primary-50 dark:bg-primary-900/20;
+  background: rgba(253, 242, 248, 0.9);
+}
+
+.toast-warning {
+  @apply border-l-venezia-500 bg-venezia-50 dark:bg-venezia-900/20;
+  background: rgba(255, 251, 247, 0.9);
+}
+
+/* 14. Responsive Ice Cream Design */
+@media (max-width: 640px) {
+  .gelato-card {
+    @apply rounded-xl;
+  }
+  
+  .scoop-button {
+    @apply rounded-xl py-3 px-6;
+  }
+  
+  .gelato-input {
+    @apply rounded-xl py-2.5;
+  }
+}
+
+/* 15. High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .gelato-card {
+    @apply border-2 border-gray-400;
+  }
+  
+  .scoop-button {
+    @apply border-2 border-gray-600;
+  }
+  
+  .flavor-tag {
+    @apply border border-gray-500;
+  }
+}
+
+/* 16. Print Styles for Ice Cream Theme */
+@media print {
+  .gelato-card {
+    @apply shadow-none border border-gray-400 bg-white;
+  }
+  
+  .scoop-button {
+    @apply shadow-none bg-gray-200 text-black;
+  }
+  
+  .frost-overlay {
+    @apply bg-white border-gray-300;
+  }
+}

@@ -23,15 +23,42 @@ const useAuthStore = create(
           if (error) throw error;
           
           if (session) {
-            // Get user profile from our users table
-            const { data: profile } = await supabase
-              .from('users')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
+            // Try to get user profile from our users table
+            let profile = null;
+            try {
+              const { data, error } = await supabase
+                .from('users')
+                .select(`
+                  *,
+                  organizations!organization_id(*)
+                `)
+                .eq('id', session.user.id)
+                .maybeSingle(); // Use maybeSingle instead of single to avoid errors when user doesn't exist
+              
+              if (!error && data) {
+                profile = data;
+                // Ensure branch_access is an array
+                profile.branch_access = profile.branch_access || [];
+                profile.role_per_branch = profile.role_per_branch || {};
+              } else if (error && error.code === '406') {
+                console.warn('User profile not found in database, using session data');
+              }
+            } catch (e) {
+              console.warn('Could not fetch user profile from custom table:', e);
+            }
+            
+            // Use session user data as fallback
+            const userData = profile || {
+              ...session.user,
+              email: session.user.email,
+              name: session.user.email?.split('@')[0] || 'Usuario',
+              role: 'user',
+              branch_access: [],
+              role_per_branch: {}
+            };
             
             set({
-              user: profile || session.user,
+              user: userData,
               session,
               isAuthenticated: true,
               isLoading: false

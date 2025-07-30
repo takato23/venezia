@@ -1,0 +1,203 @@
+/* ===============================================
+   TAB BUTTONS ENHANCEMENT - SOFT & HARMONIOUS STYLE
+   =============================================== */
+
+/* Estilo base para botones de navegación tipo tab */
+.tab-button,
+button[class*="border-b-2"][class*="font-medium"] {
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-bottom-color: transparent !important;
+  color: var(--venezia-text-muted) !important;
+  background: transparent;
+  border-radius: 0.5rem 0.5rem 0 0;
+  padding: 0.75rem 1.25rem !important;
+}
+
+/* Hover suave y armonioso */
+.tab-button:hover,
+button[class*="border-b-2"][class*="font-medium"]:hover {
+  color: var(--venezia-primary-refined) !important;
+  background: rgba(234, 88, 12, 0.04);
+  border-bottom-color: transparent !important;
+}
+
+/* Indicador inferior más sutil */
+.tab-button::after,
+button[class*="border-b-2"][class*="font-medium"]::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 80%;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    var(--venezia-primary-refined), 
+    transparent
+  );
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 2px;
+}
+
+/* Activar indicador en hover */
+.tab-button:hover::after,
+button[class*="border-b-2"][class*="font-medium"]:hover::after {
+  transform: translateX(-50%) scaleX(1);
+}
+
+/* Estado activo */
+.tab-button.active,
+button[class*="border-b-2"][class*="font-medium"].active,
+button[class*="border-b-2"][class*="border-venezia"] {
+  color: var(--venezia-primary-refined) !important;
+  background: rgba(234, 88, 12, 0.08);
+  font-weight: 600;
+}
+
+.tab-button.active::after,
+button[class*="border-b-2"][class*="font-medium"].active::after,
+button[class*="border-b-2"][class*="border-venezia"]::after {
+  transform: translateX(-50%) scaleX(1);
+  background: var(--venezia-primary-refined);
+  height: 3px;
+}
+
+/* Mejorar los iconos */
+.tab-button svg,
+button[class*="border-b-2"][class*="font-medium"] svg {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.7;
+}
+
+.tab-button:hover svg,
+button[class*="border-b-2"][class*="font-medium"]:hover svg {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+/* Estilo específico para el texto */
+.tab-button span,
+button[class*="border-b-2"][class*="font-medium"] span {
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* Modo oscuro */
+.dark .tab-button,
+.dark button[class*="border-b-2"][class*="font-medium"] {
+  color: var(--venezia-text-muted) !important;
+}
+
+.dark .tab-button:hover,
+.dark button[class*="border-b-2"][class*="font-medium"]:hover {
+  color: var(--venezia-primary-refined) !important;
+  background: rgba(251, 146, 60, 0.08);
+}
+
+.dark .tab-button.active,
+.dark button[class*="border-b-2"][class*="font-medium"].active,
+.dark button[class*="border-b-2"][class*="border-venezia"] {
+  color: var(--venezia-primary-refined) !important;
+  background: rgba(251, 146, 60, 0.12);
+}
+
+/* Alternativa: Estilo píldora suave */
+.pill-tab {
+  border: none !important;
+  border-radius: 9999px !important;
+  padding: 0.625rem 1.25rem !important;
+  background: rgba(234, 88, 12, 0.06) !important;
+  color: var(--venezia-text-muted) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 500;
+}
+
+.pill-tab:hover {
+  background: rgba(234, 88, 12, 0.12) !important;
+  color: var(--venezia-primary-refined) !important;
+  transform: translateY(-1px);
+}
+
+.pill-tab.active {
+  background: var(--venezia-primary-refined) !important;
+  color: white !important;
+  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.3);
+}
+
+/* Grupo de tabs con fondo suave */
+.tab-group {
+  background: rgba(234, 88, 12, 0.02);
+  border-radius: 0.75rem;
+  padding: 0.25rem;
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.tab-group button {
+  border: none !important;
+  border-radius: 0.5rem !important;
+  padding: 0.5rem 1rem !important;
+  background: transparent !important;
+  color: var(--venezia-text-muted) !important;
+  transition: all 0.2s ease;
+}
+
+.tab-group button:hover {
+  background: rgba(255, 255, 255, 0.8) !important;
+  color: var(--venezia-primary-refined) !important;
+}
+
+.tab-group button.active {
+  background: white !important;
+  color: var(--venezia-primary-refined) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode para grupo de tabs */
+.dark .tab-group {
+  background: rgba(251, 146, 60, 0.05);
+}
+
+.dark .tab-group button:hover {
+  background: rgba(55, 65, 81, 0.8) !important;
+}
+
+.dark .tab-group button.active {
+  background: rgb(55, 65, 81) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Animación suave de entrada */
+@keyframes tab-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tab-content {
+  animation: tab-fade-in 0.3s ease-out;
+}
+
+/* Override para quitar el borde inferior original */
+button[class*="border-b-2"] {
+  border-bottom-width: 0 !important;
+  position: relative;
+  overflow: visible;
+}
+
+/* Mejora para el espaciado */
+.flex.items-center.space-x-2 svg {
+  margin-right: 0.5rem;
+}
+
+/* Transición más suave para todo */
+* {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+}

@@ -1,0 +1,295 @@
+/* ===============================================
+   VENEZIA DESIGN REFINEMENTS - SUBTLE ENHANCEMENTS
+   =============================================== */
+
+/* 1. REFINED COLOR PALETTE - Better Contrast & Accessibility */
+:root {
+  /* Enhanced primary colors with better contrast ratios */
+  --venezia-primary-refined: #ea580c;      /* Warmer caramel with better contrast */
+  --venezia-secondary-refined: #dc2626;    /* Refined strawberry for readability */
+  --venezia-accent-refined: #059669;       /* Deeper mint for accessibility */
+  --venezia-text-enhanced: #374151;        /* Better text contrast */
+  --venezia-text-muted: #6b7280;          /* Refined muted text */
+  
+  /* Enhanced shadow system - more professional depth */
+  --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-elevated: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-pronounced: 0 12px 32px rgba(0, 0, 0, 0.15);
+  
+  /* Refined border radius system */
+  --radius-refined: 0.625rem;              /* 10px - slightly more rounded */
+  --radius-card: 0.875rem;                 /* 14px - professional card radius */
+  --radius-button: 0.75rem;                /* 12px - balanced button radius */
+  
+  /* Enhanced spacing scale */
+  --spacing-refined: 1.25rem;              /* More consistent spacing unit */
+  --spacing-comfortable: 1.75rem;          /* Better breathing room */
+}
+
+.dark {
+  /* Dark mode refinements */
+  --venezia-primary-refined: #fb923c;      /* Brighter caramel for dark mode */
+  --venezia-text-enhanced: #e5e7eb;        /* Better dark mode text */
+  --venezia-text-muted: #9ca3af;          /* Refined dark mode muted text */
+}
+
+/* 2. TYPOGRAPHY REFINEMENTS - Professional Polish */
+body {
+  font-weight: 450;                        /* Slightly bolder for better readability */
+  letter-spacing: -0.01em;                 /* Tighter for professional appearance */
+  line-height: 1.55;                      /* Optimized for reading comfort */
+  color: var(--venezia-text-enhanced);
+}
+
+/* Enhanced heading hierarchy */
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: -0.025em;               /* Professional heading spacing */
+  font-weight: 650;                       /* Refined weight for impact */
+}
+
+h1 { font-size: clamp(1.875rem, 4vw, 3rem); }
+h2 { font-size: clamp(1.5rem, 3vw, 2.25rem); }
+h3 { font-size: clamp(1.25rem, 2.5vw, 1.875rem); }
+
+/* Refined text colors */
+.text-muted {
+  color: var(--venezia-text-muted) !important;
+}
+
+/* 3. ENHANCED BUTTON SYSTEM - Subtle Polish */
+.btn, button:not(.unstyled) {
+  border-radius: var(--radius-button);
+  font-weight: 550;                       /* Refined button weight */
+  letter-spacing: 0.01em;                 /* Better button text spacing */
+  box-shadow: var(--shadow-soft);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn:hover, button:not(.unstyled):hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-elevated);
+}
+
+.btn:active, button:not(.unstyled):active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-subtle);
+}
+
+/* Enhanced scoop button styles */
+.scoop-button {
+  border-radius: var(--radius-button);
+  box-shadow: var(--shadow-soft);
+  position: relative;
+  overflow: hidden;
+}
+
+.scoop-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.scoop-button:hover::before {
+  opacity: 1;
+}
+
+/* 4. REFINED CARD SYSTEM - Professional Elevation */
+.card, .gelato-card {
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover, .gelato-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-elevated);
+}
+
+.dark .card, .dark .gelato-card {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: var(--shadow-elevated);
+}
+
+/* Enhanced card headers */
+.card-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  padding: var(--spacing-refined);
+}
+
+.dark .card-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* 5. POLISHED INPUT SYSTEM - Better Focus States */
+.input, .gelato-input, input:not([type="checkbox"]):not([type="radio"]) {
+  border-radius: var(--radius-refined);
+  border: 2px solid rgba(0, 0, 0, 0.08);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 450;
+}
+
+.input:focus, .gelato-input:focus, input:focus {
+  border-color: var(--venezia-primary-refined);
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
+  transform: translateY(-1px);
+}
+
+.dark .input:focus, .dark .gelato-input:focus, .dark input:focus {
+  box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.2);
+}
+
+/* 6. ENHANCED NAVIGATION - Subtle Improvements */
+.sidebar a, nav a {
+  border-radius: var(--radius-refined);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 500;
+}
+
+.sidebar a:hover, nav a:hover {
+  transform: translateX(2px);
+  background-color: rgba(234, 88, 12, 0.08);
+}
+
+/* 7. REFINED NOTIFICATION SYSTEM */
+.toast, .toast-scoop {
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-pronounced);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* 8. ENHANCED LOADING STATES */
+.skeleton {
+  border-radius: var(--radius-refined);
+  background: linear-gradient(
+    90deg,
+    rgba(234, 88, 12, 0.04) 25%,
+    rgba(234, 88, 12, 0.08) 50%,
+    rgba(234, 88, 12, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* 9. MICRO-INTERACTION ENHANCEMENTS */
+.hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-elevated);
+}
+
+.click-feedback:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+/* 10. ACCESSIBILITY IMPROVEMENTS */
+@media (prefers-reduced-motion: reduce) {
+  .btn, .card, .input, .scoop-button {
+    transition: none !important;
+  }
+  
+  .hover-lift:hover {
+    transform: none !important;
+  }
+}
+
+/* High contrast mode enhancements */
+@media (prefers-contrast: high) {
+  :root {
+    --venezia-primary-refined: #d97706;
+    --venezia-text-enhanced: #1f2937;
+  }
+  
+  .card, .btn {
+    border-width: 2px !important;
+  }
+}
+
+/* 11. PRINT OPTIMIZATIONS */
+@media print {
+  .card, .btn, .input {
+    box-shadow: none !important;
+    transform: none !important;
+  }
+}
+
+/* 12. RESPONSIVE REFINEMENTS */
+@media (max-width: 640px) {
+  .card {
+    border-radius: var(--radius-refined);
+  }
+  
+  .btn {
+    min-height: 44px; /* Touch-friendly */
+  }
+}
+
+/* 13. FOCUS INDICATOR IMPROVEMENTS */
+:focus-visible {
+  outline: 3px solid var(--venezia-primary-refined) !important;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.dark :focus-visible {
+  outline-color: var(--venezia-primary-refined) !important;
+}
+
+/* 14. ENHANCED SCROLLBAR */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, var(--venezia-primary-refined), rgba(234, 88, 12, 0.7));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--venezia-primary-refined);
+}
+
+/* 15. SUBTLE ANIMATION CLASSES */
+.fade-in-up {
+  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in-right {
+  animation: slideInRight 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

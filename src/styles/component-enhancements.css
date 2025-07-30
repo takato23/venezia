@@ -1,0 +1,432 @@
+/* ===============================================
+   COMPONENT ENHANCEMENTS - SUBTLE POLISH & REFINEMENTS
+   =============================================== */
+
+/* 1. ENHANCED HEADER COMPONENT */
+.header-enhanced {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 251, 247, 0.85);
+  border-bottom: 1px solid rgba(234, 88, 12, 0.1);
+  box-shadow: 0 1px 20px rgba(0, 0, 0, 0.06);
+}
+
+.dark .header-enhanced {
+  background: rgba(31, 41, 55, 0.85);
+  border-bottom: 1px solid rgba(251, 146, 60, 0.15);
+}
+
+/* Enhanced search input in header */
+.header-search {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(234, 88, 12, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.header-search:focus {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: var(--venezia-primary-refined);
+  box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.1);
+}
+
+.dark .header-search {
+  background: rgba(55, 65, 81, 0.7);
+  border-color: rgba(251, 146, 60, 0.2);
+}
+
+.dark .header-search:focus {
+  background: rgba(55, 65, 81, 0.95);
+  border-color: var(--venezia-primary-refined);
+}
+
+/* 2. REFINED SIDEBAR COMPONENT */
+.sidebar-enhanced {
+  background: linear-gradient(180deg, #ffffff 0%, #fefaf7 100%);
+  border-right: 1px solid rgba(234, 88, 12, 0.08);
+  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.04);
+}
+
+.dark .sidebar-enhanced {
+  background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+  border-right: 1px solid rgba(251, 146, 60, 0.12);
+}
+
+.sidebar-item-enhanced {
+  position: relative;
+  border-radius: 0.75rem;
+  margin: 0.25rem 0.75rem;
+  padding: 0.75rem 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 500;
+  color: var(--venezia-text-enhanced);
+}
+
+.sidebar-item-enhanced:hover {
+  background: rgba(234, 88, 12, 0.06);
+  transform: translateX(4px);
+  color: var(--venezia-primary-refined);
+}
+
+.sidebar-item-enhanced.active {
+  background: rgba(234, 88, 12, 0.1);
+  color: var(--venezia-primary-refined);
+  font-weight: 600;
+}
+
+.sidebar-item-enhanced.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: var(--venezia-primary-refined);
+  border-radius: 0 2px 2px 0;
+}
+
+/* 3. ENHANCED PRODUCT CARDS */
+.product-card-enhanced {
+  background: linear-gradient(145deg, #ffffff 0%, #fefaf7 100%);
+  border-radius: 1rem;
+  border: 1px solid rgba(234, 88, 12, 0.06);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  position: relative;
+}
+
+.product-card-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, 
+    var(--flavor-strawberry) 0%, 
+    var(--flavor-mint) 50%, 
+    var(--flavor-caramel) 100%
+  );
+}
+
+.product-card-enhanced:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.dark .product-card-enhanced {
+  background: linear-gradient(145deg, #1f2937 0%, #111827 100%);
+  border-color: rgba(251, 146, 60, 0.12);
+}
+
+/* Product image enhancement */
+.product-image-enhanced {
+  border-radius: 0.75rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.product-image-enhanced img {
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.product-card-enhanced:hover .product-image-enhanced img {
+  transform: scale(1.08);
+}
+
+/* Product title enhancement */
+.product-title-enhanced {
+  font-weight: 600;
+  color: var(--venezia-text-enhanced);
+  font-size: 1.125rem;
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+}
+
+/* Product price enhancement */
+.product-price-enhanced {
+  font-weight: 700;
+  color: var(--venezia-primary-refined);
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 4. ENHANCED METRIC CARDS */
+.metric-card-enhanced {
+  background: linear-gradient(135deg, #ffffff 0%, #fefaf7 100%);
+  border-radius: 1rem;
+  border: 1px solid rgba(234, 88, 12, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.metric-card-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--flavor-mint), var(--flavor-caramel));
+}
+
+.metric-card-enhanced:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.dark .metric-card-enhanced {
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  border-color: rgba(251, 146, 60, 0.12);
+}
+
+.metric-value-enhanced {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--venezia-primary-refined);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+}
+
+.metric-label-enhanced {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--venezia-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* 5. ENHANCED FORM ELEMENTS */
+.form-group-enhanced {
+  margin-bottom: 1.5rem;
+}
+
+.form-label-enhanced {
+  display: block;
+  font-weight: 500;
+  color: var(--venezia-text-enhanced);
+  margin-bottom: 0.5rem;
+  font-size: 0.925rem;
+}
+
+.form-input-enhanced {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 2px solid rgba(234, 88, 12, 0.1);
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.8);
+  font-size: 0.925rem;
+  font-weight: 450;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.form-input-enhanced:focus {
+  border-color: var(--venezia-primary-refined);
+  box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.1);
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-1px);
+}
+
+.dark .form-input-enhanced {
+  background: rgba(55, 65, 81, 0.8);
+  border-color: rgba(251, 146, 60, 0.2);
+}
+
+.dark .form-input-enhanced:focus {
+  background: rgba(55, 65, 81, 1);
+}
+
+/* 6. ENHANCED MODAL COMPONENT */
+.modal-enhanced {
+  border-radius: 1.25rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(234, 88, 12, 0.1);
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.95);
+  overflow: hidden;
+}
+
+.dark .modal-enhanced {
+  background: rgba(31, 41, 55, 0.95);
+  border-color: rgba(251, 146, 60, 0.2);
+}
+
+.modal-header-enhanced {
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(234, 88, 12, 0.1);
+  background: linear-gradient(90deg, rgba(234, 88, 12, 0.03), transparent);
+}
+
+.dark .modal-header-enhanced {
+  border-bottom-color: rgba(251, 146, 60, 0.15);
+  background: linear-gradient(90deg, rgba(251, 146, 60, 0.05), transparent);
+}
+
+/* 7. ENHANCED TABLE COMPONENT */
+.table-enhanced {
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(234, 88, 12, 0.08);
+}
+
+.table-enhanced thead {
+  background: linear-gradient(135deg, 
+    rgba(234, 88, 12, 0.06) 0%, 
+    rgba(234, 88, 12, 0.03) 100%
+  );
+}
+
+.table-enhanced th {
+  padding: 1rem 1.5rem;
+  font-weight: 600;
+  color: var(--venezia-text-enhanced);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.table-enhanced td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(234, 88, 12, 0.06);
+  font-weight: 450;
+}
+
+.table-enhanced tbody tr:hover {
+  background: rgba(234, 88, 12, 0.03);
+  transform: scale(1.005);
+}
+
+.dark .table-enhanced {
+  border-color: rgba(251, 146, 60, 0.12);
+}
+
+.dark .table-enhanced thead {
+  background: linear-gradient(135deg, 
+    rgba(251, 146, 60, 0.08) 0%, 
+    rgba(251, 146, 60, 0.04) 100%
+  );
+}
+
+.dark .table-enhanced td {
+  border-bottom-color: rgba(251, 146, 60, 0.08);
+}
+
+/* 8. ENHANCED BADGE COMPONENT */
+.badge-enhanced {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.875rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.badge-enhanced:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.badge-primary {
+  background: var(--venezia-primary-refined);
+  color: white;
+}
+
+.badge-success {
+  background: var(--venezia-accent-refined);
+  color: white;
+}
+
+.badge-warning {
+  background: var(--flavor-caramel);
+  color: white;
+}
+
+/* 9. ENHANCED PAGINATION */
+.pagination-enhanced {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.pagination-item-enhanced {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  border: 2px solid rgba(234, 88, 12, 0.1);
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--venezia-text-enhanced);
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.pagination-item-enhanced:hover {
+  border-color: var(--venezia-primary-refined);
+  background: rgba(234, 88, 12, 0.06);
+  transform: translateY(-2px);
+}
+
+.pagination-item-enhanced.active {
+  background: var(--venezia-primary-refined);
+  border-color: var(--venezia-primary-refined);
+  color: white;
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
+}
+
+/* 10. ENHANCED LOADING STATES */
+.loading-enhanced {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.spinner-enhanced {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 3px solid rgba(234, 88, 12, 0.1);
+  border-left-color: var(--venezia-primary-refined);
+  border-radius: 50%;
+  animation: spin-enhanced 1s linear infinite;
+}
+
+@keyframes spin-enhanced {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Loading skeleton enhanced */
+.skeleton-enhanced {
+  background: linear-gradient(
+    90deg,
+    rgba(234, 88, 12, 0.03) 25%,
+    rgba(234, 88, 12, 0.06) 50%,
+    rgba(234, 88, 12, 0.03) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-enhanced 2s infinite;
+  border-radius: 0.75rem;
+}
+
+@keyframes shimmer-enhanced {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}

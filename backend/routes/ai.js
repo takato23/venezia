@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { authenticateToken, requireRole } = require('../middleware/auth');
+const { authMiddleware: authenticateToken, requireRole } = require('../middleware/auth');
 const aiService = require('../services/aiService.supabase');
 
 // Obtener o crear conversación activa

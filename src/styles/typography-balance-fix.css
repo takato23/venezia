@@ -1,0 +1,226 @@
+/* ===============================================
+   TYPOGRAPHY BALANCE FIX - BETTER PROPORTIONS
+   =============================================== */
+
+/* 1. AJUSTE GLOBAL DE TIPOGRAFÍA - Más grande y legible */
+html {
+  font-size: 16px !important; /* Base más grande (era 14px) */
+}
+
+body {
+  font-size: 1rem !important; /* 16px base */
+  line-height: 1.6 !important;
+}
+
+/* 2. AJUSTE DE BOTONES DE TAB - Menos padding, más compactos */
+.tab-button,
+button[class*="border-b-2"][class*="font-medium"],
+button[class*="py-2"][class*="px-1"] {
+  padding: 0.5rem 1rem !important; /* Reducido de 0.75rem 1.25rem */
+  font-size: 0.9375rem !important; /* 15px - más grande */
+  font-weight: 500 !important;
+}
+
+/* Iconos proporcionados */
+.tab-button svg,
+button[class*="border-b-2"][class*="font-medium"] svg,
+button svg[class*="h-5"] {
+  width: 1.125rem !important; /* 18px */
+  height: 1.125rem !important; /* 18px */
+  margin-right: 0.5rem;
+}
+
+/* 3. TEXTOS EN GENERAL - Más grandes */
+.text-sm {
+  font-size: 0.9375rem !important; /* 15px en lugar de 14px */
+}
+
+.text-xs {
+  font-size: 0.8125rem !important; /* 13px en lugar de 12px */
+}
+
+.text-base {
+  font-size: 1rem !important; /* 16px */
+}
+
+/* 4. BOTONES GENERALES - Menos gordos */
+.btn,
+button:not(.unstyled):not([class*="border-b-2"]) {
+  padding: 0.5rem 1rem !important; /* Reducido */
+  font-size: 0.9375rem !important; /* 15px */
+  min-height: 36px !important; /* Reducido de 44px */
+}
+
+/* Tamaños de botón ajustados */
+.btn-sm {
+  padding: 0.375rem 0.75rem !important;
+  font-size: 0.875rem !important;
+  min-height: 32px !important;
+}
+
+.btn-lg {
+  padding: 0.625rem 1.25rem !important;
+  font-size: 1rem !important;
+  min-height: 42px !important;
+}
+
+/* 5. INPUTS - Proporcionados con el texto */
+.input,
+input:not([type="checkbox"]):not([type="radio"]),
+textarea,
+select {
+  padding: 0.5rem 0.875rem !important; /* Menos padding */
+  font-size: 0.9375rem !important; /* 15px */
+  min-height: 38px !important; /* Reducido */
+}
+
+/* 6. SIDEBAR - Texto más grande */
+.sidebar-item,
+aside a {
+  font-size: 0.9375rem !important; /* 15px */
+  padding: 0.625rem 1rem !important; /* Menos padding */
+}
+
+/* 7. CARDS - Mejor proporción */
+.card {
+  padding: 1.25rem !important; /* Un poco menos de padding */
+}
+
+.card h3,
+.card-title {
+  font-size: 1.125rem !important; /* 18px */
+  margin-bottom: 0.75rem !important;
+}
+
+.card p {
+  font-size: 0.9375rem !important; /* 15px */
+}
+
+/* 8. TABLAS - Texto más legible */
+table {
+  font-size: 0.9375rem !important; /* 15px */
+}
+
+th {
+  font-size: 0.875rem !important; /* 14px para headers */
+  font-weight: 600 !important;
+  padding: 0.75rem 1rem !important;
+}
+
+td {
+  padding: 0.625rem 1rem !important;
+}
+
+/* 9. NAVEGACIÓN PRINCIPAL - Mejor balance */
+nav a,
+.nav-link {
+  font-size: 0.9375rem !important; /* 15px */
+  padding: 0.5rem 0.875rem !important;
+}
+
+/* 10. LABELS DE FORMULARIO */
+label {
+  font-size: 0.9375rem !important; /* 15px */
+  font-weight: 500 !important;
+  margin-bottom: 0.375rem !important;
+}
+
+/* 11. MÉTRICAS Y NÚMEROS */
+.metric-value {
+  font-size: 1.75rem !important; /* Más pequeño pero legible */
+}
+
+.metric-label {
+  font-size: 0.875rem !important; /* 14px */
+}
+
+/* 12. AJUSTE MÓVIL - Mantener legibilidad */
+@media (max-width: 640px) {
+  html {
+    font-size: 15px !important; /* Un poco más pequeño en móvil */
+  }
+  
+  .btn,
+  button {
+    min-height: 40px !important; /* Touch-friendly pero no enorme */
+    font-size: 0.9375rem !important;
+  }
+  
+  .input {
+    min-height: 40px !important;
+    font-size: 1rem !important; /* 16px para evitar zoom en iOS */
+  }
+}
+
+/* 13. TOOLTIPS Y ELEMENTOS PEQUEÑOS */
+.tooltip,
+.badge,
+.tag {
+  font-size: 0.8125rem !important; /* 13px */
+  padding: 0.25rem 0.5rem !important;
+}
+
+/* 14. BREADCRUMBS */
+.breadcrumb {
+  font-size: 0.875rem !important; /* 14px */
+}
+
+/* 15. AJUSTE ESPECÍFICO PARA LOS TABS DE CONFIGURACIÓN */
+button[class*="flex"][class*="items-center"][class*="space-x-2"] {
+  padding: 0.5rem 0.875rem !important;
+  gap: 0.5rem !important;
+}
+
+button[class*="flex"][class*="items-center"][class*="space-x-2"] span {
+  font-size: 0.9375rem !important; /* 15px */
+  font-weight: 500 !important;
+}
+
+/* 16. DROPDOWN MENUS */
+.dropdown-item,
+[role="menuitem"] {
+  font-size: 0.9375rem !important; /* 15px */
+  padding: 0.5rem 1rem !important;
+}
+
+/* 17. MODAL HEADERS */
+.modal-header h2,
+.modal-header h3 {
+  font-size: 1.25rem !important; /* 20px */
+}
+
+.modal-body {
+  font-size: 0.9375rem !important; /* 15px */
+}
+
+/* 18. AJUSTE PARA ICONOS SOLOS (sin texto) */
+button.icon-only,
+.btn-icon {
+  padding: 0.5rem !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+}
+
+/* 19. CHIPS Y TAGS */
+.chip,
+.tag {
+  font-size: 0.8125rem !important; /* 13px */
+  padding: 0.25rem 0.625rem !important;
+  font-weight: 500 !important;
+}
+
+/* 20. ALERTAS Y NOTIFICACIONES */
+.alert,
+.toast {
+  font-size: 0.9375rem !important; /* 15px */
+  padding: 0.875rem 1rem !important;
+}
+
+/* Fix específico para que no se vea "gordo" */
+* {
+  letter-spacing: 0 !important; /* Resetear letter-spacing excesivo */
+}
+
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: -0.02em !important; /* Solo un poco tight para headers */
+}

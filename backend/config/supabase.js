@@ -11,19 +11,30 @@ if (!supabaseUrl || !supabaseServiceKey) {
   console.log('1. Create a project at https://supabase.com');
   console.log('2. Go to Settings > API');
   console.log('3. Copy the Project URL and service_role key (secret)');
-  process.exit(1);
+  // Don't exit if we're not using Supabase
+  if (process.env.USE_SUPABASE === 'true') {
+    process.exit(1);
+  }
 }
 
 // Create Supabase client with service role key for backend operations
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-});
+let supabase = null;
+if (supabaseUrl && supabaseServiceKey) {
+  supabase = createClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
+}
 
 // Test connection
 async function testConnection() {
+  if (!supabase) {
+    console.error('❌ Supabase client not initialized');
+    return false;
+  }
+  
   try {
     const { data, error } = await supabase
       .from('_test_connection')

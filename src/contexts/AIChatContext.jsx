@@ -1,11 +1,7 @@
 import React, { createContext, useContext, useCallback, useMemo } from 'react';
-// Usar la versión de Supabase si existe, si no usar la versión normal
-import usePersistentChatSupabase from '../hooks/usePersistentChat.supabase';
-import usePersistentChatLocal from '../hooks/usePersistentChat';
+// Por ahora usar solo la versión local hasta que configuremos Supabase completamente
+import usePersistentChat from '../hooks/usePersistentChat';
 import useChatInput from '../hooks/useChatInput';
-
-// Detectar si debemos usar Supabase basado en si el usuario está autenticado con Supabase
-const usePersistentChat = window.localStorage.getItem('venezia-auth') ? usePersistentChatSupabase : usePersistentChatLocal;
 import useVoiceRecognition from '../hooks/useVoiceRecognition';
 import useConnectionStatus from '../hooks/useConnectionStatus';
 import { getCachedResponse, setCachedResponse } from '../utils/chatCache';
@@ -17,7 +13,22 @@ const getBusinessData = async () => {
   try {
     console.log('🔄 Obteniendo datos reales del backend...');
     
-    // Obtener datos reales del backend
+    // Obtener contexto completo desde SuperBot endpoint
+    const superBotResponse = await fetch('/api/superbot/business-context', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    }).catch(e => ({ ok: false, error: e }));
+    
+    if (superBotResponse.ok) {
+      const contextData = await superBotResponse.json();
+      if (contextData.success) {
+        console.log('✅ Contexto completo obtenido desde SuperBot:', contextData.data);
+        return contextData.data;
+      }
+    }
+    
+    // Fallback a endpoints individuales si SuperBot no está disponible
     const [dashboardResponse, productsResponse, lowStockResponse] = await Promise.all([
       fetch('/api/dashboard/overview').catch(e => ({ ok: false, error: e })),
       fetch('/api/products').catch(e => ({ ok: false, error: e })),
@@ -97,12 +108,49 @@ const getBusinessData = async () => {
   }
 };
 
-// Funciones para ejecutar acciones REALES en el backend
+// Funciones para ejecutar acciones REALES en el backend usando SuperBot
 const executeBusinessAction = async (action, params, messageId = null) => {
   try {
-    console.log('🚀 Ejecutando acción real:', action, params);
+    console.log('🚀 SuperBot ejecutando acción real:', action, params);
     
-    let result = null;
+    // Usar el endpoint unificado del SuperBot
+    const response = await fetch('/api/superbot/execute-action', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({
+        action,
+        params,
+        messageId
+      })
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      console.log('✅ Acción SuperBot completada:', result);
+      return result;
+    } else {
+      const errorData = await response.json().catch(() => ({ message: 'Error desconocido' }));
+      return {
+        success: false,
+        message: `❌ Error del servidor: ${errorData.message || 'No se pudo completar la acción'}`
+      };
+    }
+
+  } catch (error) {
+    console.error('❌ Error ejecutando acción SuperBot:', error);
+    
+    // Fallback a endpoints individuales para compatibilidad
+    return await executeBusinessActionFallback(action, params);
+  }
+};
+
+// Fallback a endpoints individuales para compatibilidad
+const executeBusinessActionFallback = async (action, params) => {
+  try {
+    console.log('🔄 Usando fallback para acción:', action, params);
     
     switch (action) {
       case 'add_stock':
@@ -182,7 +230,7 @@ const executeBusinessAction = async (action, params, messageId = null) => {
     };
 
   } catch (error) {
-    console.error('❌ Error ejecutando acción:', error);
+    console.error('❌ Error en fallback:', error);
     return {
       success: false,
       message: `❌ Error de conexión: ${error.message}`
@@ -365,14 +413,18 @@ export const AIChatProvider = ({ children }) => {
     }
   }, [messages, addMessage, clearInput, setIsLoading, selectedModel]);
 
-  // Quick actions para heladería
+  // Quick actions para heladería con comandos SuperBot
   const quickActions = useMemo(() => [
     { id: 'sales', icon: '📊', text: '📊 ¿Cómo van las ventas hoy?' },
     { id: 'stock', icon: '📦', text: '📦 ¿Qué productos necesito reponer?' },
     { id: 'flavors', icon: '🍦', text: '🍦 ¿Cuáles son mis sabores más vendidos?' },
-    { id: 'add_stock', icon: '➕', text: '➕ Quiero agregar stock a mis productos' },
-    { id: 'new_flavor', icon: '🆕', text: '🆕 Crear un nuevo sabor de helado' },
-    { id: 'change_prices', icon: '💰', text: '💰 Cambiar precios de mis productos' }
+    { id: 'add_stock', icon: '➕', text: '➕ Agregar 10 kg de chocolate' },
+    { id: 'new_flavor', icon: '🆕', text: '🆕 Crear helado de pistacho $5000' },
+    { id: 'change_prices', icon: '💰', text: '💰 Cambiar precio del helado de vainilla $4800' },
+    { id: 'low_stock', icon: '⚠️', text: '⚠️ Productos con stock bajo' },
+    { id: 'register_sale', icon: '🛒', text: '🛒 Registrar venta de 3 helados de fresa' },
+    { id: 'production', icon: '🏭', text: '🏭 Hacer 20 helados de chocolate' },
+    { id: 'help', icon: '❓', text: '❓ ¿Qué comandos puedo usar?' }
   ], []);
 
   // Manejar quick action

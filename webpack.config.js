@@ -1,7 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const { GenerateSW } = require('workbox-webpack-plugin');
+// const { GenerateSW } = require('workbox-webpack-plugin'); // Removed - not using PWA
 const webpack = require('webpack');
 const dotenv = require('dotenv');
 
@@ -100,12 +100,16 @@ module.exports = (env, argv) => {
     plugins: [
       // Define environment variables
       new webpack.DefinePlugin({
-        'process.env': JSON.stringify(process.env),
+        'process.env': JSON.stringify({
+          ...process.env,
+          REACT_APP_GEMINI_API_KEY: process.env.REACT_APP_GEMINI_API_KEY || env.REACT_APP_GEMINI_API_KEY
+        }),
         'import.meta.env': JSON.stringify({
           VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL || env.VITE_SUPABASE_URL,
           VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || env.VITE_SUPABASE_ANON_KEY,
           VITE_API_URL: process.env.VITE_API_URL || env.VITE_API_URL || 'http://localhost:5002/api',
-          VITE_APP_NAME: process.env.VITE_APP_NAME || env.VITE_APP_NAME || 'Venezia Ice Cream'
+          VITE_APP_NAME: process.env.VITE_APP_NAME || env.VITE_APP_NAME || 'Venezia Ice Cream',
+          REACT_APP_GEMINI_API_KEY: process.env.REACT_APP_GEMINI_API_KEY || env.REACT_APP_GEMINI_API_KEY
         })
       }),
       new HtmlWebpackPlugin({
@@ -133,38 +137,6 @@ module.exports = (env, argv) => {
       ...(isProduction ? [
         new MiniCssExtractPlugin({
           filename: '[name].[contenthash].css',
-        }),
-        new GenerateSW({
-          clientsClaim: true,
-          skipWaiting: true,
-          runtimeCaching: [{
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\//,
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'google-fonts-stylesheets',
-            },
-          }, {
-            urlPattern: /^https:\/\/fonts\.gstatic\.com\//,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-webfonts',
-              expiration: {
-                maxEntries: 30,
-                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 año
-              },
-            },
-          }, {
-            urlPattern: /\/api\//,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              networkTimeoutSeconds: 3,
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 5, // 5 minutos
-              },
-            },
-          }]
         })
       ] : [])
     ],

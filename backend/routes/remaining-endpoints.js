@@ -1,9 +1,13 @@
 const { runAsync, getAsync, allAsync } = require('../database/db');
 const aiRoutes = require('./ai');
+const superBotRoutes = require('./superbot');
 
 module.exports = (app) => {
   // ==================== AI ROUTES ====================
   app.use('/api/ai', aiRoutes);
+  
+  // ==================== SUPER-BOT ROUTES ====================
+  app.use('/api/superbot', superBotRoutes);
   // ==================== PRODUCT CATEGORIES ====================
   app.get('/api/product_categories', async (req, res) => {
     try {
@@ -616,6 +620,222 @@ module.exports = (app) => {
       res.status(500).json({
         success: false,
         message: 'Error fetching customer analytics',
+        error: error.message
+      });
+    }
+  });
+
+  // ==================== POS DELIVERY INTEGRATION ====================
+  app.post('/api/pos/create-delivery-order', async (req, res) => {
+    try {
+      const { items, customer, payment_method, discount, total, delivery_address, delivery_phone, estimated_time, notes } = req.body;
+      
+      if (!delivery_address || !delivery_phone) {
+        return res.status(400).json({
+          success: false,
+          message: 'Dirección y teléfono de entrega son requeridos'
+        });
+      }
+      
+      // Create or find customer
+      let customerId = null;
+      if (customer && customer.name) {
+        const existingCustomer = await getAsync(
+          'SELECT id FROM customers WHERE name = ? OR phone = ?',
+          [customer.name, customer.phone || delivery_phone]
+        );
+        
+        if (existingCustomer) {
+          customerId = existingCustomer.id;
+          // Update customer address if provided
+          await runAsync(
+            'UPDATE customers SET address = ?, phone = ? WHERE id = ?',
+            [delivery_address, delivery_phone, customerId]
+          );
+        } else {
+          const result = await runAsync(
+            'INSERT INTO customers (name, phone, email, address) VALUES (?, ?, ?, ?)',
+            [customer.name, delivery_phone, customer.email || '', delivery_address]
+          );
+          customerId = result.id;
+        }
+      }
+      
+      // Create sale
+      const saleResult = await runAsync(
+        'INSERT INTO sales (customer_id, store_id, user_id, total, payment_method, sale_type) VALUES (?, ?, ?, ?, ?, ?)',
+        [customerId, 1, 1, total, payment_method || 'cash', 'delivery']
+      );
+      
+      // Add sale items and update stock
+      const stockUpdated = [];
+      for (const item of items) {
+        await runAsync(
+          'INSERT INTO sale_items (sale_id, product_id, quantity, unit_price, subtotal) VALUES (?, ?, ?, ?, ?)',
+          [saleResult.id, item.product_id, item.quantity, item.price || 0, (item.price || 0) * item.quantity]
+        );
+        
+        // Update product stock
+        const stockResult = await runAsync(
+          'UPDATE products SET current_stock = current_stock - ? WHERE id = ?',
+          [item.quantity, item.product_id]
+        );
+        
+        stockUpdated.push({
+          product_id: item.product_id,
+          quantity_deducted: item.quantity
+        });
+      }
+      
+      // Create delivery record
+      const deliveryResult = await runAsync(
+        `INSERT INTO deliveries (
+          sale_id, customer_name, customer_phone, address, 
+          total_amount, status, estimated_time, notes, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+        [
+          saleResult.id,
+          customer.name || 'Cliente sin nombre',
+          delivery_phone,
+          delivery_address,
+          total,
+          'pending',
+          estimated_time || '30-45 minutos',
+          notes || ''
+        ]
+      );
+      
+      // Update customer stats if applicable
+      if (customerId) {
+        await runAsync(
+          `UPDATE customers 
+           SET total_orders = total_orders + 1,
+               total_spent = total_spent + ?,
+               last_order_date = CURRENT_TIMESTAMP
+           WHERE id = ?`,
+          [total, customerId]
+        );
+      }
+      
+      // Add to cash flow if payment is cash
+      if (payment_method === 'cash') {
+        const CashFlow = require('../models/CashFlow');
+        await CashFlow.addMovement(1, 1, 'income', total, `Venta Delivery #${saleResult.id}`, saleResult.id);
+      }
+      
+      res.json({
+        success: true,
+        message: 'Orden de delivery creada exitosamente',
+        receipt_number: `DEL-${saleResult.id.toString().padStart(6, '0')}`,
+        sale: {
+          id: saleResult.id,
+          total,
+          payment_method,
+          type: 'delivery'
+        },
+        delivery: {
+          id: deliveryResult.id,
+          estimated_time,
+          status: 'pending'
+        },
+        stock_updated: stockUpdated
+      });
+    } catch (error) {
+      console.error('Error creating delivery order:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error al crear orden de delivery',
+        error: error.message
+      });
+    }
+  });
+
+  // ==================== DELIVERIES ACTIVE ====================
+  app.get('/api/deliveries/active', async (req, res) => {
+    try {
+      const activeDeliveries = await allAsync(`
+        SELECT d.*, s.total as sale_total
+        FROM deliveries d
+        LEFT JOIN sales s ON d.sale_id = s.id
+        WHERE d.status IN ('pending', 'assigned', 'in_transit')
+        ORDER BY 
+          CASE d.status 
+            WHEN 'in_transit' THEN 1
+            WHEN 'assigned' THEN 2
+            WHEN 'pending' THEN 3
+          END,
+          d.created_at ASC
+      `);
+      
+      res.json({
+        success: true,
+        data: activeDeliveries
+      });
+    } catch (error) {
+      console.error('Error fetching active deliveries:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error fetching active deliveries',
+        error: error.message
+      });
+    }
+  });
+
+  // ==================== POS LIVE METRICS ====================
+  app.get('/api/pos/live-metrics', async (req, res) => {
+    try {
+      // Today's metrics
+      const todayStats = await getAsync(`
+        SELECT 
+          COUNT(*) as sales_count,
+          COALESCE(SUM(total), 0) as sales_total,
+          COALESCE(AVG(total), 0) as avg_ticket
+        FROM sales
+        WHERE DATE(created_at) = DATE('now')
+      `);
+      
+      // Items sold today
+      const itemsSold = await getAsync(`
+        SELECT COALESCE(SUM(si.quantity), 0) as items_count
+        FROM sale_items si
+        INNER JOIN sales s ON si.sale_id = s.id
+        WHERE DATE(s.created_at) = DATE('now')
+      `);
+      
+      // Efficiency calculation (sales per hour)
+      const currentHour = new Date().getHours();
+      const efficiency = currentHour > 0 ? (todayStats.sales_count / currentHour).toFixed(1) : '0.0';
+      
+      // Delivery metrics
+      const deliveryStats = await getAsync(`
+        SELECT 
+          COUNT(*) as total_deliveries,
+          COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_deliveries,
+          COUNT(CASE WHEN status = 'in_transit' THEN 1 END) as in_transit_deliveries
+        FROM deliveries
+        WHERE DATE(created_at) = DATE('now')
+      `);
+      
+      res.json({
+        success: true,
+        data: {
+          todaySales: todayStats.sales_total || 0,
+          salesCount: todayStats.sales_count || 0,
+          avgTicket: todayStats.avg_ticket || 0,
+          itemsSold: itemsSold.items_count || 0,
+          efficiency: parseFloat(efficiency),
+          deliveries: {
+            total: deliveryStats.total_deliveries || 0,
+            pending: deliveryStats.pending_deliveries || 0,
+            in_transit: deliveryStats.in_transit_deliveries || 0
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching POS live metrics:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error fetching live metrics',
         error: error.message
       });
     }

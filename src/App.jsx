@@ -3,10 +3,12 @@ import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import { useAuthStore } from './store/authStore.supabase';
-import { useSocket } from './services/socket';
+import { useSocket } from './services/socketMock';
 import { useToast } from './hooks/useToast';
 import { ToastContainer } from './components/ui/Toast';
-import ErrorBoundary, { RouteErrorBoundary } from './components/ErrorBoundary';
+import ErrorBoundary from './components/errors/ErrorBoundary';
+import ErrorToast from './components/errors/ErrorToast';
+import { useErrorHandler } from './hooks/useErrorHandler';
 import NetworkStatus from './components/NetworkStatus';
 import useKeyboardShortcuts from './hooks/useKeyboardShortcuts';
 import useVoiceCommands from './hooks/useVoiceCommands';
@@ -27,6 +29,7 @@ import VoiceCommandIndicator from './components/ui/VoiceCommandIndicator';
 import KeyboardShortcutsModal from './components/ui/KeyboardShortcutsModal';
 import PerformanceTracker from './components/ui/PerformanceTracker';
 import AlertPanel from './components/alerts/AlertPanel';
+import OfflineIndicator from './components/ui/OfflineIndicator';
 import './styles/focus-mode.css';
 
 // Lazy loading de páginas para mejor performance
@@ -48,9 +51,12 @@ const POS = React.lazy(() => import('./pages/POS'));
 const Stores = React.lazy(() => import('./pages/Stores'));
 const Transactions = React.lazy(() => import('./pages/Transactions'));
 const BatchAssignmentPage = React.lazy(() => import('./pages/BatchAssignment'));
+const WebShop = React.lazy(() => import('./pages/ModernWebShop'));
 const Customers = React.lazy(() => import('./pages/Customers'));
 const CashFlow = React.lazy(() => import('./pages/CashFlow'));
 const Temperature = React.lazy(() => import('./pages/Temperature'));
+const BranchManagement = React.lazy(() => import('./pages/BranchManagement'));
+const CorporateDashboard = React.lazy(() => import('./pages/CorporateDashboard'));
 
 // Layout principal con sidebar y header
 const AppLayout = ({ children, globalSearchOpen, setGlobalSearchOpen, shortcutsModalOpen, setShortcutsModalOpen }) => {
@@ -79,7 +85,7 @@ const AppLayout = ({ children, globalSearchOpen, setGlobalSearchOpen, shortcutsM
   }, [setSidebarOpen]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex compact-ui">
       {/* Sidebar - no afecta el layout en móvil */}
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
@@ -181,6 +187,7 @@ function App() {
   const { checkAuth, isLoading, darkMode, setDarkMode } = useAuthStore();
   const { socket } = useSocket();
   const { toasts, removeToast, success, error, warning, info } = useToast();
+  const { handleError, handleAsyncError, isOnline } = useErrorHandler();
   const navigate = useNavigate();
   
   // Hooks para funcionalidades avanzadas
@@ -221,8 +228,17 @@ function App() {
 
   // Verificar autenticación al cargar la app
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+    handleAsyncError(
+      () => checkAuth(),
+      {
+        retries: 2,
+        onError: (error) => {
+          console.error('Auth check failed:', error);
+          error('Error de autenticación', 'No se pudo verificar la sesión');
+        }
+      }
+    );
+  }, [checkAuth, handleAsyncError, error]);
 
   // Handler para shortcuts de teclado
   useEffect(() => {
@@ -477,11 +493,17 @@ function App() {
         {/* Sistema de notificaciones Toast personalizado */}
         <ToastContainer toasts={toasts} onRemove={removeToast} />
         
+        {/* Error notifications */}
+        <ErrorToast />
+        
         {/* Monitor de estado de red */}
         <NetworkStatus />
         
         {/* Indicador de actualización de caché */}
         <CacheStatus />
+        
+        {/* Indicador de modo offline */}
+        <OfflineIndicator />
         
         <Suspense 
           fallback={
@@ -490,10 +512,13 @@ function App() {
             </div>
           }
         >
-          <RouteErrorBoundary>
+          <ErrorBoundary level="page">
             <Routes>
           {/* Ruta de login */}
           <Route path="/login" element={<Login />} />
+          
+          {/* Ruta pública de la tienda web */}
+          <Route path="/webshop" element={<WebShop />} />
           
           {/* Rutas protegidas */}
           <Route path="/" element={
@@ -655,10 +680,22 @@ function App() {
             </ProtectedRoute>
           } />
           
+          <Route path="/branches" element={
+            <ProtectedRoute globalSearchOpen={globalSearchOpen} setGlobalSearchOpen={setGlobalSearchOpen} shortcutsModalOpen={shortcutsModalOpen} setShortcutsModalOpen={setShortcutsModalOpen}>
+              <BranchManagement />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/corporate-dashboard" element={
+            <ProtectedRoute globalSearchOpen={globalSearchOpen} setGlobalSearchOpen={setGlobalSearchOpen} shortcutsModalOpen={shortcutsModalOpen} setShortcutsModalOpen={setShortcutsModalOpen}>
+              <CorporateDashboard />
+            </ProtectedRoute>
+          } />
+          
           {/* Ruta 404 */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
-      </RouteErrorBoundary>
+      </ErrorBoundary>
     </Suspense>
   </div>
 </ErrorBoundary>
