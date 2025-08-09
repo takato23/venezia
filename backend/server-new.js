@@ -10,7 +10,7 @@ const CashFlow = require('./models/CashFlow');
 const Product = require('./models/Product');
 
 const app = express();
-const PORT = process.env.PORT || 5002;
+const PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(cors());
