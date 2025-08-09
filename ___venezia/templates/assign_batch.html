@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}Asignar Lote - Sistema de Gestión de Helados{% endblock %}
+
+{% block extra_css %}
+<style>
+    #qr-video {
+        width: 100%;
+        max-width: 640px;
+        margin: 0 auto;
+    }
+    #qr-canvas {
+        display: none;
+    }
+    .scanner-container {
+        position: relative;
+        width: 80%;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .scanner-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border: 2px solid #0d6efd;
+        border-radius: 8px;
+        pointer-events: none;
+    }
+    #qr-video {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 480px !important;
+        object-fit: cover;
+    }
+    .scanner-container div {
+        width: 100% !important;
+        min-height: 480px !important;
+    }
+    .scanner-container div img {
+        width: 100% !important;
+        height: auto !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Asignar Lote a Tienda</h1>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Lotes Disponibles</h5>
+                </div>
+                <div class="card-body">
+                    <h5>Lotes disponibles</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Lote</th>
+                                    <th>Sabor</th>
+                                    <th>Cantidad (kg)</th>
+                                    <th>Fecha</th>
+                                    <th>Operador</th>
+                                    <th>Estado</th>
+                                    <th>Seleccionar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for production in productions %}
+                                {% if production.end_time and not production.assigned_store_id %}
+                                <tr>
+                                    <td>{{ production.batch_number }}</td>
+                                    <td>{{ production.flavor }}</td>
+                                    <td>{{ "%.2f"|format(production.quantity) }}</td>
+                                    <td>{{ production.production_date.strftime('%d/%m/%Y %H:%M') }}</td>
+                                    <td>{{ production.operator }}</td>
+                                    <td><span class="badge bg-primary">En Stock</span></td>
+                                    <td>
+                                        <button class="btn btn-primary btn-sm" onclick="selectBatch('{{ production.batch_number }}', '{{ production.flavor }}', {{ production.quantity }})">
+                                            <i class="fas fa-check"></i> Seleccionar
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Escanear QR</h5>
+                </div>
+                <div class="card-body">
+                    <div class="scanner-container mb-3">
+                        <video id="qr-video" playsinline></video>
+                        <div class="scanner-overlay"></div>
+                    </div>
+                    <canvas id="qr-canvas"></canvas>
+                    <div class="d-grid gap-2">
+                        <button id="start-camera" class="btn btn-primary">
+                            <i class="bi bi-camera"></i> Iniciar Cámara
+                        </button>
+                        <div id="qr-success" class="alert alert-success d-none">
+                            QR detectado exitosamente
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Asignar a Tienda</h5>
+                </div>
+                <div class="card-body">
+                    <form id="assign-form" method="POST">
+                        <div class="mb-3">
+                            <label for="batch_number" class="form-label">Número de Lote</label>
+                            <input type="text" class="form-control" id="batch_number" name="batch_number" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="store_id" class="form-label">Seleccionar Tienda</label>
+                            <select class="form-select" id="store_id" name="store_id" required>
+                                <option value="">Seleccione una tienda</option>
+                                {% for store in stores %}
+                                <option value="{{ store.id }}">{{ store.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="quantity" class="form-label">Cantidad (KG)</label>
+                            <input type="number" step="0.01" min="0" class="form-control" id="quantity" name="quantity" required>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Asignar Lote
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script>
+// Add click handler for production rows
+document.querySelectorAll('table tbody tr').forEach(row => {
+    row.addEventListener('click', function() {
+        const batchNumber = this.querySelector('td:first-child')?.textContent;
+        if (batchNumber) {
+            document.getElementById('batch_number').value = batchNumber;
+        }
+    });
+});
+
+const video = document.getElementById('qr-video');
+const canvas = document.getElementById('qr-canvas');
+const ctx = canvas.getContext('2d');
+let stream = null;
+
+document.getElementById('start-camera').addEventListener('click', async () => {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: "environment" }
+        });
+        video.srcObject = stream;
+        video.play();
+        requestAnimationFrame(tick);
+    } catch (err) {
+        console.error('Error accessing camera:', err);
+        alert('Error al acceder a la cámara. Por favor, asegúrese de que tiene una cámara conectada y ha dado los permisos necesarios.');
+    }
+});
+
+function parseQRData(qrData) {
+    try {
+        return JSON.parse(qrData);
+    } catch (e) {
+        console.error('Error parsing QR data:', e);
+        return null;
+    }
+}
+
+function tick() {
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+        
+        if (code) {
+            const productionData = parseQRData(code.data);
+            
+            if (productionData) {
+                // Update form fields
+                document.getElementById('batch_number').value = productionData.batch_number || '';
+                document.getElementById('quantity').value = (productionData.quantity || '').replace(' KG', '');
+                
+                // Show production details in success message
+                const successAlert = document.getElementById('qr-success');
+                successAlert.innerHTML = `
+                    <strong>QR detectado exitosamente</strong><br>
+                    Lote: ${productionData.batch_number || ''}<br>
+                    Sabor: ${productionData.flavor || ''}<br>
+                    Cantidad: ${productionData.quantity || ''}<br>
+                    Fecha: ${productionData.production_date || ''}
+                `;
+                
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    video.srcObject = null;
+                    successAlert.classList.remove('d-none');
+                    setTimeout(() => {
+                        successAlert.classList.add('d-none');
+                    }, 5000);
+                }
+                return;
+            }
+        }
+    }
+    requestAnimationFrame(tick);
+}
+
+document.getElementById('assign-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    
+    try {
+        const response = await fetch('/assign_batch', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Lote asignado exitosamente');
+            location.reload();
+        } else {
+            alert(result.error || 'Error al asignar lote');
+        }
+    } catch (err) {
+        console.error('Error:', err);
+        alert('Error al procesar la solicitud');
+    }
+});
+</script>
+{% endblock %}

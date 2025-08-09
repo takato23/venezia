@@ -6,7 +6,7 @@ import { useAuthStore } from './store/authStore.supabase';
 import { useSocket } from './services/socketMock';
 import { useToast } from './hooks/useToast';
 import { ToastContainer } from './components/ui/Toast';
-import ErrorBoundary from './components/errors/ErrorBoundary';
+import ErrorBoundary from './components/ErrorBoundary';
 import ErrorToast from './components/errors/ErrorToast';
 import { useErrorHandler } from './hooks/useErrorHandler';
 import NetworkStatus from './components/NetworkStatus';
@@ -34,7 +34,6 @@ import './styles/focus-mode.css';
 
 // Lazy loading de páginas para mejor performance
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
-const Sales = React.lazy(() => import('./pages/Sales'));
 const Inventory = React.lazy(() => import('./pages/Inventory'));
 const Production = React.lazy(() => import('./pages/Production'));
 const Analytics = React.lazy(() => import('./pages/Analytics'));
@@ -43,20 +42,20 @@ const Settings = React.lazy(() => import('./pages/Settings'));
 const Providers = React.lazy(() => import('./pages/Providers'));
 const WebUsers = React.lazy(() => import('./pages/WebUsers'));
 const Products = React.lazy(() => import('./pages/Products'));
-const AIAssistantPage = React.lazy(() => import('./pages/AIAssistant'));
 const Login = React.lazy(() => import('./pages/Login'));
 const Deliveries = React.lazy(() => import('./pages/Deliveries'));
 const Reports = React.lazy(() => import('./pages/Reports'));
-const POS = React.lazy(() => import('./pages/POS'));
+const POS = React.lazy(() => import('./pages/SimplePOS'));
 const Stores = React.lazy(() => import('./pages/Stores'));
+const StoreDetails = React.lazy(() => import('./pages/StoreDetails'));
 const Transactions = React.lazy(() => import('./pages/Transactions'));
-const BatchAssignmentPage = React.lazy(() => import('./pages/BatchAssignment'));
-const WebShop = React.lazy(() => import('./pages/ModernWebShop'));
 const Customers = React.lazy(() => import('./pages/Customers'));
 const CashFlow = React.lazy(() => import('./pages/CashFlow'));
-const Temperature = React.lazy(() => import('./pages/Temperature'));
 const BranchManagement = React.lazy(() => import('./pages/BranchManagement'));
 const CorporateDashboard = React.lazy(() => import('./pages/CorporateDashboard'));
+// Admin: Códigos (admin-only)
+const AdminCodigosPage = React.lazy(() => import('./pages/admin/codigos'));
+import PermissionGuard from './components/auth/PermissionGuard';
 
 // Layout principal con sidebar y header
 const AppLayout = ({ children, globalSearchOpen, setGlobalSearchOpen, shortcutsModalOpen, setShortcutsModalOpen }) => {
@@ -101,6 +100,7 @@ const AppLayout = ({ children, globalSearchOpen, setGlobalSearchOpen, shortcutsM
         {/* Main content con scroll independiente */}
         <main className={clsx(
           'flex-1 overflow-y-auto overflow-x-hidden', // Scroll independiente
+          'bg-gray-50 dark:bg-gray-900', // Fondo claro/oscuro
           'p-4 lg:p-6',
           isMobile ? 'pb-20' : '', // Espacio para nav móvil
           'custom-scrollbar' // Scrollbar personalizado
@@ -212,8 +212,10 @@ function App() {
     // Aplicar al DOM
     if (shouldUseDarkMode) {
       document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
     }
   }, []);
 
@@ -221,8 +223,10 @@ function App() {
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
     }
   }, [darkMode]);
 
@@ -517,8 +521,6 @@ function App() {
           {/* Ruta de login */}
           <Route path="/login" element={<Login />} />
           
-          {/* Ruta pública de la tienda web */}
-          <Route path="/webshop" element={<WebShop />} />
           
           {/* Rutas protegidas */}
           <Route path="/" element={
@@ -532,12 +534,20 @@ function App() {
               <Dashboard />
             </ProtectedRoute>
           } />
-          
-          <Route path="/sales/*" element={
-            <ProtectedRoute globalSearchOpen={globalSearchOpen} setGlobalSearchOpen={setGlobalSearchOpen} shortcutsModalOpen={shortcutsModalOpen} setShortcutsModalOpen={setShortcutsModalOpen}>
-              <Sales />
+          {/* Admin Codes (admin-only) */}
+          <Route path="/admin/codigos" element={
+            <ProtectedRoute
+              globalSearchOpen={globalSearchOpen}
+              setGlobalSearchOpen={setGlobalSearchOpen}
+              shortcutsModalOpen={shortcutsModalOpen}
+              setShortcutsModalOpen={setShortcutsModalOpen}
+            >
+              <PermissionGuard permission="admin.all">
+                <AdminCodigosPage />
+              </PermissionGuard>
             </ProtectedRoute>
           } />
+          
           
           <Route path="/inventory/*" element={
             <ProtectedRoute globalSearchOpen={globalSearchOpen} setGlobalSearchOpen={setGlobalSearchOpen} shortcutsModalOpen={shortcutsModalOpen} setShortcutsModalOpen={setShortcutsModalOpen}>
@@ -545,23 +555,13 @@ function App() {
             </ProtectedRoute>
           } />
           
-          <Route path="/ingredients" element={
-            <ProtectedRoute globalSearchOpen={globalSearchOpen} setGlobalSearchOpen={setGlobalSearchOpen} shortcutsModalOpen={shortcutsModalOpen} setShortcutsModalOpen={setShortcutsModalOpen}>
-              <Inventory />
-            </ProtectedRoute>
-          } />
           
           <Route path="/recipes" element={
             <ProtectedRoute globalSearchOpen={globalSearchOpen} setGlobalSearchOpen={setGlobalSearchOpen} shortcutsModalOpen={shortcutsModalOpen} setShortcutsModalOpen={setShortcutsModalOpen}>
-              <Inventory />
+              <Production />
             </ProtectedRoute>
           } />
           
-          <Route path="/stock" element={
-            <ProtectedRoute globalSearchOpen={globalSearchOpen} setGlobalSearchOpen={setGlobalSearchOpen} shortcutsModalOpen={shortcutsModalOpen} setShortcutsModalOpen={setShortcutsModalOpen}>
-              <Inventory />
-            </ProtectedRoute>
-          } />
           
           <Route path="/transactions" element={
             <ProtectedRoute globalSearchOpen={globalSearchOpen} setGlobalSearchOpen={setGlobalSearchOpen} shortcutsModalOpen={shortcutsModalOpen} setShortcutsModalOpen={setShortcutsModalOpen}>
@@ -581,17 +581,7 @@ function App() {
             </ProtectedRoute>
           } />
           
-          <Route path="/production-orders" element={
-            <ProtectedRoute globalSearchOpen={globalSearchOpen} setGlobalSearchOpen={setGlobalSearchOpen} shortcutsModalOpen={shortcutsModalOpen} setShortcutsModalOpen={setShortcutsModalOpen}>
-              <Production />
-            </ProtectedRoute>
-          } />
           
-          <Route path="/batch-assignment" element={
-            <ProtectedRoute globalSearchOpen={globalSearchOpen} setGlobalSearchOpen={setGlobalSearchOpen} shortcutsModalOpen={shortcutsModalOpen} setShortcutsModalOpen={setShortcutsModalOpen}>
-              <BatchAssignmentPage />
-            </ProtectedRoute>
-          } />
           
           <Route path="/analytics/*" element={
             <ProtectedRoute globalSearchOpen={globalSearchOpen} setGlobalSearchOpen={setGlobalSearchOpen} shortcutsModalOpen={shortcutsModalOpen} setShortcutsModalOpen={setShortcutsModalOpen}>
@@ -623,6 +613,12 @@ function App() {
             </ProtectedRoute>
           } />
           
+          <Route path="/stores/:id" element={
+            <ProtectedRoute globalSearchOpen={globalSearchOpen} setGlobalSearchOpen={setGlobalSearchOpen} shortcutsModalOpen={shortcutsModalOpen} setShortcutsModalOpen={setShortcutsModalOpen}>
+              <StoreDetails />
+            </ProtectedRoute>
+          } />
+          
           <Route path="/web-users/*" element={
             <ProtectedRoute globalSearchOpen={globalSearchOpen} setGlobalSearchOpen={setGlobalSearchOpen} shortcutsModalOpen={shortcutsModalOpen} setShortcutsModalOpen={setShortcutsModalOpen}>
               <WebUsers />
@@ -647,11 +643,6 @@ function App() {
             </ProtectedRoute>
           } />
           
-          <Route path="/temperature/*" element={
-            <ProtectedRoute globalSearchOpen={globalSearchOpen} setGlobalSearchOpen={setGlobalSearchOpen} shortcutsModalOpen={shortcutsModalOpen} setShortcutsModalOpen={setShortcutsModalOpen}>
-              <Temperature />
-            </ProtectedRoute>
-          } />
           
           <Route path="/reports/*" element={
             <ProtectedRoute globalSearchOpen={globalSearchOpen} setGlobalSearchOpen={setGlobalSearchOpen} shortcutsModalOpen={shortcutsModalOpen} setShortcutsModalOpen={setShortcutsModalOpen}>
@@ -665,20 +656,6 @@ function App() {
             </ProtectedRoute>
           } />
           
-          {/* Ruta temporal sin protección para debug */}
-          <Route path="/ai-test" element={<AIAssistantPage />} />
-          
-          <Route path="/ai-assistant" element={
-            <ProtectedRoute globalSearchOpen={globalSearchOpen} setGlobalSearchOpen={setGlobalSearchOpen} shortcutsModalOpen={shortcutsModalOpen} setShortcutsModalOpen={setShortcutsModalOpen}>
-              <AIAssistantPage />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/ai-assistant/*" element={
-            <ProtectedRoute globalSearchOpen={globalSearchOpen} setGlobalSearchOpen={setGlobalSearchOpen} shortcutsModalOpen={shortcutsModalOpen} setShortcutsModalOpen={setShortcutsModalOpen}>
-              <AIAssistantPage />
-            </ProtectedRoute>
-          } />
           
           <Route path="/branches" element={
             <ProtectedRoute globalSearchOpen={globalSearchOpen} setGlobalSearchOpen={setGlobalSearchOpen} shortcutsModalOpen={shortcutsModalOpen} setShortcutsModalOpen={setShortcutsModalOpen}>

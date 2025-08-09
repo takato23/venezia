@@ -1,0 +1,313 @@
+{% extends 'base.html' %}
+
+{% block title %}Ingredientes - Sistema de Gestión de Helados{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>Ingredientes</h2>
+                <a href="{{ url_for('add_ingredient') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Nuevo Ingrediente
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Unidad</th>
+                                    <th>Stock Actual</th>
+                                    <th>Stock Mínimo</th>
+                                    <th>Costo por Unidad</th>
+                                    <th>Proveedor</th>
+                                    <th>Última Actualización</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ingredient in ingredients %}
+                                <tr>
+                                    <td>{{ ingredient.name }}</td>
+                                    <td>{{ ingredient.unit }}</td>
+                                    <td>{{ "%.2f"|format(ingredient.current_stock) }} {{ ingredient.unit }}</td>
+                                    <td>{{ "%.2f"|format(ingredient.minimum_stock) }} {{ ingredient.unit }}</td>
+                                    <td>${{ "%.2f"|format(ingredient.cost_per_unit) }}</td>
+                                    <td>{{ ingredient.supplier.name if ingredient.supplier else '-' }}</td>
+                                    <td>{{ ingredient.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        {% if ingredient.current_stock <= ingredient.minimum_stock %}
+                                            <span class="badge bg-danger">Bajo Stock</span>
+                                        {% else %}
+                                            <span class="badge bg-success">OK</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{{ url_for('add_ingredient_transaction') }}?ingredient_id={{ ingredient.id }}" 
+                                               class="btn btn-sm btn-info" title="Registrar Transacción">
+                                                <i class="fas fa-exchange-alt"></i>
+                                            </a>
+                                            <button onclick="editIngredient({{ ingredient.id }})" 
+                                                    class="btn btn-sm btn-warning" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button onclick="confirmDelete({{ ingredient.id }}, '{{ ingredient.name }}')" 
+                                                    class="btn btn-sm btn-danger" title="Eliminar">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stock Edit Modal -->
+<div class="modal fade" id="editStockModal" tabindex="-1" role="dialog" aria-labelledby="editStockModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editStockModalLabel">Editar Ingrediente</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editStockForm">
+                    <input type="hidden" id="ingredientId" name="ingredientId">
+                    <div class="form-group">
+                        <label for="ingredientName">Ingrediente</label>
+                        <input type="text" class="form-control" id="ingredientName" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="currentStock">Stock Actual</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" id="currentStock" name="currentStock" required>
+                            <div class="input-group-append">
+                                <span class="input-group-text unit-label"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="minimumStock">Stock Mínimo</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" id="minimumStock" name="minimumStock" required>
+                            <div class="input-group-append">
+                                <span class="input-group-text unit-label"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="costPerUnit">Costo por Unidad</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <input type="number" step="0.01" class="form-control" id="costPerUnit" name="costPerUnit" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierId">Proveedor</label>
+                        <select class="form-control" id="supplierId" name="supplierId">
+                            <option value="">Sin Proveedor</option>
+                            {% for provider in providers %}
+                                <option value="{{ provider.id }}">{{ provider.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="saveStockEdit()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro que deseas eliminar el ingrediente <strong id="deleteIngredientName"></strong>?</p>
+                <p class="text-danger">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" onclick="deleteIngredient()">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Set Random Stock Button -->
+<div class="mb-3">
+    <button type="button" class="btn btn-warning" onclick="setRandomStock()">
+        <i class="fas fa-random"></i> Generar Stock Aleatorio
+    </button>
+</div>
+
+<script>
+function editIngredient(id) {
+    fetch(`/api/ingredients/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('ingredientId').value = data.id;
+            document.getElementById('ingredientName').value = data.name;
+            document.getElementById('currentStock').value = data.current_stock;
+            document.getElementById('minimumStock').value = data.minimum_stock;
+            document.getElementById('costPerUnit').value = data.cost_per_unit;
+            document.getElementById('supplierId').value = data.supplier_id || '';
+            
+            // Set unit labels
+            document.querySelectorAll('.unit-label').forEach(label => {
+                label.textContent = data.unit;
+            });
+            
+            $('#editStockModal').modal('show');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire('Error', 'Error al cargar los datos del ingrediente', 'error');
+        });
+}
+
+function saveStockEdit() {
+    const formData = {
+        id: document.getElementById('ingredientId').value,
+        current_stock: document.getElementById('currentStock').value,
+        minimum_stock: document.getElementById('minimumStock').value,
+        cost_per_unit: document.getElementById('costPerUnit').value,
+        supplier_id: document.getElementById('supplierId').value || null
+    };
+
+    fetch('/api/ingredients/' + formData.id, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            $('#editStockModal').modal('hide');
+            Swal.fire({
+                title: '¡Éxito!',
+                text: 'Ingrediente actualizado correctamente',
+                icon: 'success'
+            }).then(() => {
+                window.location.reload();
+            });
+        } else {
+            Swal.fire('Error', data.error || 'Error al actualizar el ingrediente', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Error', 'Error al actualizar el ingrediente', 'error');
+    });
+}
+
+function setRandomStock() {
+    Swal.fire({
+        title: '¿Está seguro?',
+        text: 'Esto generará valores aleatorios para el stock actual y mínimo de todos los ingredientes.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, generar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('/set_random_stock', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: '¡Éxito!',
+                        text: data.message,
+                        icon: 'success'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire('Error', data.error || 'Error al generar stock aleatorio', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire('Error', 'Error al generar stock aleatorio', 'error');
+            });
+        }
+    });
+}
+
+let deleteIngredientId = null;
+
+function confirmDelete(id, name) {
+    deleteIngredientId = id;
+    document.getElementById('deleteIngredientName').textContent = name;
+    $('#deleteConfirmModal').modal('show');
+}
+
+async function deleteIngredient() {
+    if (!deleteIngredientId) return;
+    
+    try {
+        const response = await fetch(`/api/ingredients/${deleteIngredientId}`, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Error al eliminar el ingrediente');
+        }
+        
+        // Hide modal and reload page
+        $('#deleteConfirmModal').modal('hide');
+        location.reload();
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al eliminar el ingrediente');
+    }
+}
+</script>
+{% endblock %}

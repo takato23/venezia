@@ -1,0 +1,480 @@
+{% extends "base.html" %}
+
+{% block title %}Órdenes de Producción{% endblock %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@x.x.x/dist/select2-bootstrap4.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/production_orders.css') }}">
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .order-card {
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+        font-size: 24px !important;
+        padding: 30px !important;
+    }
+    
+    .order-card .card-body {
+        padding: 70px 30px 30px 30px !important;
+        position: relative;
+    }
+    
+    .order-card .btn {
+        font-size: 24px !important;
+        padding: 15px 30px !important;
+        margin: 10px !important;
+        min-width: 300px !important;
+    }
+    
+    .order-card .card-title {
+        font-size: 32px !important;
+        font-weight: 600;
+    }
+    
+    .order-card .status-badge {
+        font-size: 24px !important;
+        padding: 10px 20px !important;
+        border-radius: 9999px;
+        font-weight: 500;
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .status-pedido {
+        background-color: #fecaca;
+        border-left: 12px solid #dc2626 !important;
+    }
+    
+    .status-proceso {
+        background-color: #fef3c7;
+        border-left: 12px solid #d97706 !important;
+    }
+    
+    .status-terminado {
+        background-color: #d1fae5;
+        border-left: 12px solid #059669 !important;
+    }
+    
+    .priority-low {
+        background-color: rgba(255, 236, 153, 0.15) !important;
+        border: 2px solid #ffc107 !important;
+        border-left: 12px solid #ffc107 !important;
+    }
+    
+    .priority-medium {
+        background-color: rgba(255, 167, 38, 0.15) !important;
+        border: 2px solid #fd7e14 !important;
+        border-left: 12px solid #fd7e14 !important;
+    }
+    
+    .priority-high {
+        background-color: rgba(220, 38, 38, 0.15) !important;
+        border: 2px solid #dc2626 !important;
+        border-left: 12px solid #dc2626 !important;
+    }
+
+    .priority-indicator {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        padding: 8px 20px;
+        border-radius: 25px;
+        font-weight: bold;
+        font-size: 22px !important;
+        color: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .priority-indicator::before {
+        content: "⚡";
+        font-size: 24px !important;
+    }
+
+    .priority-indicator.high {
+        background-color: #dc2626;
+    }
+
+    .priority-indicator.medium {
+        background-color: #fd7e14;
+    }
+
+    .priority-indicator.low {
+        background-color: #ffc107;
+        color: #000;
+    }
+    
+    .btn-status {
+        border-radius: 8px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-width: 2px !important;
+    }
+    
+    .progress-container .progress-input,
+    .progress-container .input-group-text {
+        font-size: 24px !important;
+        height: auto !important;
+        padding: 10px 15px !important;
+    }
+    
+    /* Increase spacing between elements */
+    .order-card .mb-2 {
+        margin-bottom: 1rem !important;
+    }
+    
+    .order-card .mb-3 {
+        margin-bottom: 1.5rem !important;
+    }
+    
+    /* Make cards full width and larger on tablets */
+    @media (max-width: 992px) {
+        /* Reset container constraints */
+        .container-fluid {
+            padding: 0.5rem;
+            max-width: none !important;
+            width: 100% !important;
+        }
+
+        /* Reset column constraints */
+        .col-12 {
+            padding: 0 0.5rem;
+            flex: 0 0 100% !important;
+            max-width: none !important;
+            width: 100% !important;
+        }
+
+        /* Adjust card size */
+        .order-card {
+            margin-bottom: 1rem;
+            font-size: 3rem;
+            border-radius: 24px;
+            border-width: 2px;
+            width: 100% !important;
+            max-width: none !important;
+        }
+        
+        .order-card .card-body {
+            padding: 3rem;
+        }
+
+        /* Make text larger */
+        .order-card h5,
+        .order-card h6,
+        .order-card strong,
+        .order-card span:not(.input-group-text) {
+            font-size: 3rem !important;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        /* Adjust progress section */
+        .progress-container {
+            margin-top: 2rem;
+        }
+
+        .progress-container .progress-input {
+            font-size: 3rem !important;
+            height: 5rem;
+            padding: 1rem;
+        }
+        
+        .progress-container .input-group-text {
+            font-size: 3rem !important;
+            padding: 1rem 2rem;
+            height: 5rem;
+        }
+
+        .progress-container .update-progress {
+            height: 5rem;
+            width: 5rem;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Make buttons larger */
+        .order-card .btn {
+            font-size: 3rem;
+            padding: 2rem;
+            margin: 1rem 0;
+            width: 100%;
+            height: auto;
+            white-space: normal;
+            line-height: 1.2;
+        }
+
+        /* Status badge */
+        .order-card .status-badge {
+            font-size: 2.5rem;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+        }
+
+        /* Borders */
+        .status-pedido,
+        .status-proceso,
+        .status-terminado {
+            border-left-width: 1rem;
+        }
+
+        .priority-high,
+        .priority-medium,
+        .priority-low {
+            border-top-width: 1rem;
+        }
+
+        /* Stack buttons vertically */
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .status-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* Remove any flex wrapping */
+        .d-flex {
+            flex-wrap: nowrap !important;
+        }
+
+        /* Adjust spacing */
+        .mb-2 {
+            margin-bottom: 2rem !important;
+        }
+
+        .mb-3 {
+            margin-bottom: 3rem !important;
+        }
+
+        /* Make filter controls larger */
+        .form-control {
+            font-size: 2.5rem;
+            height: auto;
+            padding: 1rem;
+        }
+
+        label {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+    }
+    
+    /* Make filters bigger */
+    .form-select, select.form-select {
+        font-size: 64px !important;
+        padding: 40px !important;
+        height: auto !important;
+        border-radius: 20px !important;
+        line-height: 1.2 !important;
+    }
+    
+    /* Make filter labels bigger */
+    .form-label {
+        font-size: 64px !important;
+        margin-bottom: 30px !important;
+        font-weight: bold !important;
+        display: block !important;
+    }
+    
+    /* Adjust filter container spacing */
+    .form-group {
+        margin-bottom: 60px !important;
+    }
+    
+    /* Make filter columns wider */
+    .col-md-3 {
+        flex: 0 0 50% !important;
+        max-width: 50% !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Órdenes de Producción</h1>
+        </div>
+        <div class="col-auto">
+            <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#orderModal" style="font-size: 2.5rem; padding: 2rem 3rem;">
+                <i class="fas fa-plus" style="margin-right: 1rem;"></i> Nueva Orden
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle btn-lg btn-block" type="button" id="statusDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-size: 2.5rem; padding: 2rem;">
+                    Estado: <span id="currentStatus">Todos</span>
+                </button>
+                <div class="dropdown-menu w-100" aria-labelledby="statusDropdown" style="font-size: 2rem;">
+                    <a class="dropdown-item py-3" href="#" data-value="">Todos</a>
+                    <a class="dropdown-item py-3" href="#" data-value="pedido">Pedido</a>
+                    <a class="dropdown-item py-3" href="#" data-value="proceso">En Proceso</a>
+                    <a class="dropdown-item py-3" href="#" data-value="terminado">Terminado</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle btn-lg btn-block" type="button" id="priorityDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-size: 2.5rem; padding: 2rem;">
+                    Prioridad: <span id="currentPriority">Todas</span>
+                </button>
+                <div class="dropdown-menu w-100" aria-labelledby="priorityDropdown" style="font-size: 2rem;">
+                    <a class="dropdown-item py-3" href="#" data-value="">Todas</a>
+                    <a class="dropdown-item py-3" href="#" data-value="3">Alta</a>
+                    <a class="dropdown-item py-3" href="#" data-value="2">Media</a>
+                    <a class="dropdown-item py-3" href="#" data-value="1">Baja</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders Container -->
+    <div class="orders-container" id="ordersContainer">
+        <!-- Orders will be dynamically added here -->
+    </div>
+</div>
+
+<!-- Modal for adding/editing orders -->
+<div class="modal fade" id="orderModal" tabindex="-1" role="dialog" aria-labelledby="orderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="orderModalLabel" style="font-size: 2rem; font-weight: 500;">Orden de Producción</h3>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="font-size: 2rem;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="orderForm">
+                    <input type="hidden" id="orderId">
+                    <div class="form-group mb-4">
+                        <label for="product" class="form-label" style="font-size: 1.5rem; font-weight: 500;">Producto</label>
+                        <select class="form-control form-control-lg" id="product" required style="font-size: 1.3rem; padding: 0.8rem;">
+                        </select>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <label for="quantity" class="form-label" style="font-size: 1.5rem; font-weight: 500;">Cantidad</label>
+                            <input type="number" class="form-control form-control-lg" id="quantity" required style="font-size: 1.3rem; padding: 0.8rem;">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="unit" class="form-label" style="font-size: 1.5rem; font-weight: 500;">Unidad</label>
+                            <select class="form-control form-control-lg" id="unit" required style="font-size: 1.3rem; padding: 0.8rem;">
+                                <option value="kg">kg</option>
+                                <option value="u">u</option>
+                                <option value="l">l</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="dueDate" class="form-label" style="font-size: 1.5rem; font-weight: 500;">Fecha de Entrega</label>
+                            <input type="date" class="form-control form-control-lg" id="dueDate" required style="font-size: 1.3rem; padding: 0.8rem;">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="priority" class="form-label" style="font-size: 1.5rem; font-weight: 500;">Prioridad</label>
+                            <select class="form-control form-control-lg" id="priority" required style="font-size: 1.3rem; padding: 0.8rem;">
+                                <option value="1">Baja</option>
+                                <option value="2">Media</option>
+                                <option value="3">Alta</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="notes" class="form-label" style="font-size: 1.5rem; font-weight: 500;">Notas</label>
+                        <textarea class="form-control form-control-lg" id="notes" rows="3" style="font-size: 1.3rem; padding: 0.8rem;"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="padding: 1rem;">
+                <button type="button" class="btn btn-secondary btn-lg" data-dismiss="modal" style="font-size: 1.3rem; padding: 0.8rem 2rem;">Cancelar</button>
+                <button type="button" class="btn btn-primary btn-lg" onclick="saveOrder(event)" style="font-size: 1.3rem; padding: 0.8rem 2rem;">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Order Template -->
+<template id="orderTemplate">
+    <div class="order-card">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 class="card-title mb-0">${order.order_number}</h5>
+                    <div class="d-flex">
+                        <button class="btn btn-warning me-2 edit-order" data-id="${order.id}">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button class="btn btn-danger delete-order" data-id="${order.id}">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </div>
+                </div>
+                <h3 class="product-name mb-4">${order.product_name}</h3>
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <div class="info-label">Cantidad:</div>
+                        <div class="info-value quantity">${order.quantity}</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-label">Entrega:</div>
+                        <div class="info-value due-date">${order.due_date}</div>
+                    </div>
+                </div>
+                <div class="notes-section mb-4">
+                    <div class="info-label">Notas:</div>
+                    <div class="info-value notes">${order.notes}</div>
+                </div>
+                <div class="progress-container mb-4" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="info-label">Progreso:</div>
+                        <div class="progress-text">0 de ${order.quantity}</div>
+                    </div>
+                    <div class="input-group input-group-lg">
+                        <input type="number" class="form-control progress-input" step="0.1" min="0">
+                        <span class="input-group-text unit-label">kg</span>
+                        <button class="btn btn-outline-primary update-progress">
+                            <i class="fas fa-save"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="button-container">
+                    <div class="btn-group-vertical w-100" role="group">
+                        <button type="button" class="btn btn-lg btn-outline-secondary btn-status" data-status="pedido">📋 Pedido</button>
+                        <button type="button" class="btn btn-lg btn-outline-warning btn-status" data-status="proceso">⚙️ En Proceso</button>
+                        <button type="button" class="btn btn-lg btn-outline-success btn-status" data-status="terminado">✅ Terminado</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="{{ url_for('static', filename='js/production_orders.js') }}"></script>
+{% endblock %}

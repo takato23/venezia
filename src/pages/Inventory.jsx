@@ -403,7 +403,7 @@ const InventoryPage = () => {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Gestión de Inventario
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-gray-700 dark:text-gray-300 mt-1">
             Control de ingredientes, recetas y stock
           </p>
         </div>
@@ -461,8 +461,8 @@ const InventoryPage = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Total Ingredientes</p>
-              <p className="text-2xl font-bold mt-1">{stats.totalIngredients}</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300">Total Ingredientes</p>
+              <p className="text-2xl font-bold mt-1 text-gray-900 dark:text-white">{stats.totalIngredients}</p>
             </div>
             <Package className="w-8 h-8 text-gray-400" />
           </div>
@@ -471,7 +471,7 @@ const InventoryPage = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Stock Bajo</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300">Stock Bajo</p>
               <p className="text-2xl font-bold mt-1 text-yellow-600">{stats.lowStock}</p>
             </div>
             <TrendingDown className="w-8 h-8 text-yellow-600" />
@@ -481,7 +481,7 @@ const InventoryPage = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Sin Stock</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300">Sin Stock</p>
               <p className="text-2xl font-bold mt-1 text-red-600">{stats.outOfStock}</p>
             </div>
             <AlertTriangle className="w-8 h-8 text-red-600" />
@@ -491,8 +491,8 @@ const InventoryPage = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Valor Total</p>
-              <p className="text-2xl font-bold mt-1">${stats.totalValue.toFixed(2)}</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300">Valor Total</p>
+              <p className="text-2xl font-bold mt-1 text-gray-900 dark:text-white">${stats.totalValue.toFixed(2)}</p>
             </div>
             <TrendingUp className="w-8 h-8 text-green-600" />
           </div>
@@ -513,7 +513,7 @@ const InventoryPage = () => {
                     'flex items-center gap-2 px-6 py-3 border-b-2 transition-colors whitespace-nowrap',
                     activeTab === tab.id
                       ? 'border-venezia-600 text-venezia-600 dark:text-venezia-400'
-                      : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                      : 'border-transparent text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
                   )}
                 >
                   <Icon className="w-4 h-4" />
@@ -632,8 +632,8 @@ const InventoryPage = () => {
                   
                   {filteredIngredients.length === 0 && (
                     <div className="col-span-full text-center py-12">
-                      <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                      <p className="text-gray-500">No se encontraron ingredientes</p>
+                      <Package className="w-16 h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+                      <p className="text-gray-600 dark:text-gray-400">No se encontraron ingredientes</p>
                     </div>
                   )}
                 </div>

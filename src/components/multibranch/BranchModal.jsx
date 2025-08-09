@@ -6,9 +6,9 @@ import {
   Utensils, ShoppingBag, Building, Plus, Minus,
   Copy, Check, AlertCircle, Navigation, Star
 } from 'lucide-react';
-import { supabase } from '../../config/supabase';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
+import axios from 'axios';
 
 const BranchModal = ({ branch, onClose, onSave }) => {
   const { user } = useAuth();
@@ -175,25 +175,19 @@ const BranchModal = ({ branch, onClose, onSave }) => {
 
     setLoading(true);
     try {
+      const apiUrl = import.meta.env.VITE_API_URL || '/api';
       const dataToSave = {
         ...formData,
         organization_id: user.organization_id || 'demo'
       };
 
       if (branch) {
-        const { error } = await supabase
-          .from('branches')
-          .update(dataToSave)
-          .eq('id', branch.id);
-
-        if (error) throw error;
+        // Actualizar sucursal existente
+        await axios.put(`${apiUrl}/branches/${branch.id}`, dataToSave);
         success('Sucursal actualizada correctamente');
       } else {
-        const { error } = await supabase
-          .from('branches')
-          .insert(dataToSave);
-
-        if (error) throw error;
+        // Crear nueva sucursal
+        await axios.post(`${apiUrl}/branches`, dataToSave);
         success('Sucursal creada correctamente');
       }
 

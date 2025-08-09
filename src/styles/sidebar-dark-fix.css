@@ -13,10 +13,46 @@
   background: linear-gradient(180deg, #1f2937 0%, #111827 100%) !important;
 }
 
+/* Fix para el sidebar neumorphic con clase sb-glass */
+.dark .sb-glass {
+  background: linear-gradient(180deg, rgba(31, 41, 55, 0.95) 0%, rgba(17, 24, 39, 0.85) 100%) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Fix para el header del sidebar */
+.dark .sb-header {
+  background: rgba(31, 41, 55, 0.5) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #e5e7eb !important;
+}
+
+/* Fix para los items del sidebar */
+.dark .sb-item {
+  color: #d1d5db !important;
+}
+
+.dark .sb-item:hover {
+  background: rgba(251, 146, 60, 0.1) !important;
+  color: #f3f4f6 !important;
+}
+
+.dark .sb-item.active,
+.dark .sb-item[aria-current="page"] {
+  background: rgba(251, 146, 60, 0.15) !important;
+  color: #fbbf24 !important;
+}
+
+/* Fix para los iconos del sidebar */
+.dark .sb-icon {
+  color: currentColor !important;
+}
+
 /* Ajustar el color del borde lateral */
-.dark .border-r-primary-300,
-.dark .dark\:border-r-primary-600 {
-  border-right-color: rgba(251, 146, 60, 0.2) !important;
+.dark .border-r-venezia-300,
+.dark .dark\:border-r-venezia-600 {
+  border-right-color: rgba(225, 77, 123, 0.2) !important;
 }
 
 /* Mejorar el contraste del texto en el sidebar oscuro */
@@ -37,7 +73,7 @@
 
 .dark aside .sidebar-item:hover svg,
 .dark aside .active svg {
-  color: var(--venezia-primary-refined) !important;
+  color: var(--venezia-accent-refined) !important;
 }
 
 /* Mejorar el hover en modo oscuro */
@@ -88,17 +124,48 @@
 }
 
 .dark aside a.active {
-  color: var(--venezia-primary-refined) !important;
+  color: var(--venezia-accent-refined) !important;
   font-weight: 600;
 }
 
 /* Fix específico para NavLink activos */
 .dark aside .active {
-  color: var(--venezia-primary-refined) !important;
+  color: var(--venezia-accent-refined) !important;
 }
 
 /* Asegurar consistencia con el resto de la app */
 .dark aside {
   background-color: #1f2937 !important;
+  color: #e5e7eb !important;
+}
+
+/* Fix para el header en modo oscuro */
+.dark header.frost-overlay {
+  background: rgba(31, 41, 55, 0.95) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom-color: rgba(251, 146, 60, 0.3) !important;
+}
+
+/* Fix para elementos del header */
+.dark header .text-gray-700 {
+  color: #e5e7eb !important;
+}
+
+.dark header .text-gray-600 {
+  color: #d1d5db !important;
+}
+
+.dark header button {
+  color: #e5e7eb !important;
+}
+
+.dark header button:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Fix para el selector de sucursal */
+.dark header .bg-white {
+  background-color: #374151 !important;
   color: #e5e7eb !important;
 }

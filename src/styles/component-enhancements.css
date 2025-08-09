@@ -26,7 +26,7 @@
 
 .header-search:focus {
   background: rgba(255, 255, 255, 0.95);
-  border-color: var(--venezia-primary-refined);
+  border-color: var(--venezia-accent-refined);
   box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.1);
 }
 
@@ -37,7 +37,7 @@
 
 .dark .header-search:focus {
   background: rgba(55, 65, 81, 0.95);
-  border-color: var(--venezia-primary-refined);
+  border-color: var(--venezia-accent-refined);
 }
 
 /* 2. REFINED SIDEBAR COMPONENT */
@@ -65,12 +65,12 @@
 .sidebar-item-enhanced:hover {
   background: rgba(234, 88, 12, 0.06);
   transform: translateX(4px);
-  color: var(--venezia-primary-refined);
+  color: var(--venezia-accent-refined);
 }
 
 .sidebar-item-enhanced.active {
   background: rgba(234, 88, 12, 0.1);
-  color: var(--venezia-primary-refined);
+  color: var(--venezia-accent-refined);
   font-weight: 600;
 }
 
@@ -82,7 +82,7 @@
   transform: translateY(-50%);
   width: 3px;
   height: 60%;
-  background: var(--venezia-primary-refined);
+  background: var(--venezia-accent-refined);
   border-radius: 0 2px 2px 0;
 }
 
@@ -148,7 +148,7 @@
 /* Product price enhancement */
 .product-price-enhanced {
   font-weight: 700;
-  color: var(--venezia-primary-refined);
+  color: var(--venezia-accent-refined);
   font-size: 1.25rem;
   font-variant-numeric: tabular-nums;
 }
@@ -188,7 +188,7 @@
 .metric-value-enhanced {
   font-size: 2rem;
   font-weight: 800;
-  color: var(--venezia-primary-refined);
+  color: var(--venezia-accent-refined);
   font-variant-numeric: tabular-nums;
   line-height: 1.2;
   margin-bottom: 0.5rem;
@@ -227,7 +227,7 @@
 }
 
 .form-input-enhanced:focus {
-  border-color: var(--venezia-primary-refined);
+  border-color: var(--venezia-accent-refined);
   box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.1);
   background: rgba(255, 255, 255, 1);
   transform: translateY(-1px);
@@ -338,7 +338,7 @@
 }
 
 .badge-primary {
-  background: var(--venezia-primary-refined);
+  background: var(--venezia-accent-refined);
   color: white;
 }
 
@@ -378,14 +378,14 @@
 }
 
 .pagination-item-enhanced:hover {
-  border-color: var(--venezia-primary-refined);
+  border-color: var(--venezia-accent-refined);
   background: rgba(234, 88, 12, 0.06);
   transform: translateY(-2px);
 }
 
 .pagination-item-enhanced.active {
-  background: var(--venezia-primary-refined);
-  border-color: var(--venezia-primary-refined);
+  background: var(--venezia-accent-refined);
+  border-color: var(--venezia-accent-refined);
   color: white;
   box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
 }
@@ -402,7 +402,7 @@
   width: 2.5rem;
   height: 2.5rem;
   border: 3px solid rgba(234, 88, 12, 0.1);
-  border-left-color: var(--venezia-primary-refined);
+  border-left-color: var(--venezia-accent-refined);
   border-radius: 50%;
   animation: spin-enhanced 1s linear infinite;
 }

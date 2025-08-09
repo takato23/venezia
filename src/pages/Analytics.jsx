@@ -160,10 +160,20 @@ const AnalyticsPage = () => {
   );
 
   // Process stores data
-  const stores = Array.isArray(storesData) ? storesData : (storesData.data || []);
+  const stores = Array.isArray(storesData) ? storesData : 
+                 (storesData && storesData.data) ? storesData.data :
+                 (storesData && Array.isArray(storesData.stores)) ? storesData.stores : [];
   
   // Combined loading state
   const loading = salesLoading || productsLoading || customersLoading || storesLoading;
+
+  // Ensure data is never null for safe access
+  const safeData = {
+    sales: salesData || {},
+    products: productsData || {},
+    customers: customerData || {},
+    kpis: kpiData || {}
+  };
 
   // Refresh all data
   const refreshData = () => {
@@ -242,19 +252,19 @@ const AnalyticsPage = () => {
 
   // Prepare chart data
   const salesChartData = useMemo(() => {
-    if (!salesData.daily_sales || !Array.isArray(salesData.daily_sales)) {
+    if (!safeData.sales.daily_sales || !Array.isArray(safeData.sales.daily_sales)) {
       return null;
     }
 
     return {
-      labels: salesData.daily_sales.map(item => {
+      labels: safeData.sales.daily_sales.map(item => {
         const date = new Date(item.date);
         return date.toLocaleDateString('es-AR', { month: 'short', day: 'numeric' });
       }),
       datasets: [
         {
           label: 'Ventas',
-          data: salesData.daily_sales.map(item => item.revenue || 0),
+          data: safeData.sales.daily_sales.map(item => item.revenue || 0),
           borderColor: 'rgb(251, 191, 36)',
           backgroundColor: 'rgba(251, 191, 36, 0.1)',
           tension: 0.4,
@@ -262,10 +272,10 @@ const AnalyticsPage = () => {
         }
       ]
     };
-  }, [salesData]);
+  }, [safeData.sales]);
 
   const paymentMethodsChartData = useMemo(() => {
-    if (!salesData.payment_methods || !Array.isArray(salesData.payment_methods)) {
+    if (!safeData.sales.payment_methods || !Array.isArray(safeData.sales.payment_methods)) {
       return null;
     }
 
@@ -278,19 +288,19 @@ const AnalyticsPage = () => {
     ];
 
     return {
-      labels: salesData.payment_methods.map(item => item.method),
+      labels: safeData.sales.payment_methods.map(item => item.method),
       datasets: [
         {
-          data: salesData.payment_methods.map(item => item.amount || 0),
-          backgroundColor: colors.slice(0, salesData.payment_methods.length),
+          data: safeData.sales.payment_methods.map(item => item.amount || 0),
+          backgroundColor: colors.slice(0, safeData.sales.payment_methods.length),
           borderWidth: 0
         }
       ]
     };
-  }, [salesData]);
+  }, [safeData.sales]);
 
   const productCategoriesChartData = useMemo(() => {
-    if (!productData.by_category || !Array.isArray(productData.by_category)) {
+    if (!safeData.products.by_category || !Array.isArray(safeData.products.by_category)) {
       return null;
     }
 
@@ -486,10 +496,10 @@ const AnalyticsPage = () => {
             <div>
               <p className="text-sm font-medium text-venezia-600">Ventas Totales</p>
               <p className="text-2xl font-bold text-venezia-900">
-                ${salesData.total_sales?.toFixed(2) || '0.00'}
+                ${salesData?.total_sales?.toFixed(2) || '0.00'}
               </p>
-              <p className={`text-sm ${salesData.sales_growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {salesData.sales_growth >= 0 ? '+' : ''}{salesData.sales_growth?.toFixed(1) || '0'}% vs período anterior
+              <p className={`text-sm ${salesData?.sales_growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {salesData?.sales_growth >= 0 ? '+' : ''}{salesData?.sales_growth?.toFixed(1) || '0'}% vs período anterior
               </p>
             </div>
             <DollarSign className="h-8 w-8 text-green-600" />

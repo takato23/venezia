@@ -1,0 +1,564 @@
+{% extends "base.html" %}
+
+{% block title %}Historial de Órdenes{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .order-card {
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        margin-bottom: 1.5rem;
+    }
+    
+    .order-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .order-status {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.8rem;
+        border-radius: 9999px;
+        font-weight: 500;
+    }
+    
+    .status-completed {
+        background-color: #d1fae5;
+        color: #059669;
+    }
+    
+    .status-cancelled {
+        background-color: #fecaca;
+        color: #dc2626;
+    }
+    
+    .order-amount {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+    
+    .order-date {
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+    
+    @media (max-width: 992px) {
+        .order-card {
+            font-size: 2.5rem;
+        }
+        
+        .order-status {
+            font-size: 2rem;
+            padding: 0.8rem 1.6rem;
+        }
+        
+        .order-amount {
+            font-size: 3rem;
+        }
+        
+        .order-date {
+            font-size: 2rem;
+        }
+        
+        .btn {
+            font-size: 2.5rem;
+            padding: 1rem 2rem;
+        }
+    }
+    
+    /* Timeline styles */
+    .timeline {
+        position: relative;
+        padding-left: 3rem;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e5e7eb;
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding-bottom: 1.5rem;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -3rem;
+        top: 0;
+        width: 1rem;
+        height: 1rem;
+        border-radius: 50%;
+        background: #4f46e5;
+        border: 2px solid #fff;
+    }
+    
+    .timeline-date {
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+    
+    .timeline-content {
+        background: #fff;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row align-items-center mb-4">
+        <div class="col">
+            <h2 class="mb-0">Historial de Órdenes</h2>
+        </div>
+        <div class="col-auto">
+            <button type="button" class="btn btn-primary" id="exportHistoryBtn">
+                <i class="fas fa-file-export"></i> Exportar
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Total Órdenes</h6>
+                    <h3 class="card-title mb-0" id="totalOrders">0</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Completadas</h6>
+                    <h3 class="card-title mb-0" id="completedOrders">0</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Canceladas</h6>
+                    <h3 class="card-title mb-0" id="cancelledOrders">0</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Total Ventas</h6>
+                    <h3 class="card-title mb-0" id="totalSales">$0.00</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="dateFilter">Fecha</label>
+                <select class="form-control" id="dateFilter">
+                    <option value="all">Todo</option>
+                    <option value="today">Hoy</option>
+                    <option value="week">Esta Semana</option>
+                    <option value="month">Este Mes</option>
+                    <option value="custom">Personalizado</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-3 custom-date-range" style="display: none;">
+            <div class="form-group">
+                <label>Desde</label>
+                <input type="date" class="form-control" id="dateFrom">
+            </div>
+        </div>
+        <div class="col-md-3 custom-date-range" style="display: none;">
+            <div class="form-group">
+                <label>Hasta</label>
+                <input type="date" class="form-control" id="dateTo">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="statusFilter">Estado</label>
+                <select class="form-control" id="statusFilter">
+                    <option value="">Todos</option>
+                    <option value="completed">Completadas</option>
+                    <option value="cancelled">Canceladas</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders List -->
+    <div class="row" id="ordersContainer">
+        <!-- Orders will be dynamically inserted here -->
+    </div>
+</div>
+
+<!-- Order Card Template -->
+<template id="orderCardTemplate">
+    <div class="col-md-6 mb-4">
+        <div class="card order-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 class="card-title mb-0">Orden #<span class="order-number"></span></h5>
+                    <span class="order-status"></span>
+                </div>
+                <div class="mb-2">
+                    <strong>Cliente:</strong> <span class="client-name"></span>
+                </div>
+                <div class="mb-2">
+                    <strong>Fecha:</strong> <span class="order-date"></span>
+                </div>
+                <div class="mb-3">
+                    <strong>Total:</strong> <span class="order-amount"></span>
+                </div>
+                <div class="timeline mb-3">
+                    <!-- Timeline items will be dynamically inserted here -->
+                </div>
+                <div class="text-right">
+                    <button class="btn btn-outline-primary view-details">
+                        <i class="fas fa-eye"></i> Ver Detalles
+                    </button>
+                    <button class="btn btn-outline-success print-receipt">
+                        <i class="fas fa-print"></i> Imprimir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Timeline Item Template -->
+<template id="timelineItemTemplate">
+    <div class="timeline-item">
+        <div class="timeline-date"></div>
+        <div class="timeline-content">
+            <div class="timeline-title"></div>
+            <div class="timeline-description"></div>
+        </div>
+    </div>
+</template>
+
+<!-- Order Details Modal -->
+<div class="modal fade" id="orderDetailsModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalles de la Orden</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Order details will be dynamically inserted here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize variables
+        const ordersContainer = document.getElementById('ordersContainer');
+        const orderCardTemplate = document.getElementById('orderCardTemplate');
+        const timelineItemTemplate = document.getElementById('timelineItemTemplate');
+        const dateFilter = document.getElementById('dateFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        const exportHistoryBtn = document.getElementById('exportHistoryBtn');
+        
+        // Load initial data
+        loadOrders();
+        
+        // Add event listeners
+        dateFilter.addEventListener('change', function() {
+            const customDateRange = document.querySelectorAll('.custom-date-range');
+            customDateRange.forEach(el => {
+                el.style.display = this.value === 'custom' ? 'block' : 'none';
+            });
+            loadOrders();
+        });
+        
+        statusFilter.addEventListener('change', loadOrders);
+        exportHistoryBtn.addEventListener('click', exportHistory);
+        
+        document.getElementById('dateFrom').addEventListener('change', loadOrders);
+        document.getElementById('dateTo').addEventListener('change', loadOrders);
+        
+        async function loadOrders() {
+            try {
+                const date = dateFilter.value;
+                const status = statusFilter.value;
+                
+                let url = '/api/orders/history/';
+                const params = new URLSearchParams();
+                if (status) params.append('status', status);
+                if (date !== 'all') {
+                    if (date === 'custom') {
+                        params.append('date_from', document.getElementById('dateFrom').value);
+                        params.append('date_to', document.getElementById('dateTo').value);
+                    } else {
+                        params.append('date', date);
+                    }
+                }
+                if (params.toString()) url += '?' + params.toString();
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                // Update summary cards
+                updateSummaryCards(data.summary);
+                
+                // Clear container
+                ordersContainer.innerHTML = '';
+                
+                // Add orders
+                data.orders.forEach(order => {
+                    const orderElement = createOrderElement(order);
+                    ordersContainer.appendChild(orderElement);
+                });
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al cargar las órdenes',
+                    position: 'center'
+                });
+            }
+        }
+        
+        function updateSummaryCards(summary) {
+            document.getElementById('totalOrders').textContent = summary.total;
+            document.getElementById('completedOrders').textContent = summary.completed;
+            document.getElementById('cancelledOrders').textContent = summary.cancelled;
+            document.getElementById('totalSales').textContent = 
+                new Intl.NumberFormat('es-AR', { 
+                    style: 'currency', 
+                    currency: 'ARS' 
+                }).format(summary.sales);
+        }
+        
+        function createOrderElement(order) {
+            const template = orderCardTemplate.content.cloneNode(true);
+            const orderCard = template.querySelector('.order-card');
+            
+            // Set order data
+            orderCard.querySelector('.order-number').textContent = order.number;
+            orderCard.querySelector('.client-name').textContent = order.client_name;
+            orderCard.querySelector('.order-date').textContent = 
+                new Date(order.created_at).toLocaleDateString();
+            orderCard.querySelector('.order-amount').textContent = 
+                new Intl.NumberFormat('es-AR', { 
+                    style: 'currency', 
+                    currency: 'ARS' 
+                }).format(order.total);
+            
+            // Set status
+            const statusBadge = orderCard.querySelector('.order-status');
+            statusBadge.textContent = order.status === 'completed' ? 'Completada' : 'Cancelada';
+            statusBadge.classList.add(`status-${order.status}`);
+            
+            // Add timeline items
+            const timeline = orderCard.querySelector('.timeline');
+            order.timeline.forEach(item => {
+                const timelineElement = createTimelineElement(item);
+                timeline.appendChild(timelineElement);
+            });
+            
+            // Add event listeners
+            orderCard.querySelector('.view-details').addEventListener('click', () => {
+                showOrderDetails(order);
+            });
+            
+            orderCard.querySelector('.print-receipt').addEventListener('click', () => {
+                printReceipt(order.id);
+            });
+            
+            return orderCard;
+        }
+        
+        function createTimelineElement(item) {
+            const template = timelineItemTemplate.content.cloneNode(true);
+            const timelineItem = template.querySelector('.timeline-item');
+            
+            timelineItem.querySelector('.timeline-date').textContent = 
+                new Date(item.date).toLocaleString();
+            timelineItem.querySelector('.timeline-title').textContent = item.title;
+            timelineItem.querySelector('.timeline-description').textContent = item.description;
+            
+            return timelineItem;
+        }
+        
+        function showOrderDetails(order) {
+            const modal = $('#orderDetailsModal');
+            const modalBody = modal.find('.modal-body');
+            
+            // Clear previous content
+            modalBody.empty();
+            
+            // Add order details
+            modalBody.html(`
+                <div class="mb-4">
+                    <h6>Información General</h6>
+                    <p><strong>Número de Orden:</strong> ${order.number}</p>
+                    <p><strong>Cliente:</strong> ${order.client_name}</p>
+                    <p><strong>Fecha:</strong> ${new Date(order.created_at).toLocaleDateString()}</p>
+                    <p><strong>Estado:</strong> ${order.status === 'completed' ? 'Completada' : 'Cancelada'}</p>
+                </div>
+                
+                <div class="mb-4">
+                    <h6>Items</h6>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Proceso</th>
+                                <th>Cantidad</th>
+                                <th>Precio</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${order.items.map(item => `
+                                <tr>
+                                    <td>${item.process_name}</td>
+                                    <td>${item.quantity}</td>
+                                    <td>${new Intl.NumberFormat('es-AR', { 
+                                        style: 'currency', 
+                                        currency: 'ARS' 
+                                    }).format(item.price)}</td>
+                                    <td>${new Intl.NumberFormat('es-AR', { 
+                                        style: 'currency', 
+                                        currency: 'ARS' 
+                                    }).format(item.subtotal)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="3">Total</th>
+                                <th>${new Intl.NumberFormat('es-AR', { 
+                                    style: 'currency', 
+                                    currency: 'ARS' 
+                                }).format(order.total)}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                
+                <div>
+                    <h6>Historial</h6>
+                    <div class="timeline">
+                        ${order.timeline.map(item => `
+                            <div class="timeline-item">
+                                <div class="timeline-date">${new Date(item.date).toLocaleString()}</div>
+                                <div class="timeline-content">
+                                    <div class="timeline-title">${item.title}</div>
+                                    <div class="timeline-description">${item.description}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `);
+            
+            // Show modal
+            modal.modal('show');
+        }
+        
+        async function printReceipt(orderId) {
+            try {
+                const response = await fetch(`/api/orders/${orderId}/receipt`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `recibo_${orderId}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    a.remove();
+                } else {
+                    throw new Error('Error generating receipt');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al generar el recibo',
+                    position: 'center'
+                });
+            }
+        }
+        
+        async function exportHistory() {
+            try {
+                const date = dateFilter.value;
+                const status = statusFilter.value;
+                
+                let url = '/api/orders/history/export';
+                const params = new URLSearchParams();
+                if (status) params.append('status', status);
+                if (date !== 'all') {
+                    if (date === 'custom') {
+                        params.append('date_from', document.getElementById('dateFrom').value);
+                        params.append('date_to', document.getElementById('dateTo').value);
+                    } else {
+                        params.append('date', date);
+                    }
+                }
+                if (params.toString()) url += '?' + params.toString();
+                
+                const response = await fetch(url, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'historial_ordenes.xlsx';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    a.remove();
+                } else {
+                    throw new Error('Error exporting history');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al exportar el historial',
+                    position: 'center'
+                });
+            }
+        }
+    });
+</script>
+{% endblock %}

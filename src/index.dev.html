@@ -13,10 +13,7 @@
     <meta name="apple-mobile-web-app-title" content="Venezia">
     
     <!-- Icons -->
-    <link rel="icon" type="image/svg+xml" href="/static/images/favicon.svg">
-    <link rel="shortcut icon" href="/favicon.ico">
-    <link rel="apple-touch-icon" href="/static/images/apple-touch-icon.png">
-    
+    <!-- Icons disabled in dev to avoid missing assets -->
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -70,8 +67,6 @@
         </div>
     </div>
     
-    <!-- Development scripts without hashes -->
-    <script src="/static/dist/vendors.js"></script>
-    <script src="/static/dist/main.js"></script>
+    <!-- Webpack injects the bundle; no manual script tags needed in dev -->
 </body>
 </html>

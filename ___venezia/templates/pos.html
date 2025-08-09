@@ -1,0 +1,734 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<script src="{{ url_for('static', filename='js/pos.js') }}"></script>
+<script>
+// Exponer store_id al frontend para favoritos por sucursal
+window.POS_STORE_ID = {{ store.id }};
+function updateCart() {
+    fetch('/api/get_cart')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                document.getElementById('cart-items').innerHTML = data.cart_html;
+                document.getElementById('cart-total').textContent = data.total;
+            } else {
+                Swal.fire('Error', data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error updating cart:', error);
+            Swal.fire('Error', 'Error al actualizar el carrito', 'error');
+        });
+}
+
+function addToCartDirect(productId) {
+    fetch('/api/add_to_cart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            quantity: 1
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.error) {
+            updateCart();
+            Swal.fire(
+                'Éxito',
+                'Producto agregado al carrito',
+                'success'
+            );
+        } else {
+            Swal.fire('Error', data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Error', 'Error al agregar al carrito', 'error');
+    });
+}
+
+function confirmClearCart() {
+    Swal.fire({
+        title: 'Confirmar Acción',
+        text: '¿Está seguro que desea limpiar el carrito? Esta acción no se puede deshacer.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Limpiar Carrito',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            clearCart();
+        }
+    });
+}
+
+function clearCart() {
+    fetch('/api/clear_cart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            updateCart();
+            Swal.fire(
+                'Carrito Limpiado',
+                'El carrito ha sido limpiado exitosamente.',
+                'success'
+            );
+        } else {
+            Swal.fire(
+                'Error',
+                'Error al limpiar el carrito: ' + data.message,
+                'error'
+            );
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire(
+            'Error',
+            'Error al limpiar el carrito',
+            'error'
+        );
+    });
+}
+
+function processSale() {
+    const paymentMethod = document.getElementById('paymentMethod').value;
+    const isDelivery = document.getElementById('deliveryToggle').checked;
+    
+    if (!paymentMethod) {
+        Swal.fire('Error', 'Por favor seleccione un método de pago', 'warning');
+        return;
+    }
+
+    let saleData = {
+        payment_method: paymentMethod,
+        is_delivery: isDelivery
+    };
+
+    if (isDelivery) {
+        const deliveryData = {
+            customer_name: document.getElementById('customerName').value,
+            phone: document.getElementById('customerPhone').value,
+            address: document.getElementById('customerAddress').value,
+            landmark: document.getElementById('customerLandmark').value,
+            notes: document.getElementById('deliveryNotes').value,
+            customer_id: selectedCustomerId,
+            latitude: document.getElementById('latitude').value,
+            longitude: document.getElementById('longitude').value
+        };
+        
+        // Validate delivery information
+        if (!deliveryData.customer_name || !deliveryData.phone || !deliveryData.address) {
+            Swal.fire('Error', 'Por favor complete los datos de entrega', 'error');
+            return;
+        }
+
+        saleData.delivery_data = deliveryData;
+    }
+
+    Swal.fire({
+        title: 'Procesando Venta',
+        text: 'Por favor espere...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    fetch('/api/process_sale', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(saleData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            Swal.fire({
+                title: 'Venta Procesada',
+                text: 'La venta se ha procesado correctamente',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
+                updateCart();
+                if (isDelivery) {
+                    // Reset delivery form
+                    document.getElementById('deliveryToggle').checked = false;
+                    document.getElementById('deliveryInfo').style.display = 'none';
+                    document.getElementById('map').style.display = 'none';
+                    document.getElementById('customerName').value = '';
+                    document.getElementById('customerPhone').value = '';
+                    document.getElementById('customerAddress').value = '';
+                    document.getElementById('customerLandmark').value = '';
+                    document.getElementById('deliveryNotes').value = '';
+                    document.getElementById('latitude').value = '';
+                    document.getElementById('longitude').value = '';
+                    selectedCustomerId = null;
+                }
+            });
+        } else {
+            Swal.fire('Error', data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Error', 'Error al procesar la venta', 'error');
+    });
+}
+
+// Initial cart load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Content Loaded');
+    
+    const deliveryToggle = document.getElementById('deliveryToggle');
+    const deliveryInfo = document.getElementById('deliveryInfo');
+    
+    if (!deliveryToggle) {
+        console.error('Delivery toggle element not found!');
+    } else {
+        console.log('Delivery toggle element found');
+        deliveryToggle.addEventListener('change', function() {
+            console.log('Delivery toggle changed:', this.checked);
+            const deliveryInfo = document.getElementById('deliveryInfo');
+            if (!deliveryInfo) {
+                console.error('Delivery info element not found!');
+            } else {
+                deliveryInfo.style.display = this.checked ? 'block' : 'none';
+                console.log('Set delivery info display to:', deliveryInfo.style.display);
+            }
+        });
+    }
+    
+    updateCart();
+    
+    // Add click handlers for add to cart buttons
+    document.querySelectorAll('.add-to-cart').forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.getAttribute('data-product-id');
+            addToCartDirect(productId);
+        });
+    });
+
+    // Setup customer search handler
+    document.getElementById('customerSearch').addEventListener('input', debounce(function() {
+        const query = this.value.trim();
+        const resultsDiv = document.getElementById('searchResults');
+        
+        if (query.length < 3) {
+            resultsDiv.style.display = 'none';
+            return;
+        }
+        
+        fetch(`/api/delivery/search_customer?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(customers => {
+                if (customers.length > 0) {
+                    resultsDiv.style.display = 'block';
+                    resultsDiv.innerHTML = customers.map(customer => `
+                        <a href="#" class="list-group-item list-group-item-action" 
+                           data-customer-id="${customer.id}"
+                           data-customer-name="${customer.customer_name}"
+                           data-customer-phone="${customer.phone}"
+                           data-customer-address="${customer.address}"
+                           data-customer-landmark="${customer.landmark || ''}">
+                            <div class="d-flex justify-content-between">
+                                <h6 class="mb-1">${customer.customer_name}</h6>
+                                <small>${customer.score}% match</small>
+                            </div>
+                            <p class="mb-1">${customer.address}</p>
+                            <small>${customer.phone}</small>
+                        </a>
+                    `).join('');
+
+                    // Add click handlers for search results
+                    resultsDiv.querySelectorAll('a').forEach(item => {
+                        item.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            document.getElementById('customerName').value = this.dataset.customerName;
+                            document.getElementById('customerPhone').value = this.dataset.customerPhone;
+                            document.getElementById('customerAddress').value = this.dataset.customerAddress;
+                            document.getElementById('customerLandmark').value = this.dataset.customerLandmark;
+                            selectedCustomerId = this.dataset.customerId;
+                            resultsDiv.style.display = 'none';
+                            document.getElementById('customerSearch').value = '';
+                        });
+                    });
+                } else {
+                    resultsDiv.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error searching customers:', error);
+                resultsDiv.style.display = 'none';
+            });
+    }, 300));
+});
+
+// Customer search functionality
+let selectedCustomerId = null;
+
+// Debounce function to limit API calls
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func.apply(this, args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Initialize Google Maps Places Autocomplete
+document.addEventListener('DOMContentLoaded', function() {
+    let map = null;
+    let marker = null;
+    const mapDiv = document.getElementById('map');
+    const addressInput = document.getElementById('customerAddress');
+    const latitudeInput = document.getElementById('latitude');
+    const longitudeInput = document.getElementById('longitude');
+
+    // Initialize the autocomplete
+    const pergaminoBounds = {
+        north: -33.845,  // Pergamino northern boundary
+        south: -33.935,  // Pergamino southern boundary
+        east: -60.515,   // Pergamino eastern boundary
+        west: -60.615    // Pergamino western boundary
+    };
+
+    const autocomplete = new google.maps.places.Autocomplete(addressInput, {
+        componentRestrictions: { country: 'AR' },  // Restrict to Argentina
+        bounds: new google.maps.LatLngBounds(
+            new google.maps.LatLng(pergaminoBounds.south, pergaminoBounds.west),
+            new google.maps.LatLng(pergaminoBounds.north, pergaminoBounds.east)
+        ),
+        strictBounds: true,  // Enforce the bounds strictly
+        fields: ['address_components', 'geometry', 'name', 'formatted_address']
+    });
+
+    // Initialize the map (hidden initially)
+    function initMap(lat = -33.89, lng = -60.57) { // Default to Pergamino center
+        map = new google.maps.Map(mapDiv, {
+            center: { lat, lng },
+            zoom: 14,  // Closer zoom for city level
+            restriction: {
+                latLngBounds: pergaminoBounds,
+                strictBounds: true
+            }
+        });
+        marker = new google.maps.Marker({
+            map: map,
+            draggable: true,
+            position: { lat, lng }
+        });
+
+        // Update coordinates when marker is dragged
+        marker.addListener('dragend', function() {
+            const position = marker.getPosition();
+            latitudeInput.value = position.lat();
+            longitudeInput.value = position.lng();
+            
+            // Reverse geocode to get address
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ location: position }, function(results, status) {
+                if (status === 'OK') {
+                    if (results[0]) {
+                        // Check if the result is within Pergamino
+                        const inPergamino = results[0].address_components.some(component => 
+                            component.long_name.includes('Pergamino') && 
+                            component.types.includes('locality')
+                        );
+                        
+                        if (inPergamino) {
+                            addressInput.value = results[0].formatted_address;
+                        } else {
+                            // If outside Pergamino, move marker back to previous position
+                            Swal.fire('Error', 'La ubicación debe estar dentro de Pergamino', 'error');
+                            marker.setPosition(map.getCenter());
+                            latitudeInput.value = map.getCenter().lat();
+                            longitudeInput.value = map.getCenter().lng();
+                        }
+                    }
+                }
+            });
+        });
+
+        // Add bounds to the map
+        const bounds = new google.maps.LatLngBounds(
+            new google.maps.LatLng(pergaminoBounds.south, pergaminoBounds.west),
+            new google.maps.LatLng(pergaminoBounds.north, pergaminoBounds.east)
+        );
+        map.fitBounds(bounds);
+    }
+
+    // Handle place selection
+    autocomplete.addListener('place_changed', function() {
+        const place = autocomplete.getPlace();
+        
+        if (!place.geometry) {
+            return;
+        }
+
+        // Show map
+        mapDiv.style.display = 'block';
+        
+        // Initialize map if not already initialized
+        if (!map) {
+            initMap();
+        }
+
+        // Update map and marker
+        const lat = place.geometry.location.lat();
+        const lng = place.geometry.location.lng();
+        
+        map.setCenter({ lat, lng });
+        marker.setPosition({ lat, lng });
+        
+        // Store coordinates
+        latitudeInput.value = lat;
+        longitudeInput.value = lng;
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-md-12 text-end">
+            <button type="button" class="btn btn-outline-secondary" onclick="window.location.href='{{ url_for('select_store', next_page='pos') }}'">
+                Cambiar Punto de Venta
+            </button>
+        </div>
+    </div>
+    <div class="row">
+        <!-- Products Section -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Productos</h4>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="productsAccordion">
+                        {% for category_name, products in category_products.items() %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading{{ loop.index }}">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapse{{ loop.index }}" aria-expanded="true"
+                                    aria-controls="collapse{{ loop.index }}">
+                                    {{ category_name }}
+                                </button>
+                            </h2>
+                            <div id="collapse{{ loop.index }}" class="accordion-collapse collapse show"
+                                aria-labelledby="heading{{ loop.index }}" data-bs-parent="#productsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        {% for product in products %}
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">{{ product.name }}</h5>
+                                                    <p class="card-text">
+                                                        Precio: ${{ "{:,.0f}".format(product.price) }}
+                                                    </p>
+                                                    <button class="btn btn-primary add-to-cart" 
+                                                            data-product-id="{{ product.id }}"
+                                                            data-product-name="{{ product.name }}"
+                                                            data-max-flavors="{{ product.max_flavors or '' }}"
+                                                            data-sales-format="{{ product.sales_format or '' }}">
+                                                        Agregar al Carrito
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Cart Section -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Carrito</h4>
+                </div>
+                <div class="card-body">
+                    <div id="cart-items">
+                        <!-- Cart items will be loaded here -->
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5>Total:</h5>
+                        <h5>$<span id="cart-total">0.00</span></h5>
+                    </div>
+                    
+                    <!-- Delivery Toggle -->
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="deliveryToggle">
+                        <label class="form-check-label" for="deliveryToggle">
+                            Entrega a Domicilio
+                        </label>
+                    </div>
+
+                    <!-- Delivery Information Form -->
+                    <div id="deliveryInfo" style="display: none;">
+                        <div class="mb-3">
+                            <label for="customerSearch" class="form-label">Buscar Cliente</label>
+                            <input type="text" class="form-control" id="customerSearch" placeholder="Nombre, teléfono o dirección">
+                            <div id="searchResults" class="list-group mt-2" style="display: none;"></div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="customerName" class="form-label">Nombre del Cliente*</label>
+                            <input type="text" class="form-control" id="customerName" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="customerPhone" class="form-label">Teléfono*</label>
+                            <input type="tel" class="form-control" id="customerPhone" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="customerAddress" class="form-label">Dirección*</label>
+                            <input type="text" class="form-control" id="customerAddress" required>
+                            <div id="map" style="height: 200px; margin-top: 10px; display: none;"></div>
+                            <!-- Hidden fields for coordinates -->
+                            <input type="hidden" id="latitude">
+                            <input type="hidden" id="longitude">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="customerLandmark" class="form-label">Punto de Referencia</label>
+                            <input type="text" class="form-control" id="customerLandmark">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="deliveryNotes" class="form-label">Notas de Entrega</label>
+                            <textarea class="form-control" id="deliveryNotes" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="mb-3">
+                        <label for="paymentMethod" class="form-label">Método de Pago</label>
+                        <select class="form-select" id="paymentMethod">
+                            <option value="">Seleccionar método de pago</option>
+                            <option value="cash">Efectivo</option>
+                            <option value="card">Tarjeta</option>
+                            <option value="transfer">Transferencia</option>
+                            <option value="mercadopago">MercadoPago</option>
+                        </select>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" onclick="processSale()">Procesar Venta</button>
+                        <button class="btn btn-danger" onclick="confirmClearCart()">Limpiar Carrito</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sabores Frecuentes (por sucursal/terminal) -->
+            <div class="card mb-4" aria-label="Sabores frecuentes">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0">Sabores frecuentes</h5>
+                    <button class="btn btn-sm btn-outline-primary" id="posQuickPoteBtn" aria-label="Agregar pote rápido (q)">Pote rápido (q)</button>
+                </div>
+                <div class="card-body">
+                    <div id="posFavoritesContainer" class="d-flex flex-wrap"></div>
+                </div>
+            </div>
+            
+            <!-- Recent Sales Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h4>Ventas Recientes</h4>
+                </div>
+                <div class="card-body">
+                    <div id="recentSalesTableContainer">
+                        {% include '_recent_sales_table.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Selección de Sabores (POS) -->
+<div class="modal fade" id="posFlavorModal" tabindex="-1" role="dialog" aria-labelledby="posFlavorModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="posFlavorModalLabel">Seleccionar Sabores</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="posFlavorAlert" class="alert alert-danger" style="display:none;"></div>
+        <p>Producto: <strong id="posSelectedProductName"></strong></p>
+        <p class="text-muted">Máximo <span id="posMaxFlavors"></span> sabores</p>
+        <div class="input-group mb-2">
+          <div class="input-group-prepend"><span class="input-group-text"><i class="fas fa-search" aria-hidden="true"></i></span></div>
+          <input id="posFlavorSearch" type="text" class="form-control" placeholder="Buscar sabor (/)" aria-label="Buscar sabor" />
+        </div>
+        <div id="posSuggested" class="mb-3"></div>
+        <div id="posFlavorList" class="mb-2" style="max-height:320px;overflow:auto;" aria-describedby="posShortcutsHint"></div>
+        <div id="posShortcutsHint"><small class="text-muted">Atajos: / buscar, 1-9 alternar sugeridos, Enter confirmar, Esc cerrar</small></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Cancelar selección">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="posAddFlavorsBtn" disabled aria-label="Agregar sabores seleccionados">Agregar</button>
+      </div>
+    </div>
+  </div>
+  </div>
+
+<!-- Payment Success Modal -->
+<div class="modal fade" id="paymentSuccessModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Pago con MercadoPago</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="qrCodeContainer" class="mb-4">
+                    <!-- QR code will be inserted here -->
+                </div>
+                <div class="btn-group mb-3">
+                    <button class="btn btn-primary" id="sendPaymentLinkBtn">
+                        <i class="fas fa-paper-plane"></i> Enviar Link de Pago
+                    </button>
+                    <button class="btn btn-secondary" id="printReceiptBtn" aria-label="Imprimir ticket (p)">
+                        <i class="fas fa-print"></i> Imprimir ticket (p)
+                    </button>
+                </div>
+                <div class="alert alert-info">
+                    <small>El estado del pago se actualizará automáticamente cuando se complete.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- QR Modal -->
+<div class="modal fade" id="qrModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Pago MP · <span id="qrSaleLabel">Venta</span></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="qrContainer">
+                    <!-- QR code will be inserted here -->
+                </div>
+                <div class="mt-3">
+                    <button class="btn btn-secondary" id="printReceiptBtn" aria-label="Imprimir ticket (p)">
+                        <i class="fas fa-print"></i> Imprimir ticket (p)
+                    </button>
+                    <button class="btn btn-success" id="closeTicketBtn" aria-label="Cerrar ticket">
+                        <i class="fas fa-check"></i> Cerrar ticket
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+/* Tab styling */
+.nav-tabs .nav-link {
+    color: #495057;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    margin-right: 4px;
+}
+
+.nav-tabs .nav-link:hover {
+    color: #0d6efd;
+    background-color: #e9ecef;
+}
+
+.nav-tabs .nav-link.active {
+    color: #0d6efd;
+    background-color: #fff;
+    border-bottom-color: transparent;
+}
+
+/* Product card styling */
+.product-card {
+    transition: transform 0.2s;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.product-card .btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+
+.product-card .btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+/* Cart styling */
+.cart-item {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+/* Modal styles */
+.modal {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.modal-dialog {
+    margin: 1.75rem auto;
+    max-width: 500px;
+}
+
+.modal-content {
+    position: relative;
+    background-color: #fff;
+    border-radius: 0.3rem;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.5);
+}
+</style>
+{% endblock %}

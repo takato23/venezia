@@ -111,19 +111,19 @@ const POSAnalytics = ({ className = "" }) => {
               <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {metrics.deliveries.total || 0}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Total</div>
+              <div className="text-sm text-gray-800 dark:text-gray-200">Total</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                 {metrics.deliveries.pending || 0}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Pendientes</div>
+              <div className="text-sm text-gray-800 dark:text-gray-200">Pendientes</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {metrics.deliveries.in_transit || 0}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">En Tránsito</div>
+              <div className="text-sm text-gray-800 dark:text-gray-200">En Tránsito</div>
             </div>
           </div>
         </div>
@@ -132,7 +132,7 @@ const POSAnalytics = ({ className = "" }) => {
       {/* Quick Insights */}
       <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
         <h4 className="font-medium text-gray-900 dark:text-white mb-2">💡 Insights Rápidos</h4>
-        <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+        <div className="space-y-1 text-sm text-gray-700 dark:text-gray-300">
           {metrics.salesCount > 0 ? (
             <>
               <p>• Llevas {metrics.salesCount} ventas realizadas hoy</p>

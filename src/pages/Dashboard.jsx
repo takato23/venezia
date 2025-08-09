@@ -32,6 +32,7 @@ import axios from 'axios';
 import { format, startOfDay, subDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
+// import WebShopLaunchButton from '../components/ui/WebShopLaunchButton';
 
 // Registrar componentes de Chart.js
 ChartJS.register(
@@ -302,6 +303,8 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* Botón de Tienda Web - Removido */}
+
       {/* Métricas principales con diseño moderno */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <ModernMetricCard
@@ -494,7 +497,7 @@ const Dashboard = () => {
               >
                 <div className={`p-2 rounded-lg ${
                   activity.type === 'sale' ? 'bg-success-100 text-success-700' :
-                  activity.type === 'production' ? 'bg-primary-100 text-primary-700' :
+                  activity.type === 'production' ? 'bg-accent-100 text-accent-700' :
                   'bg-warning-100 text-warning-700'
                 }`}>
                   {activity.type === 'sale' ? <ShoppingCart className="h-4 w-4" /> :

@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"path": "../../../claude-agent-starter/docs"
+		},
+		{
+			"path": "../../../claude-agent-starter/scripts"
+		}
+	],
+	"settings": {
+		"git.ignoreLimitWarning": true
+	}
+}

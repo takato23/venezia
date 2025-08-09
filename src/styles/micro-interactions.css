@@ -114,7 +114,7 @@
   width: 2rem;
   height: 2rem;
   border: 3px solid rgba(234, 88, 12, 0.1);
-  border-left: 3px solid var(--venezia-primary-refined);
+  border-left: 3px solid var(--venezia-accent-refined);
   border-radius: 50%;
   animation: swirl 1s linear infinite;
   position: relative;
@@ -142,7 +142,7 @@
 .loading-dots span {
   width: 0.5rem;
   height: 0.5rem;
-  background: var(--venezia-primary-refined);
+  background: var(--venezia-accent-refined);
   border-radius: 50%;
   animation: dot-bounce 1.4s ease-in-out infinite both;
 }
@@ -280,7 +280,7 @@
 .floating-label input:focus + label,
 .floating-label input:not(:placeholder-shown) + label {
   transform: translateY(-1.5rem) scale(0.85);
-  color: var(--venezia-primary-refined);
+  color: var(--venezia-accent-refined);
 }
 
 .floating-label label {
@@ -301,7 +301,7 @@
 /* 10. PROGRESS ANIMATIONS */
 .progress-bar {
   background: linear-gradient(90deg, 
-    var(--venezia-primary-refined) 0%, 
+    var(--venezia-accent-refined) 0%, 
     var(--venezia-accent-refined) 100%
   );
   animation: progress-shimmer 2s ease-in-out infinite;

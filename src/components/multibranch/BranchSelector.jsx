@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Store, MapPin, Clock, ChevronDown, Check } from 'lucide-react';
-import { supabase } from '../../config/supabase';
+import axios from 'axios';
 import { useAuth } from '../../hooks/useAuth';
 
 const BranchSelector = ({ onBranchChange, currentBranch }) => {
@@ -19,18 +19,26 @@ const BranchSelector = ({ onBranchChange, currentBranch }) => {
 
     try {
       // Cargar sucursales a las que el usuario tiene acceso
-      const { data } = await supabase
-        .from('branches')
-        .select('*')
-        .eq('organization_id', user.organization_id)
-        .eq('is_active', true)
-        .in('id', user.branch_access || []);
+      const apiUrl = import.meta.env.VITE_API_URL || '/api';
+      const response = await axios.get(`${apiUrl}/branches`, {
+        params: {
+          organization_id: user.organization_id || 'demo',
+          is_active: true
+        }
+      });
 
-      setBranches(data || []);
+      const data = response.data.success ? response.data.data : [];
+      
+      // Filtrar por acceso del usuario si está definido
+      const filteredBranches = user.branch_access 
+        ? data.filter(branch => user.branch_access.includes(branch.id))
+        : data;
+
+      setBranches(filteredBranches);
 
       // Si no hay sucursal seleccionada, seleccionar la primera
-      if (!selectedBranch && data && data.length > 0) {
-        const mainBranch = data.find(b => b.is_main_branch) || data[0];
+      if (!selectedBranch && filteredBranches && filteredBranches.length > 0) {
+        const mainBranch = filteredBranches.find(b => b.is_main_branch) || filteredBranches[0];
         setSelectedBranch(mainBranch);
         onBranchChange(mainBranch);
       }

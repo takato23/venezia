@@ -69,7 +69,7 @@ export const useApiCache = (url, params = null, options = {}) => {
       case '/api/sales':
         return MockApiService.getSales(params);
       case '/api/production_orders':
-        return MockApiService.getProductionOrders();
+        return MockApiService.getProductionBatches();
       case '/api/production_batches':
         return MockApiService.getProductionBatches();
       case '/api/stock_data':

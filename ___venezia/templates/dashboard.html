@@ -1,0 +1,394 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Sistema de Gestión de Helados{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <!-- Content Header -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Dashboard</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Quick Stats Cards -->
+            <div class="row">
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-info">
+                        <div class="inner">
+                            <h3>{{ total_production|round|int }} kg</h3>
+                            <p>Total Production</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-industry"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3>{{ total_stores }}</h3>
+                            <p>Active Stores</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-store"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-warning">
+                        <div class="inner">
+                            <h3>{{ total_flavors }}</h3>
+                            <p>Available Flavors</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-ice-cream"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-danger">
+                        <div class="inner">
+                            <h3>{{ low_stock_count }}</h3>
+                            <p>Low Stock Alerts</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Production Overview Section -->
+            <div class="row">
+                <!-- Status Summary Cards -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-tasks mr-1"></i>
+                                Estado de Órdenes de Producción
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="info-box bg-light">
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Pedidos</span>
+                                            <span class="info-box-number" id="pedido-count">0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="info-box bg-light">
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">En Proceso</span>
+                                            <span class="info-box-number" id="proceso-count">0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="info-box bg-light">
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Terminado</span>
+                                            <span class="info-box-number" id="terminado-count">0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chart-container" style="position: relative; height:200px;">
+                                <canvas id="orderStatusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Orders -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-history mr-1"></i>
+                                Órdenes Recientes
+                            </h3>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table" id="recentOrdersTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Producto</th>
+                                            <th>Cantidad</th>
+                                            <th>Estado</th>
+                                            <th>Fecha</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Filled by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Production Chart -->
+            <div class="row">
+                <div class="col-12 d-flex justify-content-between align-items-center">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Production Trends (Last 7 Days)</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="productionChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                        </div>
+                    </div>
+                    <div class="ml-3">
+                        <a href="{{ url_for('webshop.index') }}" class="btn btn-success">
+                            Ver Webshop (vista cliente)
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Stock Alerts -->
+                <div class="col-md-6">
+                    <div class="card" id="stock-alerts">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-exclamation-circle mr-1"></i>
+                                Alertas de Stock Bajo
+                            </h3>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table" id="stockTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Tienda</th>
+                                            <th>Sabor</th>
+                                            <th>Stock</th>
+                                            <th>Mín</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Filled by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="p-3 border-top">
+                                <button id="quickFixStock" class="btn btn-sm btn-primary">
+                                    Ir a edición de stock de la sucursal con más alertas
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header d-flex align-items-center">
+                            <h3 class="card-title mb-0 mr-3">Filtrar alertas por sucursal</h3>
+                            <select id="stockStoreFilter" class="form-control form-control-sm" style="max-width: 260px;">
+                                <option value="">Todas</option>
+                                {% for s in stores %}
+                                <option value="{{ s.id }}">{{ s.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="card-body d-flex align-items-center">
+                            <a href="{{ url_for('edit_store_stock') }}#pote-prices" class="btn btn-outline-primary btn-sm mr-3">
+                                Editar precios de potes
+                            </a>
+                            <p class="text-muted mb-0">Usa el filtro para enfocar una sucursal y resolver rápido.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js -->
+<script src="{{ url_for('static', filename='adminlte/plugins/chart.js/Chart.min.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Production Chart
+    fetch('/api/production_data')
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('productionChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Daily Production (kg)',
+                        data: data.values,
+                        borderColor: '#17a2b8',
+                        backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Production (kg)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        });
+
+    // Production Orders Overview
+    function updateProductionOrdersOverview() {
+        fetch('/api/production_orders_summary')
+            .then(response => response.json())
+            .then(data => {
+                // Update status counts
+                document.getElementById('pedido-count').textContent = data.status_counts[1] || 0;
+                document.getElementById('proceso-count').textContent = data.status_counts[2] || 0;
+                document.getElementById('terminado-count').textContent = data.status_counts[3] || 0;
+
+                // Update status chart
+                const statusCtx = document.getElementById('orderStatusChart').getContext('2d');
+                new Chart(statusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Pedido', 'En Proceso', 'Terminado'],
+                        datasets: [{
+                            data: [
+                                data.status_counts[1] || 0,
+                                data.status_counts[2] || 0,
+                                data.status_counts[3] || 0
+                            ],
+                            backgroundColor: [
+                                '#ffc107',  // Warning yellow for Pedido
+                                '#17a2b8',  // Info blue for En Proceso
+                                '#28a745'   // Success green for Terminado
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+
+                // Update recent orders table
+                const tbody = document.querySelector('#recentOrdersTable tbody');
+                tbody.innerHTML = '';
+                data.recent_orders.forEach(order => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${order.id}</td>
+                        <td>${order.product}</td>
+                        <td>${order.quantity} kg</td>
+                        <td>${order.status}</td>
+                        <td>${order.created_at}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            });
+    }
+
+    // Initial update
+    updateProductionOrdersOverview();
+
+    // Update every 30 seconds
+    setInterval(updateProductionOrdersOverview, 30000);
+
+    function updateStockTable() {
+        const storeId = document.getElementById('stockStoreFilter')?.value || '';
+        const url = storeId ? `/api/stock_data?store_id=${storeId}` : '/api/stock_data';
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.querySelector('#stockTable tbody');
+                tbody.innerHTML = '';
+                
+                // Filter to show only low stock items
+                const lowStockItems = data.filter(item => item.status === 'Bajo stock');
+                
+                // Calcular sucursal con más alertas
+                const byStore = {};
+                lowStockItems.forEach(i => { byStore[i.store_id] = (byStore[i.store_id]||0)+1; });
+                const topStoreId = Object.entries(byStore).sort((a,b)=>b[1]-a[1])[0]?.[0];
+                const quickBtn = document.getElementById('quickFixStock');
+                if (topStoreId && quickBtn) {
+                    quickBtn.onclick = () => { window.location.href = `/edit_store_stock/${topStoreId}` };
+                    quickBtn.disabled = false;
+                } else if (quickBtn) {
+                    quickBtn.disabled = true;
+                }
+
+                lowStockItems.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.store}</td>
+                        <td>
+                          ${item.flavor}
+                          <a class="btn btn-link btn-sm p-0 ml-2" href="/edit_store_stock/${item.store_id}" title="Editar stock en ${item.store}">
+                            Editar
+                          </a>
+                        </td>
+                        <td>${item.current_quantity} kg</td>
+                        <td>${item.minimum_quantity} kg</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+                if (lowStockItems.length === 0) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = '<td colspan="4" class="text-center">No hay productos con bajo stock</td>';
+                    tbody.appendChild(row);
+                }
+            });
+    }
+
+    // Update stock table every 30 seconds and on filter change
+    updateStockTable();
+    setInterval(updateStockTable, 30000);
+    const storeFilter = document.getElementById('stockStoreFilter');
+    if (storeFilter) {
+        storeFilter.addEventListener('change', updateStockTable);
+    }
+});
+</script>
+{% endblock %}

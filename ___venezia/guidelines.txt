@@ -1,0 +1,92 @@
+# Troubleshooting Guidelines
+
+When reporting an issue, please provide the following information to help diagnose the problem quickly:
+
+1. Browser Console Output:
+   - Open your browser's developer tools (F12)
+   - Check the Console tab for any error messages
+   - Copy and share any relevant errors or warnings
+
+2. Network Tab Information:
+   - In developer tools, go to the Network tab
+   - Perform the action that's causing the issue
+   - Note the request URL, method (GET/POST), and response status
+   - Check if the response contains any error messages
+
+3. Comparison Points:
+   - If a similar feature works (e.g., if providers delete works but products don't)
+   - Mention the working feature so we can compare implementations
+
+4. Database-Related Issues:
+   - For deletion problems: Check if the item might have related records
+   - For creation/update issues: Note any validation errors
+   - For query issues: Share any SQL errors from the console
+
+5. UI/Display Issues:
+   - Screenshot or description of what you're seeing vs what you expect
+   - Any specific user interactions that trigger the issue
+   - Browser and screen size if relevant
+
+# Technical Stack & Dependencies
+
+1. Frontend Framework:
+   - AdminLTE 3.2.0
+   - Bootstrap 4.6.2
+   - jQuery 3.6.0 (required by AdminLTE)
+   - Font Awesome (included in AdminLTE)
+
+2. Script Loading Order:
+   - Scripts that define functions used in HTML must be loaded in the head section
+   - Order matters: Load libraries before custom scripts that depend on them
+   - Example order:
+     1. jQuery 3.6.0
+     2. Bootstrap 4.6.2 (bootstrap.bundle.min.js)
+     3. AdminLTE 3.2.0
+     4. Custom functions used in HTML attributes (onclick, etc.)
+
+# Known Solutions
+
+1. Product Deletion:
+   - Products with related records in Stock or StockHistory are not actually deleted
+   - They are marked as inactive (is_active = False) instead
+   - This is intentional to maintain data integrity
+   - Solution: Use the status filter to hide inactive products if needed
+
+2. JavaScript Function Availability:
+   - Issue: "ReferenceError: function is not defined" when using onclick attributes
+   - Cause: Functions used in HTML onclick attributes must be defined before they're called
+   - Solution: Move function definitions to the head section, after loading all required libraries
+   - Example:
+     ```html
+     <head>
+         <!-- Load libraries first -->
+         <script src="jquery.min.js"></script>
+         <script src="bootstrap.bundle.min.js"></script>
+         
+         <!-- Then define functions used in HTML -->
+         <script>
+             function deleteProduct(id) {
+                 // Function code here
+             }
+         </script>
+     </head>
+     ```
+
+3. Bootstrap Modal Issues:
+   - Issue: Modals not showing up when clicking trigger buttons
+   - Common Causes:
+     1. Using wrong Bootstrap version attributes:
+        - Bootstrap 5 uses: data-bs-toggle="modal" and data-bs-target="#modalId"
+        - Bootstrap 4 uses: data-toggle="modal" and data-target="#modalId"
+     2. Missing Bootstrap JS:
+        - Bootstrap's JavaScript must be loaded after jQuery
+        - Check if bootstrap.bundle.min.js is included
+     3. Incorrect event binding:
+        - Bootstrap 4 uses .modal() and show.bs.modal events
+        - Example:
+          ```javascript
+          $('#myModal').on('show.bs.modal', function(event) {
+              const button = $(event.relatedTarget);
+              const data = button.data('some-attribute');
+          });
+          ```

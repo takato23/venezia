@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}Usuarios Web{% endblock %}
+
+{% block head %}
+{{ super() }}
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Gestión de Usuarios Web</h2>
+    
+    <!-- Add User Button -->
+    <div class="mb-4">
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addUserModal">
+            <i class="fas fa-plus"></i> Agregar Usuario
+        </button>
+    </div>
+    
+    <!-- Users Table -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Usuarios Web</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>Teléfono</th>
+                            <th>Dirección</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.first_name }}</td>
+                            <td>{{ user.last_name }}</td>
+                            <td>{{ user.phone }}</td>
+                            <td>{{ user.address }}</td>
+                            <td>
+                                <span class="badge {% if user.active %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ 'Activo' if user.active else 'Inactivo' }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-primary" 
+                                            onclick="openEditModal('{{ user.id }}', '{{ user.email }}', '{{ user.first_name }}', 
+                                                                '{{ user.last_name }}', '{{ user.phone }}', '{{ user.address }}', 
+                                                                {{ 'true' if user.active else 'false' }})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger" 
+                                            onclick="deleteUser('{{ user.id }}', '{{ user.email }}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="addUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addUserModalLabel">Agregar Usuario Web</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addUserForm">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Contraseña</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="first_name">Nombre</label>
+                        <input type="text" class="form-control" id="first_name" name="first_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="last_name">Apellido</label>
+                        <input type="text" class="form-control" id="last_name" name="last_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Teléfono</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="address">Dirección</label>
+                        <input type="text" class="form-control" id="address" name="address" required>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="active" name="active" checked>
+                        <label class="form-check-label" for="active">Activo</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="submit" form="addUserForm" class="btn btn-primary">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editUserModalLabel">Editar Usuario Web</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editUserForm">
+                    <input type="hidden" id="edit_id" name="id">
+                    <div class="form-group">
+                        <label for="edit_email">Email</label>
+                        <input type="email" class="form-control" id="edit_email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_password">Contraseña (dejar vacío para mantener)</label>
+                        <input type="password" class="form-control" id="edit_password" name="password">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_first_name">Nombre</label>
+                        <input type="text" class="form-control" id="edit_first_name" name="first_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_last_name">Apellido</label>
+                        <input type="text" class="form-control" id="edit_last_name" name="last_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_phone">Teléfono</label>
+                        <input type="tel" class="form-control" id="edit_phone" name="phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_address">Dirección</label>
+                        <input type="text" class="form-control" id="edit_address" name="address" required>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="edit_active" name="active">
+                        <label class="form-check-label" for="edit_active">Activo</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="submit" form="editUserForm" class="btn btn-primary">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add User Form Submit
+    document.getElementById('addUserForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = {
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+            first_name: document.getElementById('first_name').value,
+            last_name: document.getElementById('last_name').value,
+            phone: document.getElementById('phone').value,
+            address: document.getElementById('address').value,
+            active: document.getElementById('active').checked
+        };
+        
+        fetch('/web_users/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                $('#addUserModal').modal('hide');
+                Swal.fire('¡Éxito!', 'Usuario creado exitosamente', 'success')
+                .then(() => window.location.reload());
+            } else {
+                Swal.fire('Error', data.error, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire('Error', 'Error al crear el usuario', 'error');
+        });
+    });
+    
+    // Edit User Form Submit
+    document.getElementById('editUserForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const userId = document.getElementById('edit_id').value;
+        const formData = {
+            email: document.getElementById('edit_email').value,
+            password: document.getElementById('edit_password').value,
+            first_name: document.getElementById('edit_first_name').value,
+            last_name: document.getElementById('edit_last_name').value,
+            phone: document.getElementById('edit_phone').value,
+            address: document.getElementById('edit_address').value,
+            active: document.getElementById('edit_active').checked
+        };
+        
+        fetch(`/web_users/${userId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                $('#editUserModal').modal('hide');
+                Swal.fire('¡Éxito!', 'Usuario actualizado exitosamente', 'success')
+                .then(() => window.location.reload());
+            } else {
+                Swal.fire('Error', data.error, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire('Error', 'Error al actualizar el usuario', 'error');
+        });
+    });
+});
+
+function openEditModal(id, email, firstName, lastName, phone, address, active) {
+    document.getElementById('edit_id').value = id;
+    document.getElementById('edit_email').value = email;
+    document.getElementById('edit_password').value = ''; // Clear password field
+    document.getElementById('edit_first_name').value = firstName;
+    document.getElementById('edit_last_name').value = lastName;
+    document.getElementById('edit_phone').value = phone;
+    document.getElementById('edit_address').value = address;
+    document.getElementById('edit_active').checked = active;
+    
+    $('#editUserModal').modal('show');
+}
+
+function deleteUser(id, email) {
+    Swal.fire({
+        title: '¿Está seguro?',
+        text: `¿Desea eliminar el usuario "${email}"?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/web_users/${id}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('¡Eliminado!', 'El usuario ha sido eliminado.', 'success')
+                    .then(() => window.location.reload());
+                } else {
+                    Swal.fire('Error', data.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire('Error', 'Error al eliminar el usuario', 'error');
+            });
+        }
+    });
+}
+</script>
+{% endblock %}

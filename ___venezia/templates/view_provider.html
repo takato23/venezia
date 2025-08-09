@@ -1,0 +1,95 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="info-box">
+                <span class="info-box-icon bg-info"><i class="fas fa-user"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Información General</span>
+                    <span class="info-box-text">Tipo: {{ 'Persona' if provider.type == 'person' else 'Empresa' }}</span>
+                    {% if provider.type == 'person' %}
+                    <span class="info-box-text">Nombre: {{ provider.name }}</span>
+                    <span class="info-box-text">Apellido: {{ provider.lastname }}</span>
+                    {% else %}
+                    <span class="info-box-text">Razón Social: {{ provider.business_name }}</span>
+                    {% endif %}
+                    <span class="info-box-text">CUIT: {{ provider.cuit }}</span>
+                    <span class="info-box-text">Estado: 
+                        <span class="badge badge-{{ 'success' if provider.is_active else 'danger' }}">
+                            {{ 'Activo' if provider.is_active else 'Inactivo' }}
+                        </span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="info-box">
+                <span class="info-box-icon bg-success"><i class="fas fa-phone"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Contacto</span>
+                    <span class="info-box-text">
+                        Teléfono: 
+                        <a href="{{ provider.whatsapp_link }}" target="_blank">
+                            {{ provider.formatted_phone }} <i class="fab fa-whatsapp text-success"></i>
+                        </a>
+                    </span>
+                    <span class="info-box-text">Email: {{ provider.email or '-' }}</span>
+                    <span class="info-box-text">Dirección: {{ provider.address or '-' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-md-6">
+            <div class="info-box">
+                <span class="info-box-icon bg-warning"><i class="fas fa-tags"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Categorías</span>
+                    <div class="mt-2">
+                        {% for category in provider.categories %}
+                        <span class="badge badge-info">{{ category.name }}</span>
+                        {% else %}
+                        <em>Sin categorías asignadas</em>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="info-box">
+                <span class="info-box-icon bg-danger"><i class="fas fa-credit-card"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Métodos de Pago</span>
+                    <span class="info-box-text">{{ provider.payment_methods or '-' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-md-6">
+            <div class="info-box">
+                <span class="info-box-icon bg-primary"><i class="fas fa-clock"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Horario de Atención</span>
+                    <span class="info-box-text">{{ provider.business_hours or '-' }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="info-box">
+                <span class="info-box-icon bg-secondary"><i class="fas fa-sticky-note"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Notas</span>
+                    <span class="info-box-text">{{ provider.notes or '-' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-12">
+            <small class="text-muted">
+                Creado: {{ provider.created_at.strftime('%Y-%m-%d %H:%M:%S') }}<br>
+                Última actualización: {{ provider.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}
+            </small>
+        </div>
+    </div>
+</div>

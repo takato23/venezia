@@ -1,0 +1,145 @@
+/* DARK MODE OVERRIDE - FIX DEFINITIVO V2 */
+
+/* SIDEBAR - Forzar modo oscuro con máxima especificidad */
+.dark aside.sb-glass,
+.dark .sb-glass,
+.dark [class*="sb-glass"],
+body.dark aside.sb-glass {
+  background: linear-gradient(180deg, rgba(17, 24, 39, 0.95) 0%, rgba(17, 24, 39, 0.85) 100%) !important;
+  background-image: linear-gradient(180deg, rgba(17, 24, 39, 0.95) 0%, rgba(17, 24, 39, 0.85) 100%) !important;
+  background-color: rgba(17, 24, 39, 0.95) !important;
+}
+
+/* Override inline styles del sidebar */
+.dark aside[style],
+.dark aside.sb-glass[style] {
+  background: linear-gradient(180deg, rgba(17, 24, 39, 0.95) 0%, rgba(17, 24, 39, 0.85) 100%) !important;
+}
+
+/* Fondo del contenedor principal del sidebar */
+.dark aside > div,
+.dark .sb-glass > div {
+  background: transparent !important;
+}
+
+/* Header del sidebar */
+.dark .sb-header {
+  background: rgba(31, 41, 55, 0.5) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  color: #e5e7eb !important;
+}
+
+/* Dividers del sidebar */
+.dark .sb-divider {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Items del sidebar - base */
+.dark .sb-item {
+  color: #d1d5db !important;
+  background: transparent !important;
+}
+
+/* Items del sidebar - hover */
+.dark .sb-item:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #f3f4f6 !important;
+}
+
+/* Items del sidebar - active */
+.dark .sb-item[aria-current="page"],
+.dark .sb-item.active {
+  background: rgba(96, 165, 250, 0.18) !important;
+  border-color: rgba(96, 165, 250, 0.45) !important;
+  color: #93c5fd !important;
+}
+
+/* Rail lateral de items activos */
+.dark .sb-rail {
+  background: transparent !important;
+}
+
+.dark .sb-item[aria-current="page"] .sb-rail {
+  background: #60a5fa !important;
+}
+
+/* Iconos del sidebar */
+.dark .sb-icon {
+  color: #9ca3af !important;
+}
+
+.dark .sb-item[aria-current="page"] .sb-icon {
+  color: #60a5fa !important;
+}
+
+/* Labels del sidebar */
+.dark .sb-label {
+  color: #f3f4f6 !important;
+}
+
+/* Títulos de grupos */
+.dark .sb-group-title {
+  color: #9ca3af !important;
+}
+
+/* Search input del sidebar */
+.dark .sb-search {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #f3f4f6 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* HEADER PRINCIPAL */
+.dark header.frost-overlay {
+  background: rgba(31, 41, 55, 0.95) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom-color: rgba(251, 146, 60, 0.3) !important;
+}
+
+/* Todos los elementos del header */
+.dark header,
+.dark header * {
+  color: #e5e7eb !important;
+}
+
+/* Botones del header */
+.dark header button {
+  background: transparent !important;
+  color: #e5e7eb !important;
+}
+
+.dark header button:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Input del header */
+.dark header input {
+  background: rgba(55, 65, 81, 0.8) !important;
+  color: #e5e7eb !important;
+  border-color: rgba(75, 85, 99, 0.6) !important;
+}
+
+.dark header input::placeholder {
+  color: #9ca3af !important;
+}
+
+/* OVERRIDES GENERALES */
+/* Forzar que no haya fondos blancos */
+.dark .bg-white:not(.scoop-button) {
+  background-color: #374151 !important;
+}
+
+/* Asegurar scrollbar oscuro */
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.6) !important;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Mobile overlay */
+.dark .bg-black\/50 {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+}

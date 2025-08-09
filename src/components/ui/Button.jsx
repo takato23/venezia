@@ -17,10 +17,10 @@ const Button = React.forwardRef(({
   const baseClasses = 'scoop-button relative overflow-hidden font-semibold transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transform hover:scale-105 active:scale-95';
   
   const variants = {
-    primary: `scoop-button ${flavor ? `scoop-${flavor}` : ''} text-white shadow-lg hover:shadow-xl focus:ring-primary-400/50`,
+    primary: `scoop-button ${flavor ? `scoop-${flavor}` : ''} text-white shadow-lg hover:shadow-xl focus:ring-accent-400/50`,
     secondary: 'bg-venezia-100 dark:bg-gray-700 text-venezia-800 dark:text-gray-100 hover:bg-venezia-200 dark:hover:bg-gray-600 focus:ring-venezia-400 shadow-md hover:shadow-lg',
-    success: 'scoop-mint text-white shadow-lg hover:shadow-xl focus:ring-mint-400/50',
-    danger: 'scoop-strawberry text-white shadow-lg hover:shadow-xl focus:ring-primary-400/50',
+    success: 'bg-sage-500 text-white shadow-lg hover:shadow-xl focus:ring-sage-400/50',
+    danger: 'bg-accent-500 text-white shadow-lg hover:shadow-xl focus:ring-accent-400/50',
     outline: 'border-2 border-venezia-300 dark:border-gray-600 bg-white/80 dark:bg-gray-800/80 text-venezia-700 dark:text-gray-200 hover:bg-venezia-50 dark:hover:bg-gray-700 focus:ring-venezia-400 backdrop-blur-sm',
     ghost: 'text-venezia-700 dark:text-gray-200 hover:bg-venezia-100/60 dark:hover:bg-gray-700/60 focus:ring-venezia-400 backdrop-blur-sm'
   };

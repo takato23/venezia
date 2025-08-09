@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   Store, 
   Plus, 
@@ -292,6 +292,7 @@ const StoreForm = ({ store, isOpen, onClose, onSave }) => {
 
 const StoresPage = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { success, error, warning } = useToast();
   
   // State
@@ -378,7 +379,9 @@ const StoresPage = () => {
   
   const handleViewStore = (store) => {
     // Navigate to store details page
-    console.log('View store:', store);
+    navigate(`/stores/${store.id}`, { 
+      state: { store }
+    });
   };
   
   const handleSaveStore = async (storeData) => {

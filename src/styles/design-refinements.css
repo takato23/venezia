@@ -5,7 +5,7 @@
 /* 1. REFINED COLOR PALETTE - Better Contrast & Accessibility */
 :root {
   /* Enhanced primary colors with better contrast ratios */
-  --venezia-primary-refined: #ea580c;      /* Warmer caramel with better contrast */
+  --venezia-accent-refined: #ea580c;      /* Warmer caramel with better contrast */
   --venezia-secondary-refined: #dc2626;    /* Refined strawberry for readability */
   --venezia-accent-refined: #059669;       /* Deeper mint for accessibility */
   --venezia-text-enhanced: #374151;        /* Better text contrast */
@@ -29,7 +29,7 @@
 
 .dark {
   /* Dark mode refinements */
-  --venezia-primary-refined: #fb923c;      /* Brighter caramel for dark mode */
+  --venezia-accent-refined: #fb923c;      /* Brighter caramel for dark mode */
   --venezia-text-enhanced: #e5e7eb;        /* Better dark mode text */
   --venezia-text-muted: #9ca3af;          /* Refined dark mode muted text */
 }
@@ -137,7 +137,7 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.875rem); }
 }
 
 .input:focus, .gelato-input:focus, input:focus {
-  border-color: var(--venezia-primary-refined);
+  border-color: var(--venezia-accent-refined);
   box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
   transform: translateY(-1px);
 }
@@ -209,7 +209,7 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.875rem); }
 /* High contrast mode enhancements */
 @media (prefers-contrast: high) {
   :root {
-    --venezia-primary-refined: #d97706;
+    --venezia-accent-refined: #d97706;
     --venezia-text-enhanced: #1f2937;
   }
   
@@ -239,13 +239,13 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.875rem); }
 
 /* 13. FOCUS INDICATOR IMPROVEMENTS */
 :focus-visible {
-  outline: 3px solid var(--venezia-primary-refined) !important;
+  outline: 3px solid var(--venezia-accent-refined) !important;
   outline-offset: 2px;
   border-radius: 4px;
 }
 
 .dark :focus-visible {
-  outline-color: var(--venezia-primary-refined) !important;
+  outline-color: var(--venezia-accent-refined) !important;
 }
 
 /* 14. ENHANCED SCROLLBAR */
@@ -255,12 +255,12 @@ h3 { font-size: clamp(1.25rem, 2.5vw, 1.875rem); }
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, var(--venezia-primary-refined), rgba(234, 88, 12, 0.7));
+  background: linear-gradient(to bottom, var(--venezia-accent-refined), rgba(234, 88, 12, 0.7));
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--venezia-primary-refined);
+  background: var(--venezia-accent-refined);
 }
 
 /* 15. SUBTLE ANIMATION CLASSES */

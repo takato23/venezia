@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useAuthStore } from '../store/authStore';
+import { useAuthStore } from '../store/authStore.supabase';
 import { supabase } from '../config/supabase';
 
 const STORAGE_KEY = 'venezia-ai-chat-history';

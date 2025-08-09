@@ -199,12 +199,12 @@ const DataTable = ({
                 onClick={() => setShowFilters(!showFilters)}
                 className={clsx(
                   'relative',
-                  Object.keys(filters).length > 0 && 'text-primary-600 dark:text-primary-400'
+                  Object.keys(filters).length > 0 && 'text-accent-600 dark:text-accent-400'
                 )}
               >
                 Filters
                 {Object.keys(filters).length > 0 && (
-                  <span className="absolute -top-1 -right-1 h-3 w-3 bg-primary-600 rounded-full" />
+                  <span className="absolute -top-1 -right-1 h-3 w-3 bg-accent-600 rounded-full" />
                 )}
               </Button>
             )}
@@ -300,7 +300,7 @@ const DataTable = ({
                           className={clsx(
                             'h-3 w-3 -mb-1',
                             sortConfig.key === column.key && sortConfig.direction === 'asc' 
-                              ? 'text-primary-600 dark:text-primary-400' 
+                              ? 'text-accent-600 dark:text-accent-400' 
                               : 'text-gray-400'
                           )}
                         />
@@ -308,7 +308,7 @@ const DataTable = ({
                           className={clsx(
                             'h-3 w-3',
                             sortConfig.key === column.key && sortConfig.direction === 'desc' 
-                              ? 'text-primary-600 dark:text-primary-400' 
+                              ? 'text-accent-600 dark:text-accent-400' 
                               : 'text-gray-400'
                           )}
                         />

@@ -1,0 +1,238 @@
+🔍 DETECTANDO ELEMENTOS INTERACTIVOS ROTOS
+
+🔍 Analizando Dashboard...
+   ✅ 3 elementos verificados, 2 probablemente rotos
+🔍 Analizando Products...
+   ✅ 3 elementos verificados, 2 probablemente rotos
+🔍 Analizando Stores...
+   ✅ 3 elementos verificados, 2 probablemente rotos
+🔍 Analizando POS...
+   ✅ 3 elementos verificados, 2 probablemente rotos
+🔍 Analizando WebShop...
+   ✅ 64 elementos verificados, 20 probablemente rotos
+
+📊 REPORTE DE ELEMENTOS INTERACTIVOS ROTOS
+============================================================
+
+📈 RESUMEN:
+   Total elementos verificados: 76
+   Elementos probablemente rotos: 28
+
+🚨 ELEMENTOS ROTOS ENCONTRADOS:
+
+📄 Dashboard (http://localhost:5173/):
+
+   1. BUTTON: "Iniciar Sesión"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: button:nth-child(2)
+      Clases: 
+                w-full flex items-center justify-center gap-2 
+                px-4 py-3 rounded-lg
+      HTML: <button type="submit" class="
+                w-full flex items-center justify-center gap-2 
+                px-4 py-3 rounded-lg font-medium
+                text-white bg-blue-600 hover:bg-blue-700 
+...
+
+   2. LINK: "¿Olvidaste tu contraseña?"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: a:nth-child(1)
+      Href: #
+      HTML: <a href="#" class="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400">¿Olvidaste tu contraseña?</a>...
+
+📄 Products (http://localhost:5173/products):
+
+   1. BUTTON: "Iniciar Sesión"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: button:nth-child(2)
+      Clases: 
+                w-full flex items-center justify-center gap-2 
+                px-4 py-3 rounded-lg
+      HTML: <button type="submit" class="
+                w-full flex items-center justify-center gap-2 
+                px-4 py-3 rounded-lg font-medium
+                text-white bg-blue-600 hover:bg-blue-700 
+...
+
+   2. LINK: "¿Olvidaste tu contraseña?"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: a:nth-child(1)
+      Href: #
+      HTML: <a href="#" class="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400">¿Olvidaste tu contraseña?</a>...
+
+📄 Stores (http://localhost:5173/stores):
+
+   1. BUTTON: "Iniciar Sesión"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: button:nth-child(2)
+      Clases: 
+                w-full flex items-center justify-center gap-2 
+                px-4 py-3 rounded-lg
+      HTML: <button type="submit" class="
+                w-full flex items-center justify-center gap-2 
+                px-4 py-3 rounded-lg font-medium
+                text-white bg-blue-600 hover:bg-blue-700 
+...
+
+   2. LINK: "¿Olvidaste tu contraseña?"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: a:nth-child(1)
+      Href: #
+      HTML: <a href="#" class="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400">¿Olvidaste tu contraseña?</a>...
+
+📄 POS (http://localhost:5173/pos):
+
+   1. BUTTON: "Iniciar Sesión"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: button:nth-child(2)
+      Clases: 
+                w-full flex items-center justify-center gap-2 
+                px-4 py-3 rounded-lg
+      HTML: <button type="submit" class="
+                w-full flex items-center justify-center gap-2 
+                px-4 py-3 rounded-lg font-medium
+                text-white bg-blue-600 hover:bg-blue-700 
+...
+
+   2. LINK: "¿Olvidaste tu contraseña?"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: a:nth-child(1)
+      Href: #
+      HTML: <a href="#" class="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400">¿Olvidaste tu contraseña?</a>...
+
+📄 WebShop (http://localhost:5173/webshop):
+
+   1. HOVER-ELEMENT: "Nuevo sabor de pistacho 🍨2341"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: div:nth-child(12)
+      Clases: absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:op
+      HTML: <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"><div class="absolute bottom-0 left-0 right-0 ...
+
+   2. HOVER-ELEMENT: "Triple chocolate belga 🍫45623"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: div:nth-child(15)
+      Clases: absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:op
+      HTML: <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"><div class="absolute bottom-0 left-0 right-0 ...
+
+   3. HOVER-ELEMENT: "Frutilla con crema 🍓78945"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: div:nth-child(18)
+      Clases: absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:op
+      HTML: <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"><div class="absolute bottom-0 left-0 right-0 ...
+
+   4. HOVER-ELEMENT: "Clásica vainilla madagascar567"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: div:nth-child(21)
+      Clases: absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:op
+      HTML: <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"><div class="absolute bottom-0 left-0 right-0 ...
+
+   5. HOVER-ELEMENT: "Menta granizada especial 🌿890"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: div:nth-child(24)
+      Clases: absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:op
+      HTML: <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"><div class="absolute bottom-0 left-0 right-0 ...
+
+   6. HOVER-ELEMENT: "Café espresso italiano ☕43221"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: div:nth-child(27)
+      Clases: absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:op
+      HTML: <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"><div class="absolute bottom-0 left-0 right-0 ...
+
+   7. HOVER-ELEMENT: "+"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: div:nth-child(41)
+      Clases: bg-orange-100 p-1.5 rounded-lg opacity-70 group-hover:opacity-100 transition-opacity
+      HTML: <div class="bg-orange-100 p-1.5 rounded-lg opacity-70 group-hover:opacity-100 transition-opacity" title="Agregar al carrito"><div class="text-orange-600 font-bold text-sm">+</div></div>...
+
+   8. HOVER-ELEMENT: "+"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: div:nth-child(43)
+      Clases: bg-orange-100 p-1.5 rounded-lg opacity-70 group-hover:opacity-100 transition-opacity
+      HTML: <div class="bg-orange-100 p-1.5 rounded-lg opacity-70 group-hover:opacity-100 transition-opacity" title="Agregar al carrito"><div class="text-orange-600 font-bold text-sm">+</div></div>...
+
+   9. HOVER-ELEMENT: "+"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: div:nth-child(45)
+      Clases: bg-orange-100 p-1.5 rounded-lg opacity-70 group-hover:opacity-100 transition-opacity
+      HTML: <div class="bg-orange-100 p-1.5 rounded-lg opacity-70 group-hover:opacity-100 transition-opacity" title="Agregar al carrito"><div class="text-orange-600 font-bold text-sm">+</div></div>...
+
+   10. HOVER-ELEMENT: "+"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: div:nth-child(47)
+      Clases: bg-orange-100 p-1.5 rounded-lg opacity-70 group-hover:opacity-100 transition-opacity
+      HTML: <div class="bg-orange-100 p-1.5 rounded-lg opacity-70 group-hover:opacity-100 transition-opacity" title="Agregar al carrito"><div class="text-orange-600 font-bold text-sm">+</div></div>...
+
+   11. HOVER-ELEMENT: "+"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: div:nth-child(49)
+      Clases: bg-orange-100 p-1.5 rounded-lg opacity-70 group-hover:opacity-100 transition-opacity
+      HTML: <div class="bg-orange-100 p-1.5 rounded-lg opacity-70 group-hover:opacity-100 transition-opacity" title="Agregar al carrito"><div class="text-orange-600 font-bold text-sm">+</div></div>...
+
+   12. HOVER-ELEMENT: "+"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: div:nth-child(51)
+      Clases: bg-orange-100 p-1.5 rounded-lg opacity-70 group-hover:opacity-100 transition-opacity
+      HTML: <div class="bg-orange-100 p-1.5 rounded-lg opacity-70 group-hover:opacity-100 transition-opacity" title="Agregar al carrito"><div class="text-orange-600 font-bold text-sm">+</div></div>...
+
+   13. HOVER-ELEMENT: "+"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: div:nth-child(53)
+      Clases: bg-orange-100 p-1.5 rounded-lg opacity-70 group-hover:opacity-100 transition-opacity
+      HTML: <div class="bg-orange-100 p-1.5 rounded-lg opacity-70 group-hover:opacity-100 transition-opacity" title="Agregar al carrito"><div class="text-orange-600 font-bold text-sm">+</div></div>...
+
+   14. HOVER-ELEMENT: "+"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: div:nth-child(55)
+      Clases: bg-orange-100 p-1.5 rounded-lg opacity-70 group-hover:opacity-100 transition-opacity
+      HTML: <div class="bg-orange-100 p-1.5 rounded-lg opacity-70 group-hover:opacity-100 transition-opacity" title="Agregar al carrito"><div class="text-orange-600 font-bold text-sm">+</div></div>...
+
+   15. HOVER-ELEMENT: ""Los mejores helados de la ciu"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: div:nth-child(62)
+      Clases: bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-shadow
+      HTML: <div class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-shadow" style="opacity: 0; transform: translateY(20px) translateZ(0px);"><div class="flex mb-3"><svg xmlns="http://www.w3.org/...
+
+   16. HOVER-ELEMENT: ""Excelente atención y sabores "
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: div:nth-child(63)
+      Clases: bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-shadow
+      HTML: <div class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-shadow" style="opacity: 0; transform: translateY(20px) translateZ(0px);"><div class="flex mb-3"><svg xmlns="http://www.w3.org/...
+
+   17. HOVER-ELEMENT: ""Me encanta que tengan opcione"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: div:nth-child(64)
+      Clases: bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-shadow
+      HTML: <div class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-shadow" style="opacity: 0; transform: translateY(20px) translateZ(0px);"><div class="flex mb-3"><svg xmlns="http://www.w3.org/...
+
+   18. HOVER-ELEMENT: "Ver detalles→"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: div:nth-child(74)
+      Clases: text-sm text-purple-600 opacity-0 group-hover:opacity-100 transition-all font-medium flex items-cent
+      HTML: <div class="text-sm text-purple-600 opacity-0 group-hover:opacity-100 transition-all font-medium flex items-center gap-1 pointer-events-none" style="opacity: 1; transform: none;"><span>Ver detalles</s...
+
+   19. HOVER-ELEMENT: "Ver detalles→"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: div:nth-child(77)
+      Clases: text-sm text-purple-600 opacity-0 group-hover:opacity-100 transition-all font-medium flex items-cent
+      HTML: <div class="text-sm text-purple-600 opacity-0 group-hover:opacity-100 transition-all font-medium flex items-center gap-1 pointer-events-none" style="opacity: 1; transform: none;"><span>Ver detalles</s...
+
+   20. HOVER-ELEMENT: "Ver detalles→"
+      Problema: No tiene onClick, handlers React, ni event listeners
+      Selector: div:nth-child(80)
+      Clases: text-sm text-purple-600 opacity-0 group-hover:opacity-100 transition-all font-medium flex items-cent
+      HTML: <div class="text-sm text-purple-600 opacity-0 group-hover:opacity-100 transition-all font-medium flex items-center gap-1 pointer-events-none" style="opacity: 1; transform: none;"><span>Ver detalles</s...
+
+
+💡 RECOMENDACIONES:
+   🔧 Revisar los elementos listados arriba
+   ⚠️  Muchos botones parecen no tener funcionalidad
+   💻 Verificar que tengan onClick handlers o event listeners
+   🧪 Probar manualmente los elementos sospechosos
+
+🛠️  CÓMO ARREGLAR:
+   1. Agregar onClick handlers a los botones
+   2. Conectar los botones a funciones reales
+   3. Quitar clases hover: de elementos no clickeables
+   4. Agregar href válidos a los links
+
+============================================================

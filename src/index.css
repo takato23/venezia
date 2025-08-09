@@ -3,10 +3,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap');
 
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
-
 /* Ice Cream Enhanced Theme System */
 @import './styles/ice-cream-theme.css';
 
@@ -14,29 +10,38 @@
 @import './styles/design-refinements.css';
 @import './styles/component-enhancements.css';
 @import './styles/micro-interactions.css';
-@import './styles/sidebar-dark-fix.css';
 @import './styles/tab-buttons-enhancement.css';
 @import './styles/typography-balance-fix.css';
 @import './styles/ai-chat-final.css';
 
-/* Ice Cream Theme Variables */
+/* Clean Theme - Nueva paleta */
+@import './styles/sidebar-clean.css';
+@import './styles/header-clean.css';
+
+/* Dark Mode Fix - Forzar colores correctos */
+@import './styles/dark-mode-fix.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Venezia Theme Variables */
 :root {
-  /* Primary Ice Cream Colors */
-  --venezia-primary: #f59e0b;        /* Rich Caramel */
-  --venezia-secondary: #ec4899;      /* Strawberry Pink */
-  --venezia-accent: #14b8a6;         /* Fresh Mint */
-  --venezia-light: #fffbf7;          /* Cream White */
-  --venezia-dark: #78350f;           /* Espresso Dark */
-  --venezia-text: #451a03;           /* Dark Roast Text */
-  --venezia-border: #fdebd0;         /* Soft Cream Border */
+  /* Primary Colors - Light Mode */
+  --venezia-primary: #c2a878;        /* Crema suave */
+  --venezia-secondary: #e14d7b;      /* Rosa malva */
+  --venezia-accent: #648564;         /* Verde salvia */
+  --venezia-light: #faf8f5;          /* Crema claro */
+  --venezia-dark: #594936;           /* Café oscuro */
+  --venezia-text: #594936;           /* Texto café */
+  --venezia-border: #e8dcc9;         /* Borde crema */
   
-  /* Ice Cream Flavor Palette */
-  --flavor-vanilla: #fffbf7;
-  --flavor-strawberry: #ec4899;
-  --flavor-chocolate: #43302b;
-  --flavor-mint: #14b8a6;
-  --flavor-pistachio: #84cc16;
-  --flavor-caramel: #f59e0b;
+  /* Flavor Palette - Tonos suaves */
+  --flavor-vanilla: #faf8f5;
+  --flavor-rose: #f9d1df;
+  --flavor-mocha: #6b5940;
+  --flavor-sage: #b1c7b1;
+  --flavor-caramel: #d4c4a8;
   
   /* Temperature Theme */
   --frost-light: #f0fdfa;
@@ -61,23 +66,22 @@
   --transition-slow: 350ms ease-in-out;
 }
 
-/* Dark Mode Ice Cream Theme */
+/* Dark Mode Theme */
 .dark {
-  --venezia-primary: #fbbf24;        /* Warm Golden Caramel */
-  --venezia-secondary: #f472b6;      /* Bright Strawberry */
-  --venezia-accent: #2dd4bf;         /* Cool Mint */
-  --venezia-light: #1f2937;          /* Dark Chocolate Base */
-  --venezia-dark: #fef7ed;           /* Light Cream */
-  --venezia-text: #f3f4f6;           /* Cream Text */
-  --venezia-border: #4b5563;         /* Muted Border */
+  --venezia-primary: #d4c4a8;        /* Crema cálido */
+  --venezia-secondary: #f4a9c3;      /* Rosa suave */
+  --venezia-accent: #87a687;         /* Verde salvia claro */
+  --venezia-light: #1f2937;          /* Gris oscuro */
+  --venezia-dark: #f3f1ed;           /* Crema muy claro */
+  --venezia-text: #f3f1ed;           /* Texto claro */
+  --venezia-border: #364536;         /* Borde oscuro */
   
-  /* Dark Mode Flavors - Richer & Warmer */
-  --flavor-vanilla: #f9fafb;
-  --flavor-strawberry: #f472b6;
-  --flavor-chocolate: #6b7280;
-  --flavor-mint: #34d399;
-  --flavor-pistachio: #a3e635;
-  --flavor-caramel: #fbbf24;
+  /* Dark Mode Flavors - Tonos suaves */
+  --flavor-vanilla: #f3f1ed;
+  --flavor-rose: #f4a9c3;
+  --flavor-mocha: #8b7968;
+  --flavor-sage: #87a687;
+  --flavor-caramel: #bfb3a1;
 }
 
 /* Base styles */
@@ -99,7 +103,7 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
   line-height: 1.65;
   color: var(--venezia-text);
-  background-color: var(--venezia-light);
+  background-color: #faf8f5; /* Crema claro para modo claro */
   transition: background-color var(--transition-normal), color var(--transition-normal);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -109,6 +113,11 @@ body {
   -webkit-overflow-scrolling: touch;
   /* Mejorar legibilidad */
   letter-spacing: 0.01em;
+}
+
+/* Dark mode body background */
+.dark body {
+  background-color: #1f2937; /* Gris oscuro para modo oscuro */
 }
 
 /* Performance optimizations */
@@ -411,7 +420,7 @@ body {
 }
 
 .metric-label {
-  @apply text-xs text-gray-600 dark:text-gray-400 font-medium uppercase tracking-wider;
+  @apply text-xs text-gray-700 dark:text-gray-300 font-medium uppercase tracking-wider;
 }
 
 .metric-change {

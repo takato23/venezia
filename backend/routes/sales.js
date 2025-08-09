@@ -10,67 +10,56 @@ const USE_SUPABASE = process.env.USE_SUPABASE === 'true' || process.env.SUPABASE
 
 // ==================== SALES ENDPOINTS ====================
 
-// Create a new sale
+// POST /api/sales
 router.post('/', async (req, res) => {
   try {
-    const { items, customer, payment_method, discount, total } = req.body;
-    
-    // Validate required fields
-    if (!items || items.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Se requiere al menos un producto para procesar la venta'
-      });
+    const { items, customer, payment_method, admin_code, store_id } = req.body;
+
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ success: false, data: null, error: { code: 'INVALID', msg: 'Se requiere al menos un ítem' } });
     }
 
-    if (!total || total <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'El total de la venta debe ser mayor a 0'
-      });
-    }
+    const effectiveStoreId = Number(store_id || req.user?.store_id || 1);
+    const effectiveUserId = Number(req.user?.id || 1);
 
-    // Use Supabase if available
-    if (USE_SUPABASE) {
-      try {
-        const result = await Sale.create({
-          customer_id: customer?.id || null,
-          store_id: req.user?.store_id || 1,
-          user_id: req.user?.id || 1,
-          total,
-          payment_method: payment_method || 'cash',
-          items: items.map(item => ({
-            product_id: item.product_id || item.id,
-            quantity: item.quantity,
-            price: item.price || item.unit_price || 0
-          }))
-        });
+    const subtotal = items.reduce((sum, it) => sum + ((Number(it.price) || 0) * Number(it.quantity || 0)), 0);
+    const round2 = (n) => Math.round(n * 100) / 100;
 
-        // Send notification for new order
-        const notificationService = getNotificationService();
-        if (notificationService) {
-          notificationService.notifyNewOrder({
-            id: result.sale.id,
-            order_number: result.receipt_number,
-            customer_name: customer?.name || 'Cliente',
-            total_amount: total,
-            store_id: req.user?.store_id || 1
-          }).catch(err => console.error('Error sending notification:', err));
-        }
-
-        return res.json({
-          success: true,
-          message: 'Venta procesada exitosamente',
-          receipt_number: result.receipt_number,
-          sale: result.sale
-        });
-      } catch (supabaseError) {
-        console.error('Supabase error, falling back to SQLite:', supabaseError);
-        // Fall through to SQLite implementation
+    // Admin code validation
+    let codeRow = null;
+    let discountAmount = 0;
+    if (admin_code) {
+      codeRow = await getAsync('SELECT * FROM admin_codes WHERE code = ?', [String(admin_code).trim()]);
+      if (!codeRow) {
+        return res.status(400).json({ success: false, data: null, error: { code: 'INVALID', msg: 'Código inválido' } });
+      }
+      if (codeRow.status !== 'active') {
+        return res.status(400).json({ success: false, data: null, error: { code: 'DISABLED', msg: 'Código deshabilitado' } });
+      }
+      if (codeRow.expires_at && new Date(codeRow.expires_at).getTime() < Date.now()) {
+        return res.status(400).json({ success: false, data: null, error: { code: 'EXPIRED', msg: 'Código expirado' } });
+      }
+      if (codeRow.max_uses !== null && typeof codeRow.max_uses !== 'undefined' && codeRow.uses >= codeRow.max_uses) {
+        return res.status(400).json({ success: false, data: null, error: { code: 'CAPACITY_REACHED', msg: 'Límite de usos alcanzado' } });
+      }
+      if (codeRow.store_id && Number(codeRow.store_id) !== effectiveStoreId) {
+        return res.status(400).json({ success: false, data: null, error: { code: 'STORE_MISMATCH', msg: 'Código no aplicable a esta tienda' } });
+      }
+      if (codeRow.discount_type === 'percent') {
+        discountAmount = round2(subtotal * Number(codeRow.discount_value || 0) / 100);
+      } else if (codeRow.discount_type === 'amount') {
+        discountAmount = Math.min(Number(codeRow.discount_value || 0), subtotal);
+        discountAmount = round2(discountAmount);
+      } else {
+        discountAmount = 0;
       }
     }
 
-    // SQLite implementation (fallback)
+    const totalFinal = Math.max(0, round2(subtotal - discountAmount));
+
+    // Start transaction
+    await runAsync('BEGIN TRANSACTION');
+
     // Create or find customer
     let customerId = null;
     if (customer && customer.name) {
@@ -90,26 +79,42 @@ router.post('/', async (req, res) => {
       }
     }
     
-    // Create sale
+    // Create sale with final total
     const saleResult = await runAsync(
       'INSERT INTO sales (customer_id, store_id, user_id, total, payment_method) VALUES (?, ?, ?, ?, ?)',
-      [customerId, req.user?.store_id || 1, req.user?.id || 1, total, payment_method || 'cash']
+      [customerId, effectiveStoreId, effectiveUserId, totalFinal, payment_method || 'cash']
     );
     
     // Add sale items and update stock
     for (const item of items) {
+      const unit = Number(item.price || 0);
+      const qty = Number(item.quantity || 0);
       await runAsync(
         'INSERT INTO sale_items (sale_id, product_id, quantity, unit_price, subtotal) VALUES (?, ?, ?, ?, ?)',
-        [saleResult.id, item.product_id || item.id, item.quantity, item.price || 0, (item.price || 0) * item.quantity]
+        [saleResult.id, item.product_id, qty, unit, round2(unit * qty)]
       );
-      
-      // Update product stock
       await runAsync(
         'UPDATE products SET current_stock = current_stock - ? WHERE id = ?',
-        [item.quantity, item.product_id || item.id]
+        [qty, item.product_id]
       );
     }
     
+    // Register admin code usage and increment uses
+    if (codeRow) {
+      await runAsync(
+        'INSERT INTO admin_codes_uses (code_id, sale_id, user_id, store_id) VALUES (?, ?, ?, ?)',
+        [codeRow.id, saleResult.id, effectiveUserId, effectiveStoreId]
+      );
+      const upd = await runAsync(
+        "UPDATE admin_codes SET uses = uses + 1 WHERE id = ? AND status = 'active' AND (max_uses IS NULL OR uses < max_uses)",
+        [codeRow.id]
+      );
+      if (!upd || upd.changes === 0) {
+        await runAsync('ROLLBACK');
+        return res.status(400).json({ success: false, data: null, error: { code: 'CAPACITY_REACHED', msg: 'Límite de usos alcanzado' } });
+      }
+    }
+
     // Update customer stats if applicable
     if (customerId) {
       await runAsync(
@@ -118,50 +123,46 @@ router.post('/', async (req, res) => {
              total_spent = total_spent + ?,
              last_order_date = CURRENT_TIMESTAMP
          WHERE id = ?`,
-        [total, customerId]
+        [totalFinal, customerId]
       );
     }
     
     // Add to cash flow if payment is cash
-    if (payment_method === 'cash') {
-      await CashFlow.addMovement(
-        req.user?.store_id || 1, 
-        req.user?.id || 1, 
-        'income', 
-        total, 
-        `Venta #${saleResult.id}`, 
-        saleResult.id
-      );
+    if ((payment_method || 'cash') === 'cash') {
+      await CashFlow.addMovement(effectiveUserId, effectiveStoreId, 'income', totalFinal, `Venta #${saleResult.id}`, saleResult.id);
     }
-    
-    // Send notification for new order
-    const notificationService = getNotificationService();
-    if (notificationService) {
-      notificationService.notifyNewOrder({
-        id: saleResult.id,
-        order_number: `VEN-${saleResult.id.toString().padStart(6, '0')}`,
-        customer_name: customer?.name || 'Cliente',
-        total_amount: total,
-        store_id: req.user?.store_id || 1
-      }).catch(err => console.error('Error sending notification:', err));
-    }
+
+    await runAsync('COMMIT');
     
     res.json({
       success: true,
       message: 'Venta procesada exitosamente',
       receipt_number: `VEN-${saleResult.id.toString().padStart(6, '0')}`,
+      data: {
+        sale_id: saleResult.id,
+        total: round2(subtotal),
+        discount: round2(discountAmount),
+        total_final: totalFinal,
+        admin_code: codeRow ? {
+          code: codeRow.code,
+          type: codeRow.type,
+          discount_type: codeRow.discount_type,
+          discount_value: codeRow.discount_value
+        } : null
+      },
       sale: {
         id: saleResult.id,
-        total,
+        total: totalFinal,
         payment_method
       }
     });
   } catch (error) {
+    try { await runAsync('ROLLBACK'); } catch {}
     console.error('Error processing sale:', error);
     res.status(500).json({
       success: false,
-      message: 'Error al procesar venta',
-      error: error.message
+      data: null,
+      error: { code: 'SERVER_ERROR', msg: 'Error al procesar venta' }
     });
   }
 });

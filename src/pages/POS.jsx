@@ -77,6 +77,9 @@ const POSPage = () => {
   const [lastSale, setLastSale] = useState(null);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [adminCode, setAdminCode] = useState('');
+  const [adminCodeInfo, setAdminCodeInfo] = useState(null);
+  const [adminCodeStatus, setAdminCodeStatus] = useState(null); // 'valid' | 'invalid' | 'expired' | 'capacity' | 'disabled' | 'store_mismatch'
   
   // API Data
   const { 
@@ -108,12 +111,19 @@ const POSPage = () => {
   // Loading state
   const loading = loadingProducts || loadingCategories || loadingCustomers || loadingRecentSales || loadingCashStatus;
 
-  // Safe data with proper array validation
-  const safeProducts = Array.isArray(products) ? products : [];
-  const safeCategories = Array.isArray(categories) ? categories : [];
-  const safeCustomers = Array.isArray(customers) ? customers : [];
-  const safeRecentSales = Array.isArray(recentSales) ? recentSales : [];
-  const safeCashStatus = cashStatus || { available: 0 };
+  // Safe data with proper API response structure handling
+  const safeProducts = Array.isArray(products?.data) ? products.data : 
+                      Array.isArray(products?.products) ? products.products :
+                      Array.isArray(products) ? products : [];
+  const safeCategories = Array.isArray(categories?.data) ? categories.data : 
+                        Array.isArray(categories?.categories) ? categories.categories :
+                        Array.isArray(categories) ? categories : [];
+  const safeCustomers = Array.isArray(customers?.data) ? customers.data : 
+                       Array.isArray(customers) ? customers : [];
+  const safeRecentSales = Array.isArray(recentSales?.data) ? recentSales.data : 
+                         Array.isArray(recentSales?.sales) ? recentSales.sales :
+                         Array.isArray(recentSales) ? recentSales : [];
+  const safeCashStatus = cashStatus?.data || cashStatus || { available: 0 };
   
   // Filter products
   const filteredProducts = useMemo(() => {
@@ -145,6 +155,53 @@ const POSPage = () => {
       itemCount
     };
   }, [cart, discount, discountType]);
+
+  const validateAdminCode = async () => {
+    try {
+      setAdminCodeStatus(null);
+      const resp = await fetch('/api/admin/admin_codes/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: adminCode, store_id: 1 })
+      });
+      const result = await resp.json();
+      if (!resp.ok || !result?.success) {
+        const code = result?.error?.code || 'INVALID';
+        setAdminCodeInfo(null);
+        if (code === 'EXPIRED') setAdminCodeStatus('expired');
+        else if (code === 'CAPACITY_REACHED') setAdminCodeStatus('capacity');
+        else if (code === 'DISABLED') setAdminCodeStatus('disabled');
+        else if (code === 'STORE_MISMATCH') setAdminCodeStatus('store_mismatch');
+        else setAdminCodeStatus('invalid');
+        error('Código inválido', result?.error?.msg || 'No se pudo validar el código');
+        return;
+      }
+      setAdminCodeInfo(result.data);
+      setAdminCodeStatus('valid');
+      // Aplicar descuento al carrito para vista previa
+      if (result.data.discount_type === 'percent') {
+        setDiscountType('percent');
+        setDiscount(Number(result.data.discount_value || 0));
+      } else if (result.data.discount_type === 'amount') {
+        setDiscountType('fixed');
+        setDiscount(Number(result.data.discount_value || 0));
+      } else {
+        setDiscountType('percent');
+        setDiscount(0);
+      }
+      success('Código aplicado', 'Descuento aplicado al total');
+    } catch (e) {
+      error('Error', 'No se pudo validar el código');
+    }
+  };
+
+  const removeAdminCode = () => {
+    setAdminCode('');
+    setAdminCodeInfo(null);
+    setAdminCodeStatus(null);
+    setDiscount(0);
+    setDiscountType('percent');
+  };
   
   // Top products (sorted by sales frequency)
   const topProducts = useMemo(() => {
@@ -277,8 +334,8 @@ const POSPage = () => {
           phone: deliveryData.phone || ''
         },
         payment_method: paymentMethod,
-        discount: discountType === 'percent' ? discount : 0,
-        total: parseFloat(cartStats.total)
+        store_id: 1,
+        admin_code: adminCodeInfo?.code || undefined
       };
       
       let endpoint = '/api/sales';
@@ -325,8 +382,8 @@ const POSPage = () => {
           customer_email: customer?.email || '',
           payment_method: paymentMethod,
           receipt_number: result.receipt_number,
-          discount: discount,
-          discount_type: discountType,
+          discount: result?.data?.discount ?? discount,
+          discount_type: adminCodeInfo?.discount_type === 'amount' ? 'fixed' : (adminCodeInfo?.discount_type || discountType),
           sale_type: orderType,
           delivery_address: orderType === 'delivery' ? deliveryData.address : null,
           estimated_time: orderType === 'delivery' ? deliveryData.estimatedTime : null
@@ -354,6 +411,9 @@ const POSPage = () => {
         setCart([]);
         setCustomer(null);
         setDiscount(0);
+        setAdminCode('');
+        setAdminCodeInfo(null);
+        setAdminCodeStatus(null);
         setOrderType('pickup');
         setDeliveryData({
           address: '',
@@ -449,8 +509,8 @@ const POSPage = () => {
           payment_method: paymentData.method,
           payment_id: paymentData.transactionId,
           receipt_number: result.receipt_number,
-          discount: discount,
-          discount_type: discountType,
+          discount: result?.data?.discount ?? discount,
+          discount_type: adminCodeInfo?.discount_type === 'amount' ? 'fixed' : (adminCodeInfo?.discount_type || discountType),
           sale_type: orderType,
           delivery_address: orderType === 'delivery' ? deliveryData.address : null,
           estimated_time: orderType === 'delivery' ? deliveryData.estimatedTime : null
@@ -466,6 +526,9 @@ const POSPage = () => {
         setCart([]);
         setCustomer(null);
         setDiscount(0);
+        setAdminCode('');
+        setAdminCodeInfo(null);
+        setAdminCodeStatus(null);
         setOrderType('pickup');
         setDeliveryData({
           address: '',
@@ -501,7 +564,7 @@ const POSPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Punto de Venta</h1>
-          <p className="text-gray-600 dark:text-gray-400">Sistema de ventas rápido y eficiente</p>
+          <p className="text-gray-700 dark:text-gray-300">Sistema de ventas rápido y eficiente</p>
         </div>
         
         <div className="flex items-center gap-3">
@@ -853,6 +916,42 @@ const POSPage = () => {
             }}
             className="mb-4"
           />
+
+          {/* Admin Code */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Código de administrador
+            </label>
+            <div className="flex items-center gap-2">
+              <Input
+                aria-label="Código de administrador"
+                placeholder="Ingresa el código"
+                value={adminCode}
+                onChange={(e)=>setAdminCode(e.target.value)}
+                className="flex-1"
+              />
+              <Button onClick={validateAdminCode} aria-label="Validar y aplicar código">
+                Validar/Aplicar
+              </Button>
+              {adminCodeInfo && (
+                <Button variant="outline" onClick={removeAdminCode} aria-label="Quitar código aplicado">
+                  Quitar
+                </Button>
+              )}
+            </div>
+            {adminCodeStatus === 'valid' && (
+              <p className="text-green-600 text-sm mt-1">Código válido. Descuento aplicado.</p>
+            )}
+            {adminCodeStatus && adminCodeStatus !== 'valid' && (
+              <p className="text-red-600 text-sm mt-1">
+                {adminCodeStatus === 'expired' && 'Código expirado'}
+                {adminCodeStatus === 'capacity' && 'Límite de usos alcanzado'}
+                {adminCodeStatus === 'disabled' && 'Código deshabilitado'}
+                {adminCodeStatus === 'store_mismatch' && 'Código no aplicable a esta tienda'}
+                {adminCodeStatus === 'invalid' && 'Código inválido'}
+              </p>
+            )}
+          </div>
           
           {/* Discount */}
           <div>
@@ -894,6 +993,12 @@ const POSPage = () => {
                 <span>Descuento:</span>
                 <span>-${cartStats.discountAmount}</span>
               </div>
+              {adminCodeInfo && (
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Código aplicado:</span>
+                  <span>{adminCodeInfo.code} ({adminCodeInfo.discount_type === 'percent' ? `${adminCodeInfo.discount_value}%` : `$${adminCodeInfo.discount_value}`})</span>
+                </div>
+              )}
               <div className="flex justify-between font-bold text-lg">
                 <span>Total:</span>
                 <span>${cartStats.total}</span>

@@ -37,6 +37,12 @@ desktop.ini
 # Logs
 logs/
 *.log
+*.log.*
+.frontend.log
+.backend.log
+frontend.log
+backend.log
+dev_server.log
 
 # Testing
 coverage/
@@ -59,7 +65,8 @@ flask_session/
 *.db
 *.sqlite3
 *.sqlite
-!backend/database/venezia.db
+# NOTE: We avoid re-including local/dev DBs
+# (existing tracked DB files will remain tracked unless removed from index)
 
 # Backups (keep only recent)
 backend/backups/*
@@ -71,6 +78,10 @@ backend/backups/*.json
 *.temp
 *.cache
 .cache/
+*.pid
+.frontend.pid
+.server.pid
+backend/.server.pid
 
 # Bundle analysis
 stats.json
@@ -81,6 +92,9 @@ workbox-*.js
 sw.js
 
 # Misc
+# Built frontend artifacts (do not version control compiled bundles)
+app/static/dist/
+app/static/dist/**
 *.rar
 *.backup
 *.old

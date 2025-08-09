@@ -18,9 +18,9 @@ const ModernMetricCard = ({
   // Ice Cream Flavor Gradients
   const flavorGradients = {
     vanilla: 'from-venezia-400 to-venezia-600',
-    strawberry: 'from-primary-400 to-primary-600', 
+    strawberry: 'from-accent-400 to-accent-600', 
     chocolate: 'from-chocolate-500 to-chocolate-700',
-    mint: 'from-mint-400 to-mint-600',
+    mint: 'from-sage-400 to-sage-600',
     pistachio: 'from-pistachio-400 to-pistachio-600',
     caramel: 'from-venezia-500 to-venezia-700',
   };
@@ -28,9 +28,9 @@ const ModernMetricCard = ({
   // Ice Cream Background Themes
   const flavorBackgrounds = {
     vanilla: 'from-venezia-50/80 to-venezia-100/80 dark:from-venezia-900/20 dark:to-venezia-800/20',
-    strawberry: 'from-primary-50/80 to-primary-100/80 dark:from-primary-900/20 dark:to-primary-800/20',
+    strawberry: 'from-accent-50/80 to-accent-100/80 dark:from-accent-900/20 dark:to-accent-800/20',
     chocolate: 'from-chocolate-50/80 to-chocolate-100/80 dark:from-chocolate-900/20 dark:to-chocolate-800/20',
-    mint: 'from-mint-50/80 to-mint-100/80 dark:from-mint-900/20 dark:to-mint-800/20',
+    mint: 'from-sage-50/80 to-sage-100/80 dark:from-sage-900/20 dark:to-sage-800/20',
     pistachio: 'from-pistachio-50/80 to-pistachio-100/80 dark:from-pistachio-900/20 dark:to-pistachio-800/20',
     caramel: 'from-venezia-50/80 to-venezia-200/80 dark:from-venezia-900/20 dark:to-venezia-700/20',
   };
@@ -136,8 +136,8 @@ const ModernMetricCard = ({
                 className={clsx(
                   'flavor-tag flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold shadow-md',
                   'backdrop-blur-sm border',
-                  changeType === 'positive' && 'flavor-mint border-mint-300 bg-mint-100/90 text-mint-700 dark:bg-mint-900/40 dark:text-mint-300 dark:border-mint-600',
-                  changeType === 'negative' && 'flavor-strawberry border-primary-300 bg-primary-100/90 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300 dark:border-primary-600',
+                  changeType === 'positive' && 'sage border-sage-300 bg-sage-100/90 text-sage-700 dark:bg-sage-900/40 dark:text-sage-300 dark:border-sage-600',
+                  changeType === 'negative' && 'accent border-accent-300 bg-accent-100/90 text-accent-700 dark:bg-accent-900/40 dark:text-accent-300 dark:border-accent-600',
                   changeType === 'neutral' && 'flavor-vanilla border-venezia-300 bg-venezia-100/90 text-venezia-700 dark:bg-venezia-900/40 dark:text-venezia-300 dark:border-venezia-600'
                 )}
               >

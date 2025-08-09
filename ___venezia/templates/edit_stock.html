@@ -1,0 +1,421 @@
+{% extends "base.html" %}
+
+{% block title %}{% if show_store_selection %}Seleccionar Tienda{% else %}Editar Stock - {{ store.name }}{% endif %} - Sistema de Gestión de Helados{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% if show_store_selection %}
+        <h1 class="mb-4">Seleccionar Tienda</h1>
+        <div class="row">
+            {% for store in stores %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ store.name }}</h5>
+                        {% if store.address %}
+                            <p class="card-text">{{ store.address }}</p>
+                        {% endif %}
+                        <a href="{{ url_for('edit_store_stock', store_id=store.id) }}" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> Editar Stock
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <h1 class="mb-4">Editar Stock - {{ store.name }}</h1>
+        <div class="mb-4 d-flex align-items-center">
+            <a href="{{ url_for('edit_store_stock') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver a Selección de Tienda
+            </a>
+            <div class="ml-3" style="max-width: 320px;">
+                <div class="input-group">
+                    <div class="input-group-prepend"><span class="input-group-text"><i class="fas fa-search"></i></span></div>
+                    <input id="stockSearch" type="text" class="form-control" placeholder="Buscar producto/sabor...">
+                </div>
+            </div>
+        </div>
+
+        {% for category_name, products in category_products.items() %}
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">{{ category_name }}</h5>
+                {% if category_name == 'Sabores' %}
+                <button type="button" class="btn btn-primary btn-sm" 
+                        data-toggle="modal" 
+                        data-target="#massEditModal">
+                    <i class="fas fa-edit"></i> Copiar Stock Mínimo
+                </button>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped stock-table-section">
+                        <thead>
+                            <tr>
+                                {% if category_name == 'Sabores' %}
+                                <th style="width: 30px;">
+                                    <input type="checkbox" id="selectAll" title="Seleccionar Todos">
+                                </th>
+                                {% endif %}
+                                <th>Producto</th>
+                                <th>Stock Actual</th>
+                                <th>Stock Mínimo</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in products %}
+                            <tr class="stock-row">
+                                {% if category_name == 'Sabores' %}
+                                <td>
+                                    <input type="checkbox" class="product-select" 
+                                           data-product-id="{{ item.id }}"
+                                           data-product-name="{{ item.name }}">
+                                </td>
+                                {% endif %}
+                                <td class="product-name">{{ item.name }}</td>
+                                <td>{{ "%.2f"|format(item.quantity) if item.quantity else 0.00 }}</td>
+                                <td>{{ "%.2f"|format(item.minimum) if item.minimum else 0.00 }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-sm" 
+                                            data-toggle="modal" 
+                                            data-target="#editModal"
+                                            data-product-id="{{ item.id }}"
+                                            data-product-name="{{ item.name }}"
+                                            data-quantity="{{ item.quantity }}"
+                                            data-minimum="{{ item.minimum }}"
+                                            data-sales-format="{{ item.sales_format }}">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="{% if category_name == 'Sabores' %}5{% else %}4{% endif %}" class="text-center">
+                                    No hay productos en esta categoría
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Precios de Potes -->
+        <div class="card mb-4" id="pote-prices">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Precios de Potes</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Presentación</th>
+                                <th>Precio</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pote in pote_products %}
+                            <tr>
+                                <td>{{ pote.name }} ({{ pote.sales_format }})</td>
+                                <td>$ {{ '%.2f'|format(pote.price) }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#priceModal"
+                                            data-product-id="{{ pote.id }}" data-product-name="{{ pote.name }}" data-price="{{ pote.price }}">
+                                        <i class="fas fa-edit"></i> Editar Precio
+                                    </button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center">No hay potes configurados</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Editar Precio -->
+        <div class="modal fade" id="priceModal" tabindex="-1" role="dialog" aria-labelledby="priceModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <form method="POST" action="{{ url_for('update_pote_price', store_id=store.id) }}">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="priceModalLabel">Editar Precio</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="product_id" id="price_product_id">
+                            <div class="form-group">
+                                <label>Producto</label>
+                                <input type="text" class="form-control" id="price_product_name" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="new_price">Nuevo Precio</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend"><span class="input-group-text">$</span></div>
+                                    <input type="number" min="0" step="0.01" class="form-control" id="new_price" name="new_price" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Modal -->
+        <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <form method="POST" action="{{ url_for('edit_store_stock', store_id=store.id) }}">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editModalLabel">Editar Stock</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="product_id" id="product_id">
+                            
+                            <div class="form-group">
+                                <label>Producto</label>
+                                <input type="text" class="form-control" id="product_name" readonly>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="quantity">Stock Actual</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" min="0" class="form-control" id="quantity" name="quantity" required>
+                                    <div class="input-group-append">
+                                        <span class="input-group-text" id="format_label">KG</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="notes">Notas</label>
+                                <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                        placeholder="Razón del ajuste de stock"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mass Edit Modal -->
+        <div class="modal fade" id="massEditModal" tabindex="-1" role="dialog" aria-labelledby="massEditModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <form id="massEditForm" method="POST" action="{{ url_for('mass_edit_minimum_stock', store_id=store.id) }}">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="massEditModalLabel">Copiar Stock Mínimo</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="source_product">Copiar Stock Mínimo de:</label>
+                                <select class="form-control" id="source_product" name="source_product" required>
+                                    <option value="">Seleccione un sabor...</option>
+                                    {% for item in category_products['Sabores'] %}
+                                    <option value="{{ item.id }}" 
+                                            data-minimum="{{ item.minimum }}">
+                                        {{ item.name }} (Min: {{ "%.2f"|format(item.minimum) }} KG)
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Aplicar a los siguientes sabores:</label>
+                                <div id="selectedProducts" class="mt-2">
+                                    <p class="text-muted">No hay sabores seleccionados</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Aplicar Cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if not show_store_selection %}
+<script>
+$(document).ready(function() {
+    // Single edit modal handler
+    $('#editModal').on('show.bs.modal', function(event) {
+        const button = $(event.relatedTarget);
+        const productId = button.data('product-id');
+        const productName = button.data('product-name');
+        const quantity = button.data('quantity');
+        const minimum = button.data('minimum');
+        const salesFormat = button.data('sales-format');
+        
+        const modal = $(this);
+        modal.find('#product_id').val(productId);
+        modal.find('#product_name').val(productName);
+        modal.find('#quantity').val(quantity);
+        modal.find('#format_label').text(salesFormat);
+        
+        if (salesFormat === 'KG') {
+            modal.find('#quantity').attr('step', '0.01');
+        } else {
+            modal.find('#quantity').attr('step', '1');
+        }
+    });
+
+    // Búsqueda rápida
+    $('#stockSearch').on('input', function() {
+        const q = $(this).val().toLowerCase();
+        $('.stock-table-section tbody tr').each(function() {
+            const name = $(this).find('.product-name').text().toLowerCase();
+            if (!q || name.includes(q)) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    });
+
+    // Atajos de teclado: / enfoca búsqueda, Enter confirma modal
+    $(document).on('keydown', function(e) {
+        // Ignorar si estamos escribiendo en inputs/textarea
+        const tag = e.target.tagName.toLowerCase();
+        if (tag === 'input' || tag === 'textarea') return;
+        if (e.key === '/') {
+            e.preventDefault();
+            $('#stockSearch').focus();
+        }
+    });
+
+    // Enter en inputs del modal guarda
+    $('#editModal').on('shown.bs.modal', function() {
+        const $form = $(this).find('form');
+        $(this).find('input').off('keydown.saveEnter').on('keydown.saveEnter', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                $form.trigger('submit');
+            }
+        });
+    });
+
+    // Modal precio
+    $('#priceModal').on('show.bs.modal', function(event) {
+        const button = $(event.relatedTarget);
+        const productId = button.data('product-id');
+        const productName = button.data('product-name');
+        const price = button.data('price');
+        const modal = $(this);
+        modal.find('#price_product_id').val(productId);
+        modal.find('#price_product_name').val(productName);
+        modal.find('#new_price').val(price);
+    });
+
+    // Select all checkbox handler
+    $('#selectAll').change(function() {
+        $('.product-select').prop('checked', $(this).prop('checked'));
+        updateSelectedProducts();
+    });
+
+    // Individual checkbox handler
+    $('.product-select').change(function() {
+        updateSelectedProducts();
+        
+        // Update "Select All" checkbox
+        const allChecked = $('.product-select:checked').length === $('.product-select').length;
+        $('#selectAll').prop('checked', allChecked);
+    });
+
+    // Update selected products in mass edit modal
+    function updateSelectedProducts() {
+        const selectedProducts = $('.product-select:checked').map(function() {
+            return {
+                id: $(this).data('product-id'),
+                name: $(this).data('product-name')
+            };
+        }).get();
+
+        const container = $('#selectedProducts');
+        if (selectedProducts.length === 0) {
+            container.html('<p class="text-muted">No hay sabores seleccionados</p>');
+        } else {
+            const productList = selectedProducts.map(p => 
+                `<div class="selected-product">
+                    <input type="hidden" name="target_products[]" value="${p.id}">
+                    ${p.name}
+                </div>`
+            ).join('');
+            container.html(productList);
+        }
+    }
+
+    // Mass edit form submission
+    $('#massEditForm').submit(function(e) {
+        e.preventDefault();
+        
+        const sourceProduct = $('#source_product').val();
+        const targetProducts = $('.product-select:checked').map(function() {
+            return $(this).data('product-id');
+        }).get();
+
+        if (!sourceProduct) {
+            alert('Por favor seleccione un sabor del cual copiar el stock mínimo');
+            return;
+        }
+
+        if (targetProducts.length === 0) {
+            alert('Por favor seleccione al menos un sabor al cual aplicar el stock mínimo');
+            return;
+        }
+
+        // Submit form via AJAX
+        $.ajax({
+            url: $(this).attr('action'),
+            method: 'POST',
+            data: {
+                source_product: sourceProduct,
+                target_products: targetProducts
+            },
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert(response.error || 'Error al actualizar el stock mínimo');
+                }
+            },
+            error: function() {
+                alert('Error al procesar la solicitud');
+            }
+        });
+    });
+});
+</script>
+{% endif %}
+{% endblock %}

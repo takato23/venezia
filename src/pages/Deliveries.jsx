@@ -70,10 +70,14 @@ const DeliveriesPage = () => {
     loading: loadingOrders 
   } = useApiCache('/api/sales');
 
-  // Safe arrays
-  const safeDeliveries = deliveries || [];
-  const safeDrivers = drivers || [];
-  const safeOrders = orders?.sales || orders || [];
+  // Safe arrays - handle API response structure
+  const safeDeliveries = Array.isArray(deliveries?.data) ? deliveries.data : 
+                        Array.isArray(deliveries) ? deliveries : [];
+  const safeDrivers = Array.isArray(drivers?.data) ? drivers.data : 
+                     Array.isArray(drivers) ? drivers : [];
+  const safeOrders = Array.isArray(orders?.sales) ? orders.sales :
+                    Array.isArray(orders?.data) ? orders.data :
+                    Array.isArray(orders) ? orders : [];
 
   const loading = loadingDeliveries || loadingDrivers || loadingOrders;
 

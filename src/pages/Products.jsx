@@ -16,7 +16,7 @@ import {
   AlertTriangle,
   ChevronDown
 } from 'lucide-react';
-import { useAuth } from '../store/authStore';
+import { useAuth } from '../hooks/useAuth';
 import { useSocket } from '../services/socketMock';
 import { useApiCache, useMultipleApiCache } from '../hooks/useApiCache';
 import { useToast } from '../hooks/useToast';
@@ -83,7 +83,7 @@ const CategorySection = memo(({ categoryName, products, categories, onEdit, onDe
     </h2>
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {products.map(product => {
-        const category = (categories || []).find(c => c.id === product.category_id);
+        const category = (categories?.data || categories || []).find(c => c.id === product.category_id);
         return (
           <ProductCard
             key={product.id}
@@ -133,9 +133,10 @@ const Products = () => {
 
   // Filtrar productos memoizado
   const filteredProducts = useMemo(() => {
-    if (!Array.isArray(products)) return [];
+    const productsList = products?.products || products || [];
+    if (!Array.isArray(productsList)) return [];
     
-    return products.filter(product => {
+    return productsList.filter(product => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            (product.description || '').toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = filterCategory === '' || product.category_id === parseInt(filterCategory);
@@ -148,7 +149,7 @@ const Products = () => {
     if (!categories) return {};
     
     return filteredProducts.reduce((acc, product) => {
-      const categoryName = (categories || []).find(c => c.id === product.category_id)?.name || 'Sin categoría';
+      const categoryName = (categories?.data || categories || []).find(c => c.id === product.category_id)?.name || 'Sin categoría';
       if (!acc[categoryName]) {
         acc[categoryName] = [];
       }
@@ -330,10 +331,10 @@ const Products = () => {
               onChange={(e) => setFilterCategory(e.target.value)}
               options={[
                 { value: '', label: 'Todas las categorías' },
-                ...(categories || []).map(cat => ({
+                ...((categories?.data || categories || []).map(cat => ({
                   value: cat.id.toString(),
                   label: cat.name
-                }))
+                })))
               ]}
             />
           </div>
@@ -347,7 +348,7 @@ const Products = () => {
             key={categoryName}
             categoryName={categoryName}
             products={categoryProducts}
-            categories={categories}
+            categories={categories?.data || categories || []}
             onEdit={handleEditProduct}
             onDelete={handleDeleteProduct}
             onView={handleViewProduct}
@@ -444,10 +445,10 @@ const ProductModal = ({ product, categories, onSave, onClose }) => {
             onChange={(e) => setFormData({...formData, category_id: e.target.value})}
             options={[
               { value: '', label: 'Seleccionar categoría' },
-              ...(categories || []).map(cat => ({
+              ...((categories?.data || categories || []).map(cat => ({
                 value: cat.id.toString(),
                 label: cat.name
-              }))
+              })))
             ]}
             required
           />

@@ -61,7 +61,7 @@ const ProductionPage = () => {
     data: orders, 
     loading: loadingOrders, 
     refetch: refetchOrders 
-  } = useApiCache('/api/production_orders');
+  } = useApiCache('/api/production_batches');
   
   const { 
     data: batches, 
@@ -85,8 +85,10 @@ const ProductionPage = () => {
   } = useApiCache('/api/ingredients');
   
   // Ensure arrays are never null and handle API response structure
-  const safeOrders = orders || [];
-  const safeBatches = batches || [];
+  const safeOrders = Array.isArray(orders?.orders) ? orders.orders :
+                     Array.isArray(orders) ? orders : [];
+  const safeBatches = Array.isArray(batches?.batches) ? batches.batches :
+                      Array.isArray(batches) ? batches : [];
   const safeRecipes = Array.isArray(recipes?.recipes) ? recipes.recipes : 
                      Array.isArray(recipes) ? recipes : [];
   const safeProducts = Array.isArray(products?.products) ? products.products : 
@@ -231,8 +233,8 @@ const ProductionPage = () => {
   const handleSaveOrder = async (data) => {
     try {
       const url = selectedOrder 
-        ? `/api/production_orders/${selectedOrder.id}`
-        : '/api/production_orders';
+        ? `/api/production_batches/${selectedOrder.id}`
+        : '/api/production_batches';
       
       const response = await fetch(url, {
         method: selectedOrder ? 'PUT' : 'POST',
@@ -260,7 +262,7 @@ const ProductionPage = () => {
   // Handle status change
   const handleStatusChange = async (order, newStatus) => {
     try {
-      const response = await fetch(`/api/production_orders/${order.id}/status`, {
+      const response = await fetch(`/api/production_batches/${order.id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
@@ -286,7 +288,7 @@ const ProductionPage = () => {
   // Handle batch assignment
   const handleAssignBatch = async (orderId, batchData) => {
     try {
-      const response = await fetch(`/api/production_orders/${orderId}/batches`, {
+      const response = await fetch(`/api/production_batches/${orderId}/batches`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ batches: batchData })
@@ -314,7 +316,7 @@ const ProductionPage = () => {
     }
 
     try {
-      const response = await fetch(`/api/production_orders/${orderId}`, {
+      const response = await fetch(`/api/production_batches/${orderId}`, {
         method: 'DELETE'
       });
 

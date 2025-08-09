@@ -17,7 +17,7 @@ button[class*="border-b-2"][class*="font-medium"] {
 /* Hover suave y armonioso */
 .tab-button:hover,
 button[class*="border-b-2"][class*="font-medium"]:hover {
-  color: var(--venezia-primary-refined) !important;
+  color: var(--venezia-accent-refined) !important;
   background: rgba(234, 88, 12, 0.04);
   border-bottom-color: transparent !important;
 }
@@ -34,7 +34,7 @@ button[class*="border-b-2"][class*="font-medium"]::after {
   height: 2px;
   background: linear-gradient(90deg, 
     transparent, 
-    var(--venezia-primary-refined), 
+    var(--venezia-accent-refined), 
     transparent
   );
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -51,7 +51,7 @@ button[class*="border-b-2"][class*="font-medium"]:hover::after {
 .tab-button.active,
 button[class*="border-b-2"][class*="font-medium"].active,
 button[class*="border-b-2"][class*="border-venezia"] {
-  color: var(--venezia-primary-refined) !important;
+  color: var(--venezia-accent-refined) !important;
   background: rgba(234, 88, 12, 0.08);
   font-weight: 600;
 }
@@ -60,7 +60,7 @@ button[class*="border-b-2"][class*="border-venezia"] {
 button[class*="border-b-2"][class*="font-medium"].active::after,
 button[class*="border-b-2"][class*="border-venezia"]::after {
   transform: translateX(-50%) scaleX(1);
-  background: var(--venezia-primary-refined);
+  background: var(--venezia-accent-refined);
   height: 3px;
 }
 
@@ -92,14 +92,14 @@ button[class*="border-b-2"][class*="font-medium"] span {
 
 .dark .tab-button:hover,
 .dark button[class*="border-b-2"][class*="font-medium"]:hover {
-  color: var(--venezia-primary-refined) !important;
+  color: var(--venezia-accent-refined) !important;
   background: rgba(251, 146, 60, 0.08);
 }
 
 .dark .tab-button.active,
 .dark button[class*="border-b-2"][class*="font-medium"].active,
 .dark button[class*="border-b-2"][class*="border-venezia"] {
-  color: var(--venezia-primary-refined) !important;
+  color: var(--venezia-accent-refined) !important;
   background: rgba(251, 146, 60, 0.12);
 }
 
@@ -116,12 +116,12 @@ button[class*="border-b-2"][class*="font-medium"] span {
 
 .pill-tab:hover {
   background: rgba(234, 88, 12, 0.12) !important;
-  color: var(--venezia-primary-refined) !important;
+  color: var(--venezia-accent-refined) !important;
   transform: translateY(-1px);
 }
 
 .pill-tab.active {
-  background: var(--venezia-primary-refined) !important;
+  background: var(--venezia-accent-refined) !important;
   color: white !important;
   box-shadow: 0 2px 8px rgba(234, 88, 12, 0.3);
 }
@@ -146,12 +146,12 @@ button[class*="border-b-2"][class*="font-medium"] span {
 
 .tab-group button:hover {
   background: rgba(255, 255, 255, 0.8) !important;
-  color: var(--venezia-primary-refined) !important;
+  color: var(--venezia-accent-refined) !important;
 }
 
 .tab-group button.active {
   background: white !important;
-  color: var(--venezia-primary-refined) !important;
+  color: var(--venezia-accent-refined) !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 

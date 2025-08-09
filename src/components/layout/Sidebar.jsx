@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -27,7 +27,7 @@ import {
   Building2,
   LayoutGrid
 } from 'lucide-react';
-import { useAuthStore } from '../../store/authStore';
+import { useAuthStore } from '../../store/authStore.supabase';
 import clsx from 'clsx';
 
 const Sidebar = React.memo(({ isOpen, onClose }) => {
@@ -52,6 +52,22 @@ const Sidebar = React.memo(({ isOpen, onClose }) => {
     }
   };
 
+  // A11y: respeta reducción de movimiento
+  const prefersReducedMotion = useMemo(() => {
+    try {
+      return typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch {
+      return false;
+    }
+  }, []);
+  
+  // A11y: id para label del nav
+  const ariaLabelledById = 'sidebar-title';
+
+  // Keyboard navigation: focus management
+  const [focusedIndex, setFocusedIndex] = useState(0);
+
+  // Navigation groups definition - moved before flatItems to avoid reference error
   const navigationGroups = [
     {
       title: 'Principal',
@@ -60,10 +76,9 @@ const Sidebar = React.memo(({ isOpen, onClose }) => {
       ]
     },
     {
-      title: 'Ventas & POS',
+      title: 'Ventas',
       items: [
         { name: 'Punto de Venta', href: '/pos', icon: ShoppingCart },
-        { name: 'Ventas', href: '/sales', icon: ShoppingCart },
         { name: 'Tienda Web', href: '/shop', icon: Store },
         { name: 'Entregas', href: '/deliveries', icon: Truck },
       ]
@@ -71,10 +86,8 @@ const Sidebar = React.memo(({ isOpen, onClose }) => {
     {
       title: 'Inventario',
       items: [
-        { name: 'Stock General', href: '/stock', icon: Package },
-        { name: 'Ingredientes', href: '/ingredients', icon: Package },
-        { name: 'Transacciones', href: '/transactions', icon: History },
         { name: 'Inventario', href: '/inventory', icon: Package },
+        { name: 'Transacciones', href: '/transactions', icon: History },
       ]
     },
     {
@@ -82,8 +95,6 @@ const Sidebar = React.memo(({ isOpen, onClose }) => {
       items: [
         { name: 'Recetas', href: '/recipes', icon: ChefHat },
         { name: 'Producción', href: '/production', icon: Factory },
-        { name: 'Órdenes de Producción', href: '/production-orders', icon: Factory },
-        { name: 'Asignar Lote', href: '/batch-assignment', icon: Factory },
       ]
     },
     {
@@ -119,11 +130,65 @@ const Sidebar = React.memo(({ isOpen, onClose }) => {
     {
       title: 'Sistema',
       items: [
-        { name: 'Control de Temperatura', href: '/temperature', icon: Thermometer },
         { name: 'Configuración', href: '/settings', icon: Settings },
       ]
     }
   ];
+
+  // Flatten items for focus movement
+  const flatItems = useMemo(() => {
+    const list = [];
+    navigationGroups.forEach((group, gi) => {
+      group.items.forEach((item, ii) => {
+        list.push({ ...item, gi, ii, key: `${group.title}-${item.name}` });
+      });
+    });
+    return list;
+  }, []);
+
+  useEffect(() => {
+    const handler = (e) => {
+      // Allow navigation only when sidebar is open
+      if (!isOpen) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setFocusedIndex((idx) => Math.min(idx + 1, flatItems.length - 1));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setFocusedIndex((idx) => Math.max(idx - 1, 0));
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        setFocusedIndex(0);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        setFocusedIndex(flatItems.length - 1);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isOpen, flatItems.length]);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (!isOpen) return;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setFocusedIndex((i) => Math.min(i + 1, flatItems.length - 1));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setFocusedIndex((i) => Math.max(i - 1, 0));
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        setFocusedIndex(0);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        setFocusedIndex(flatItems.length - 1);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen, flatItems.length]);
 
   // Variantes de animación
   const sidebarVariants = {
@@ -180,7 +245,6 @@ const Sidebar = React.memo(({ isOpen, onClose }) => {
 
   return (
     <>
-      {/* Overlay para móvil */}
       <AnimatePresence>
         {isMobile && isOpen && (
           <motion.div
@@ -194,26 +258,28 @@ const Sidebar = React.memo(({ isOpen, onClose }) => {
         )}
       </AnimatePresence>
 
-      {/* Ice Cream Themed Sidebar */}
+      {/* Neumorphic Glass Sidebar */}
       <motion.aside
         variants={sidebarVariants}
         animate={isOpen ? 'open' : 'closed'}
         className={clsx(
-          'fixed left-0 top-0 z-50 h-screen gelato-card border-r-4 border-r-primary-300 dark:border-r-primary-600',
-          'lg:translate-x-0 shadow-2xl',
+          'fixed left-0 top-0 z-50 h-screen lg:translate-x-0 shadow-2xl',
+          'sb-glass',
           isMobile && !isOpen && '-translate-x-full',
-          isMobile && 'max-w-[85vw]' // Máximo 85% del ancho
+          isMobile && 'max-w-[85vw]'
         )}
-        style={{
-          background: 'linear-gradient(180deg, var(--flavor-vanilla) 0%, var(--cream-warm) 100%)'
-        }}
+        role="navigation"
+        aria-label="Navegación principal"
+        aria-labelledby={ariaLabelledById}
       >
         <div className="flex h-full flex-col">
-          {/* Header con área táctil optimizada */}
-          <div className={clsx(
-            'flex items-center justify-between border-b border-gray-200 dark:border-gray-700',
-            isMobile ? 'h-20 px-4 py-3' : 'h-16 px-4' // Más altura en móvil
-          )}>
+          {/* Header */}
+          <div
+            className={clsx(
+              'flex items-center justify-between sb-header',
+              isMobile ? 'h-20 px-4 py-3' : 'h-16 px-4'
+            )}
+          >
             <AnimatePresence mode="wait">
               {isOpen ? (
                 <motion.div
@@ -224,12 +290,12 @@ const Sidebar = React.memo(({ isOpen, onClose }) => {
                   exit="closed"
                   className="flex items-center gap-3"
                 >
-                  <div className="h-10 w-10 scoop-button scoop-strawberry rounded-xl flex items-center justify-center shadow-lg animate-wobble-soft">
-                    <span className="text-white font-bold text-lg font-display">🍦</span>
+                  <div className="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg bg-venezia-500 text-white">
+                    <span className="font-bold text-lg">VZ</span>
                   </div>
                   <div>
-                    <h1 className="text-xl font-display font-bold text-venezia-800 dark:text-venezia-100">Venezia</h1>
-                    <p className="text-xs text-venezia-600 dark:text-venezia-400 font-medium">Gelateria Management</p>
+                    <h1 id={ariaLabelledById} className="sb-label text-base font-semibold">Venezia</h1>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Sistema de Gestión</p>
                   </div>
                 </motion.div>
               ) : (
@@ -238,31 +304,43 @@ const Sidebar = React.memo(({ isOpen, onClose }) => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="h-10 w-10 scoop-button scoop-strawberry rounded-xl flex items-center justify-center shadow-lg animate-wobble-soft"
+                  className="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg bg-venezia-500 text-white"
                 >
-                  <span className="text-white font-bold text-lg">🍦</span>
+                  <span className="font-bold text-lg">VZ</span>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Botón cerrar en móvil - área táctil más grande */}
             {isMobile && (
               <button
                 onClick={onClose}
-                className="touch-target p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors active:scale-95"
+                className="touch-target p-3 rounded-xl sb-item active:scale-95"
                 aria-label="Cerrar menú"
               >
-                <X className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+                <X className="h-6 w-6 sb-icon" />
               </button>
             )}
           </div>
 
-          {/* Navigation con scroll optimizado */}
-          <nav className="flex-1 overflow-y-auto custom-scrollbar p-4">
-            <div className="space-y-6"> {/* Más espacio entre grupos */}
-              {navigationGroups.map((group, groupIndex) => (
-                <div key={group.title} className="space-y-2">
-                  {/* Group Title */}
+          {/* Search (only desktop and expanded) */}
+          {!isMobile && isOpen && (
+            <div className="px-4 py-3 sb-divider">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Buscar..."
+                  className="sb-search w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 dark:focus:ring-accent-400"
+                  aria-label="Buscar en el menú"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Navigation */}
+          <nav className="flex-1 overflow-y-auto custom-scrollbar sb-scroll p-3" aria-label="Secciones del menú">
+            <div className="space-y-4">
+              {navigationGroups.map((group) => (
+                <div key={group.title} className="space-y-1.5" role="group" aria-label={group.title}>
                   <AnimatePresence>
                     {isOpen && (
                       <motion.h3
@@ -270,93 +348,67 @@ const Sidebar = React.memo(({ isOpen, onClose }) => {
                         initial="closed"
                         animate="open"
                         exit="closed"
-                        className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-4"
+                        className="sb-group-title px-3"
                       >
                         {group.title}
                       </motion.h3>
                     )}
                   </AnimatePresence>
-                  
-                  {/* Group Items */}
+
                   <div className="space-y-1">
                     {group.items.map((item) => {
-                const isActive = location.pathname === item.href;
-                
-                return (
-                  <NavLink
-                    key={item.name}
-                    to={item.href}
-                    onClick={handleLinkClick}
-                    className={({ isActive }) =>
-                      clsx(
-                        'group flex items-center gap-4 rounded-2xl px-4 transition-all duration-300 relative backdrop-blur-sm',
-                        'hover:bg-primary-50/60 dark:hover:bg-gray-700/60 hover:shadow-md hover:-translate-y-0.5',
-                        'focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900',
-                        'active:scale-95 active:shadow-inner', // Feedback táctil
-                        // Área táctil más grande en móvil
-                        isMobile ? 'py-4 min-h-[56px]' : 'py-3 min-h-[44px]',
-                        // Estilo especial para AI Assistant
-                        item.highlight && !isActive && 'bg-gradient-to-r from-mint-50/80 to-pistachio-50/80 dark:from-mint-900/20 dark:to-pistachio-900/20 border border-mint-200/50 dark:border-mint-700/50',
-                        isActive
-                          ? item.highlight 
-                            ? 'bg-gradient-to-r from-mint-100/90 to-pistachio-100/90 text-mint-700 dark:bg-gradient-to-r dark:from-mint-900/50 dark:to-pistachio-900/50 dark:text-mint-300 shadow-lg border border-mint-300 dark:border-mint-600'
-                            : 'bg-gradient-to-r from-primary-50/90 to-venezia-50/90 text-primary-700 dark:bg-gradient-to-r dark:from-primary-900/50 dark:to-venezia-900/50 dark:text-primary-300 shadow-lg'
-                          : item.highlight
-                            ? 'text-mint-700 dark:text-mint-300'
-                            : 'text-venezia-700 dark:text-venezia-300'
-                      )
-                    }
-                  >
-                    <item.icon className={clsx(
-                      'flex-shrink-0 transition-colors',
-                      isMobile ? 'h-6 w-6' : 'h-5 w-5',
-                      isActive
-                        ? item.highlight
-                          ? 'text-purple-600 dark:text-purple-400'
-                          : 'text-blue-600 dark:text-blue-400'
-                        : item.highlight
-                          ? 'text-purple-500 dark:text-purple-400 group-hover:text-purple-700 dark:group-hover:text-purple-300'
-                          : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'
-                    )} />
-                    
-                    <AnimatePresence>
-                      {isOpen && (
-                        <motion.div
-                          variants={contentVariants}
-                          initial="closed"
-                          animate="open"
-                          exit="closed"
-                          className="flex items-center gap-2 flex-1"
-                        >
-                          <span className={clsx(
-                            'truncate font-medium',
-                            isMobile ? 'text-base' : 'text-sm'
-                          )}>
-                            {item.name}
-                          </span>
-                          {item.highlight && (
-                            <span className="bg-gradient-to-r from-purple-500 to-blue-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-sm">
-                              NEW
-                            </span>
-                          )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                      const isActive = location.pathname === item.href;
 
-                    {/* Ice Cream Cone Active Indicator */}
-                    {isActive && (
-                      <motion.div
-                        layoutId="activeIndicator"
-                        className="cone-indicator"
-                        transition={{
-                          type: 'spring',
-                          stiffness: 300,
-                          damping: 30
-                        }}
-                      />
-                    )}
-                  </NavLink>
-                );
+                      return (
+                        <NavLink
+                          key={item.name}
+                          to={item.href}
+                          onClick={handleLinkClick}
+                          aria-current={isActive ? 'page' : undefined}
+                          className={({ isActive }) =>
+                            clsx(
+                              'sb-item group flex items-center gap-3 rounded-xl px-3 relative',
+                              prefersReducedMotion ? '' : 'transition-all duration-200',
+                              'focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 dark:focus-visible:ring-accent-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900',
+                              isMobile ? 'py-3 min-h-[48px]' : 'py-2.5 min-h-[42px]',
+                              isActive
+                                ? 'text-blue-800 dark:text-blue-200'
+                                : 'text-gray-800 dark:text-gray-200'
+                            )
+                          }
+                          tabIndex={0}
+                          role="link"
+                          aria-label={item.name}
+                          onFocus={() => {
+                            const idx = flatItems.findIndex((f) => f.name === item.name && f.href === item.href);
+                            if (idx >= 0) setFocusedIndex(idx);
+                          }}
+                        >
+                          <span className={clsx('sb-rail', prefersReducedMotion ? '' : 'transition-all')} aria-hidden="true" />
+                          <item.icon
+                            className={clsx(
+                              'sb-icon flex-shrink-0',
+                              isMobile ? 'h-5 w-5' : 'h-4.5 w-4.5'
+                            )}
+                          />
+
+                          <AnimatePresence>
+                            {isOpen && (
+                              <motion.div
+                                variants={prefersReducedMotion ? undefined : contentVariants}
+                                initial={prefersReducedMotion ? undefined : 'closed'}
+                                animate={prefersReducedMotion ? undefined : 'open'}
+                                exit={prefersReducedMotion ? undefined : 'closed'}
+                                className="flex items-center gap-2 flex-1"
+                              >
+                                <span className={clsx('sb-label truncate font-semibold', isMobile ? 'text-[15px]' : 'text-[14px]')}>
+                                  {item.name}
+                                </span>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </NavLink>
+                      );
                     })}
                   </div>
                 </div>
@@ -364,33 +416,24 @@ const Sidebar = React.memo(({ isOpen, onClose }) => {
             </div>
           </nav>
 
-          {/* Footer con controles accesibles */}
-          <div className="border-t border-gray-200 dark:border-gray-700 p-4">
-            {/* Toggle Dark Mode */}
+          {/* Footer */}
+          <div className="sb-divider p-3">
             <button
               onClick={toggleDarkMode}
               className={clsx(
-                'group flex items-center gap-4 w-full rounded-2xl px-4 transition-all duration-300 backdrop-blur-sm',
-                'hover:bg-primary-50/60 dark:hover:bg-gray-700/60 hover:shadow-md hover:-translate-y-0.5',
-                'focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900',
-                'text-venezia-700 dark:text-venezia-300',
-                'active:scale-95',
-                isMobile ? 'py-4 min-h-[56px]' : 'py-3 min-h-[44px]'
+                'sb-item group flex items-center gap-3 w-full rounded-xl px-3',
+                prefersReducedMotion ? '' : 'transition-all duration-200',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:focus-visible:ring-blue-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900',
+                isMobile ? 'py-3 min-h-[48px]' : 'py-2.5 min-h-[42px]'
               )}
               aria-label={darkMode ? 'Activar modo claro' : 'Activar modo oscuro'}
             >
               {darkMode ? (
-                <Sun className={clsx(
-                  'flex-shrink-0 text-yellow-500 transition-colors',
-                  isMobile ? 'h-6 w-6' : 'h-5 w-5'
-                )} />
+                <Sun className={clsx('sb-icon flex-shrink-0 text-yellow-500', isMobile ? 'h-5 w-5' : 'h-4.5 w-4.5')} />
               ) : (
-                <Moon className={clsx(
-                  'flex-shrink-0 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors',
-                  isMobile ? 'h-6 w-6' : 'h-5 w-5'
-                )} />
+                <Moon className={clsx('sb-icon flex-shrink-0 text-gray-500 dark:text-gray-400', isMobile ? 'h-5 w-5' : 'h-4.5 w-4.5')} />
               )}
-              
+
               <AnimatePresence>
                 {isOpen && (
                   <motion.span
@@ -398,10 +441,7 @@ const Sidebar = React.memo(({ isOpen, onClose }) => {
                     initial="closed"
                     animate="open"
                     exit="closed"
-                    className={clsx(
-                      'truncate font-medium',
-                      isMobile ? 'text-base' : 'text-sm'
-                    )}
+                    className={clsx('sb-label truncate font-semibold', isMobile ? 'text-[15px]' : 'text-[14px]')}
                   >
                     {darkMode ? 'Modo Claro' : 'Modo Oscuro'}
                   </motion.span>
@@ -409,17 +449,16 @@ const Sidebar = React.memo(({ isOpen, onClose }) => {
               </AnimatePresence>
             </button>
 
-            {/* Versión - solo desktop */}
             {!isMobile && (
-              <div className="mt-2">
+              <div className="mt-1.5">
                 <AnimatePresence>
                   {isOpen && (
                     <motion.div
-                      variants={contentVariants}
-                      initial="closed"
-                      animate="open"
-                      exit="closed"
-                      className="text-xs text-gray-500 dark:text-gray-400 text-center py-2"
+                      variants={prefersReducedMotion ? undefined : contentVariants}
+                      initial={prefersReducedMotion ? undefined : 'closed'}
+                      animate={prefersReducedMotion ? undefined : 'open'}
+                      exit={prefersReducedMotion ? undefined : 'closed'}
+                      className="text-[11px] text-gray-600 dark:text-gray-400 text-center py-1.5"
                     >
                       Venezia Ice Cream v2.0
                     </motion.div>

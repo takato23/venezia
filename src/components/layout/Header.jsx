@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Menu, Search, Bell, User, LogOut, Settings, ChevronDown, Moon, Sun, Store } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuthStore } from '../../store/authStore';
+import { useAuthStore } from '../../store/authStore.supabase';
 import { useSocket } from '../../services/socketMock';
 import AlertCenter from '../alerts/AlertCenter';
 import BranchSelector from '../multibranch/BranchSelector';
@@ -95,7 +95,7 @@ const Header = ({ onMenuClick }) => {
   };
 
   return (
-    <header className="frost-overlay border-b-4 border-b-primary-200 dark:border-b-primary-600 sticky top-0 z-40 shadow-lg">
+    <header className="frost-overlay border-b-4 border-b-venezia-200 dark:border-b-venezia-700 sticky top-0 z-40 shadow-lg">
       <div className="flex items-center justify-between h-16 px-4 lg:px-6">
         {/* Left section */}
         <div className="flex items-center gap-3">
@@ -130,7 +130,7 @@ const Header = ({ onMenuClick }) => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
-              className="gelato-input pl-10 pr-4 py-2 w-64 bg-venezia-50/80 dark:bg-gray-700/80 border-venezia-200 dark:border-gray-600 placeholder-venezia-500"
+              className="gelato-input pl-10 pr-4 py-2 w-64 bg-venezia-50/80 dark:bg-gray-700/80 border-venezia-200 dark:border-gray-600 placeholder-venezia-700 dark:placeholder-gray-300"
               aria-label="Buscar productos, órdenes o clientes"
             />
           </div>
@@ -142,7 +142,7 @@ const Header = ({ onMenuClick }) => {
           {isMobile && (
             <button
               onClick={() => setShowMobileSearch(true)}
-              className="touch-target p-3 rounded-2xl scoop-button scoop-mint hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+              className="touch-target p-3 rounded-2xl bg-sage-500 hover:bg-sage-600 text-white hover:shadow-lg transition-all duration-300 transform hover:scale-105"
               aria-label="Buscar productos, órdenes o clientes"
               title="Buscar productos, órdenes o clientes"
             >
@@ -162,9 +162,9 @@ const Header = ({ onMenuClick }) => {
             title={darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
           >
             {darkMode ? (
-              <Sun className={clsx('text-venezia-500 animate-wobble-soft', isMobile ? 'h-6 w-6' : 'h-5 w-5')} />
+              <Sun className={clsx('text-accent-400', isMobile ? 'h-6 w-6' : 'h-5 w-5')} />
             ) : (
-              <Moon className={clsx('text-venezia-600 dark:text-venezia-300 animate-wobble-soft', isMobile ? 'h-6 w-6' : 'h-5 w-5')} />
+              <Moon className={clsx('text-venezia-700 dark:text-venezia-300', isMobile ? 'h-6 w-6' : 'h-5 w-5')} />
             )}
           </button>
 
@@ -194,7 +194,7 @@ const Header = ({ onMenuClick }) => {
               aria-label="Menú de usuario"
             >
               <div className={clsx(
-                'scoop-button scoop-pistachio text-white rounded-2xl flex items-center justify-center font-semibold shadow-lg',
+                'bg-accent-500 hover:bg-accent-600 text-white rounded-2xl flex items-center justify-center font-semibold shadow-lg transition-colors',
                 isMobile ? 'h-9 w-9 text-sm' : 'h-8 w-8 text-xs'
               )}>
                 {user?.name?.charAt(0)?.toUpperCase() || '🍦'}
@@ -218,11 +218,11 @@ const Header = ({ onMenuClick }) => {
                   exit={{ opacity: 0, scale: 0.95, y: -10 }}
                   transition={{ duration: 0.2 }}
                   className={clsx(
-                    'absolute right-0 mt-2 gelato-card shadow-2xl border-2 border-primary-200 dark:border-primary-600 z-50 overflow-hidden',
+                    'absolute right-0 mt-2 gelato-card shadow-2xl border-2 border-venezia-200 dark:border-venezia-700 z-50 overflow-hidden',
                     isMobile ? 'w-64' : 'w-56'
                   )}
                 >
-                  <div className="p-4 border-b border-primary-200/30 dark:border-primary-600/30">
+                  <div className="p-4 border-b border-venezia-200/30 dark:border-venezia-700/30">
                     <p className="font-semibold text-venezia-800 dark:text-venezia-100">{user?.name || 'Usuario'}</p>
                     <p className="text-sm text-venezia-600 dark:text-venezia-400">{user?.email || 'usuario@venezia.com'}</p>
                   </div>
@@ -233,7 +233,7 @@ const Header = ({ onMenuClick }) => {
                         setUserMenuOpen(false);
                         // Navegar a configuración
                       }}
-                      className="flex items-center gap-3 w-full px-4 py-3 text-left text-sm text-venezia-700 dark:text-venezia-300 hover:bg-primary-50/60 dark:hover:bg-gray-700/60 transition-all duration-200 hover:-translate-y-0.5"
+                      className="flex items-center gap-3 w-full px-4 py-3 text-left text-sm text-venezia-700 dark:text-venezia-300 hover:bg-venezia-50/60 dark:hover:bg-gray-700/60 transition-all duration-200 hover:-translate-y-0.5"
                     >
                       <Settings className="h-4 w-4 text-venezia-500" />
                       Configuración
@@ -244,9 +244,9 @@ const Header = ({ onMenuClick }) => {
                         setUserMenuOpen(false);
                         logout();
                       }}
-                      className="flex items-center gap-3 w-full px-4 py-3 text-left text-sm text-primary-600 dark:text-primary-400 hover:bg-primary-50/60 dark:hover:bg-primary-900/20 transition-all duration-200 hover:-translate-y-0.5"
+                      className="flex items-center gap-3 w-full px-4 py-3 text-left text-sm text-accent-600 dark:text-accent-400 hover:bg-accent-50/60 dark:hover:bg-accent-900/20 transition-all duration-200 hover:-translate-y-0.5"
                     >
-                      <LogOut className="h-4 w-4 text-primary-500" />
+                      <LogOut className="h-4 w-4 text-accent-500" />
                       Cerrar sesión
                     </button>
                   </div>

@@ -56,20 +56,26 @@ const WebUsers = () => {
 
   const loadUsers = async () => {
     try {
-      const response = await fetch('/api/web_users');
+      const apiUrl = import.meta.env.VITE_API_URL || '/api';
+      const response = await fetch(`${apiUrl}/web_users`);
       if (response.ok) {
         const data = await response.json();
-        setUsers(data);
+        // Handle API response structure - extract data array
+        const usersArray = Array.isArray(data?.data) ? data.data : 
+                          Array.isArray(data) ? data : [];
+        setUsers(usersArray);
       }
     } catch (error) {
       console.error('Error cargando usuarios web:', error);
+      setUsers([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
   };
 
-  // Filtrar usuarios
-  const filteredUsers = users.filter(user => {
+  // Filtrar usuarios - add safety check
+  const safeUsers = Array.isArray(users) ? users : [];
+  const filteredUsers = safeUsers.filter(user => {
     const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -134,7 +140,8 @@ const WebUsers = () => {
     
     setSubmitting(true);
     try {
-      const response = await fetch('/web_users/add', {
+      const apiBase = (import.meta.env.VITE_API_URL) || 'http://localhost:5002';
+      const response = await fetch(`${apiBase}/web_users/add`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -172,7 +179,8 @@ const WebUsers = () => {
     
     setSubmitting(true);
     try {
-      const response = await fetch(`/web_users/${selectedUser.id}`, {
+      const apiBase = (import.meta.env.VITE_API_URL) || 'http://localhost:5002';
+      const response = await fetch(`${apiBase}/web_users/${selectedUser.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -209,7 +217,8 @@ const WebUsers = () => {
   const handleDeleteUser = async () => {
     setSubmitting(true);
     try {
-      const response = await fetch(`/web_users/${selectedUser.id}`, {
+      const apiBase = (import.meta.env.VITE_API_URL) || 'http://localhost:5002';
+      const response = await fetch(`${apiBase}/web_users/${selectedUser.id}`, {
         method: 'DELETE'
       });
       

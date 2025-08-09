@@ -1,103 +1,175 @@
-// Service Worker para Venezia Ice Cream PWA
-const CACHE_NAME = 'venezia-v1';
+// Service Worker para Venezia WebShop
+const CACHE_VERSION = 'v2';
+const CACHE_NAME = `venezia-webshop-${CACHE_VERSION}`;
+const DYNAMIC_CACHE = `venezia-dynamic-${CACHE_VERSION}`;
+const IMAGE_CACHE = `venezia-images-${CACHE_VERSION}`;
+
+// Archivos esenciales para funcionar offline
 const urlsToCache = [
   '/',
-  '/index.html',
-  '/static/css/main.css',
-  '/static/js/bundle.js',
-  '/manifest.json'
+  '/webshop',
+  '/manifest.json',
+  '/placeholder-ice-cream.jpg',
+  '/offline.html'
 ];
 
-// Install event
-self.addEventListener('install', event => {
+// Límites de cache
+const CACHE_LIMITS = {
+  images: 50,
+  dynamic: 30
+};
+
+// Instalar Service Worker
+self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Cache opened');
+      .then((cache) => {
+        console.log('Cache abierto');
         return cache.addAll(urlsToCache);
       })
+      .then(() => self.skipWaiting())
   );
 });
 
-// Activate event
-self.addEventListener('activate', event => {
+// Activar Service Worker
+self.addEventListener('activate', (event) => {
+  const cacheWhitelist = [CACHE_NAME, DYNAMIC_CACHE, IMAGE_CACHE];
+  
   event.waitUntil(
-    caches.keys().then(cacheNames => {
+    caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName);
+        cacheNames.map((cacheName) => {
+          if (!cacheWhitelist.includes(cacheName)) {
             return caches.delete(cacheName);
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });
 
-// Fetch event con manejo correcto de chrome-extension
-self.addEventListener('fetch', event => {
-  // Ignorar requests de chrome-extension
-  if (event.request.url.startsWith('chrome-extension://')) {
+// Interceptar requests
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+  
+  // Ignorar peticiones de extensiones del navegador
+  if (url.protocol === 'chrome-extension:' || url.protocol === 'moz-extension:') {
     return;
   }
-
-  // Ignorar requests a Supabase para evitar problemas de CORS
-  if (event.request.url.includes('supabase.co')) {
+  
+  // API calls - Network First
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          // Clonar la respuesta
+          const responseToCache = response.clone();
+          
+          // Guardar en cache dinámico
+          caches.open(DYNAMIC_CACHE).then((cache) => {
+            cache.put(request, responseToCache);
+          });
+          
+          return response;
+        })
+        .catch(() => {
+          // Si falla, buscar en cache
+          return caches.match(request);
+        })
+    );
     return;
   }
-
+  
+  // Imágenes - Cache First
+  if (request.destination === 'image') {
+    event.respondWith(
+      caches.match(request)
+        .then((response) => {
+          if (response) {
+            return response;
+          }
+          
+          return fetch(request).then((response) => {
+            return caches.open(DYNAMIC_CACHE).then((cache) => {
+              cache.put(request, response.clone());
+              return response;
+            });
+          });
+        })
+        .catch(() => {
+          // Imagen placeholder si no hay conexión
+          return caches.match('/placeholder-ice-cream.jpg');
+        })
+    );
+    return;
+  }
+  
+  // Resto de recursos - Cache First con fallback
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Cache hit - return response
+    caches.match(request)
+      .then((response) => {
         if (response) {
           return response;
         }
-
-        // Clone the request
-        const fetchRequest = event.request.clone();
-
-        return fetch(fetchRequest).then(response => {
-          // Check if valid response
+        
+        return fetch(request).then((response) => {
+          // No cachear respuestas no exitosas
           if (!response || response.status !== 200 || response.type !== 'basic') {
             return response;
           }
-
-          // Ignorar si no es HTTP/HTTPS
-          if (!event.request.url.startsWith('http')) {
-            return response;
-          }
-
-          // Clone the response
+          
           const responseToCache = response.clone();
-
-          caches.open(CACHE_NAME)
-            .then(cache => {
-              // Solo cachear requests válidos
-              if (event.request.method === 'GET') {
-                cache.put(event.request, responseToCache);
-              }
-            });
-
+          
+          caches.open(DYNAMIC_CACHE).then((cache) => {
+            cache.put(request, responseToCache);
+          });
+          
           return response;
         });
       })
-      .catch(error => {
-        console.error('Fetch failed:', error);
-        // Podrías retornar una página offline aquí
+      .catch(() => {
+        // Página offline si es una navegación
+        if (request.destination === 'document') {
+          return caches.match('/offline.html');
+        }
       })
   );
 });
 
-// Background sync
-self.addEventListener('sync', event => {
-  if (event.tag === 'sync-sales') {
-    event.waitUntil(syncSalesData());
+// Sincronización en background
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'sync-orders') {
+    event.waitUntil(syncPendingOrders());
   }
 });
 
-async function syncSalesData() {
-  // Implementar sincronización de ventas offline
-  console.log('Syncing sales data...');
+// Función para sincronizar pedidos pendientes
+async function syncPendingOrders() {
+  const pendingOrders = await getPendingOrders();
+  
+  for (const order of pendingOrders) {
+    try {
+      await fetch('/api/public/shop/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(order)
+      });
+      
+      // Marcar como sincronizado
+      await markOrderAsSynced(order.id);
+    } catch (error) {
+      console.error('Error sincronizando orden:', error);
+    }
+  }
+}
+
+// Helpers para IndexedDB (simplificado)
+async function getPendingOrders() {
+  // Implementar con IndexedDB
+  return [];
+}
+
+async function markOrderAsSynced(orderId) {
+  // Implementar con IndexedDB
 }

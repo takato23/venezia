@@ -216,7 +216,7 @@ ${errorStack}
           If you continue to experience issues, please contact{' '}
           <a 
             href="mailto:support@venezia.com" 
-            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+            className="text-accent-600 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300"
           >
             support@venezia.com
           </a>

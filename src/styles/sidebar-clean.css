@@ -1,0 +1,145 @@
+/* Sidebar Clean Theme - Paleta Venezia */
+
+/* Variables del Sidebar */
+:root {
+  /* Light Mode */
+  --sb-bg: rgba(250, 248, 245, 0.95);          /* venezia-100 con transparencia */
+  --sb-bg-solid: #faf8f5;                      /* venezia-100 */
+  --sb-text: #594936;                          /* venezia-900 */
+  --sb-text-muted: #87704d;                    /* venezia-700 */
+  --sb-hover: rgba(232, 220, 201, 0.3);        /* venezia-300 con transparencia */
+  --sb-active-bg: rgba(194, 168, 120, 0.15);   /* venezia-500 con transparencia */
+  --sb-active-text: #a78b5f;                   /* venezia-600 */
+  --sb-border: rgba(232, 220, 201, 0.5);       /* venezia-300 */
+  --sb-accent: #e14d7b;                        /* accent-500 */
+}
+
+/* Dark Mode */
+.dark {
+  --sb-bg: rgba(31, 41, 55, 0.95);             /* gray-800 con transparencia */
+  --sb-bg-solid: #1f2937;                      /* gray-800 */
+  --sb-text: #f3f1ed;                          /* warm-100 */
+  --sb-text-muted: #bfb3a1;                    /* warm-400 */
+  --sb-hover: rgba(55, 65, 81, 0.5);           /* gray-700 con transparencia */
+  --sb-active-bg: rgba(225, 77, 123, 0.15);    /* accent-500 con transparencia */
+  --sb-active-text: #f4a9c3;                   /* accent-300 */
+  --sb-border: rgba(75, 85, 99, 0.5);          /* gray-600 */
+  --sb-accent: #f4a9c3;                        /* accent-300 */
+}
+
+/* Sidebar Container */
+.sb-glass {
+  background: var(--sb-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-right: 1px solid var(--sb-border);
+}
+
+/* Forzar colores en modo oscuro */
+.dark .sb-glass {
+  background: var(--sb-bg) !important;
+  background-color: var(--sb-bg-solid) !important;
+}
+
+/* Header */
+.sb-header {
+  border-bottom: 1px solid var(--sb-border);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.dark .sb-header {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Navigation Items */
+.sb-item {
+  color: var(--sb-text);
+  transition: all 0.2s ease;
+}
+
+.sb-item:hover {
+  background: var(--sb-hover);
+  transform: translateX(2px);
+}
+
+.sb-item[aria-current="page"],
+.sb-item.active {
+  background: var(--sb-active-bg);
+  color: var(--sb-active-text);
+  font-weight: 600;
+}
+
+/* Icons */
+.sb-icon {
+  color: var(--sb-text-muted);
+  transition: color 0.2s ease;
+}
+
+.sb-item:hover .sb-icon {
+  color: var(--sb-text);
+}
+
+.sb-item[aria-current="page"] .sb-icon,
+.sb-item.active .sb-icon {
+  color: var(--sb-accent);
+}
+
+/* Labels */
+.sb-label {
+  color: var(--sb-text);
+}
+
+/* Group Titles */
+.sb-group-title {
+  color: var(--sb-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+/* Search Input */
+.sb-search {
+  background: var(--sb-hover);
+  border: 1px solid var(--sb-border);
+  color: var(--sb-text);
+}
+
+.sb-search::placeholder {
+  color: var(--sb-text-muted);
+  opacity: 0.6;
+}
+
+.sb-search:focus {
+  border-color: var(--sb-accent);
+  outline: none;
+}
+
+/* Rail Indicator */
+.sb-rail {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 0;
+  background: var(--sb-accent);
+  border-radius: 0 3px 3px 0;
+  transition: height 0.2s ease;
+}
+
+.sb-item[aria-current="page"] .sb-rail,
+.sb-item.active .sb-rail {
+  height: 24px;
+}
+
+/* Divider */
+.sb-divider {
+  border-color: var(--sb-border);
+}
+
+/* Mobile Overlay */
+.dark .bg-black\/50 {
+  background-color: rgba(0, 0, 0, 0.7);
+}

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useAuthStore } from '../store/authStore';
+import { useAuthStore } from '../store/authStore.supabase';
 import io from 'socket.io-client';
 import toast from 'react-hot-toast';
 

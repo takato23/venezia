@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { User, Settings as SettingsIcon, Shield, Palette, Activity, Users, Brain, ToggleLeft, ToggleRight, Key, Save, Database } from 'lucide-react';
 import Tabs from '../components/ui/Tabs';
-import { useAuthStore } from '../store/authStore';
+import { useAuthStore } from '../store/authStore.supabase';
 import UserProfile from '../components/auth/UserProfile';
 import { PermissionsList } from '../components/auth/PermissionGuard';
 import SessionManager from '../components/auth/SessionManager';

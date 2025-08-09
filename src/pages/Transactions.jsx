@@ -352,8 +352,9 @@ const TransactionsPage = () => {
     refetch: refetchTransactions 
   } = useApiCache('/api/transactions');
   
-  // Safe data
-  const safeTransactions = transactions || [];
+  // Safe data - handle API response structure  
+  const safeTransactions = Array.isArray(transactions?.data) ? transactions.data : 
+                          Array.isArray(transactions) ? transactions : [];
   
   // Filter and sort transactions
   const filteredTransactions = useMemo(() => {

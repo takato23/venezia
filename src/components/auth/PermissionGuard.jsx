@@ -1,6 +1,6 @@
 import React from 'react';
 import { Shield, Lock } from 'lucide-react';
-import { useAuthStore } from '../../store/authStore';
+import { useAuthStore } from '../../store/authStore.supabase';
 import Button from '../ui/Button';
 
 // Permission definitions

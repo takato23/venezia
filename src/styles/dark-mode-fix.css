@@ -1,0 +1,74 @@
+/* Dark Mode Fix - Asegurar colores correctos para el contenido principal */
+
+/* Fondo principal en modo claro - MÁS ESPECÍFICO */
+html:not(.dark) body main,
+body:not(.dark) main,
+main.bg-gray-50 {
+  background-color: #f9fafb !important; /* gray-50 */
+  color: #111827 !important; /* gray-900 para texto */
+}
+
+/* Fondo principal en modo oscuro - MÁS ESPECÍFICO */
+html.dark body main,
+body.dark main,
+.dark main {
+  background-color: #111827 !important; /* gray-900 */
+  color: #f9fafb !important; /* gray-50 para texto */
+}
+
+/* Header en modo claro */
+html:not(.dark) header,
+html:not(.dark) .header {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(12px);
+}
+
+/* Header en modo oscuro */
+html.dark header,
+html.dark .header {
+  background-color: rgba(17, 24, 39, 0.9) !important; /* gray-900 con transparencia */
+  backdrop-filter: blur(12px);
+}
+
+/* Sidebar en modo claro */
+html:not(.dark) aside,
+html:not(.dark) .sidebar {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Sidebar en modo oscuro */
+html.dark aside,
+html.dark .sidebar {
+  background-color: rgba(17, 24, 39, 0.95) !important;
+}
+
+/* Asegurar que el body también tenga el color correcto */
+html:not(.dark) body {
+  background-color: #f9fafb !important;
+}
+
+html.dark body {
+  background-color: #111827 !important;
+}
+
+/* Forzar colores de texto */
+html:not(.dark) body {
+  color: #111827 !important; /* texto oscuro en modo claro */
+}
+
+html.dark body {
+  color: #f9fafb !important; /* texto claro en modo oscuro */
+}
+
+/* Eliminar cualquier estilo inline que pueda estar interfiriendo */
+main[style*="background"] {
+  background-color: inherit !important;
+}
+
+/* Asegurar transiciones suaves */
+main,
+header,
+aside,
+body {
+  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+}

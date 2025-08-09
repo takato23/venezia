@@ -1,0 +1,61 @@
+/* Header Clean Theme - Paleta Venezia */
+
+/* Header Frost Overlay */
+.frost-overlay {
+  background: rgba(250, 248, 245, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--venezia-border);
+}
+
+.dark .frost-overlay {
+  background: rgba(31, 41, 55, 0.85) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(75, 85, 99, 0.5) !important;
+}
+
+/* Gelato Card para dropdowns */
+.gelato-card {
+  background: rgba(250, 248, 245, 0.98);
+  border: 1px solid var(--venezia-border);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.dark .gelato-card {
+  background: rgba(31, 41, 55, 0.98) !important;
+  border: 1px solid rgba(75, 85, 99, 0.5) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Gelato Input */
+.gelato-input {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--venezia-border);
+  color: var(--venezia-text);
+}
+
+.dark .gelato-input {
+  background: rgba(55, 65, 81, 0.8) !important;
+  border: 1px solid rgba(75, 85, 99, 0.5) !important;
+  color: #f3f1ed !important;
+}
+
+.gelato-input::placeholder {
+  color: #a69583;
+}
+
+.dark .gelato-input::placeholder {
+  color: #8b7968;
+}
+
+.gelato-input:focus {
+  border-color: var(--venezia-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(194, 168, 120, 0.1);
+}
+
+.dark .gelato-input:focus {
+  border-color: #d4c4a8;
+  box-shadow: 0 0 0 3px rgba(212, 196, 168, 0.1);
+}

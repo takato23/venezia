@@ -258,47 +258,9 @@ app.put('/api/cashflow/movements/:id', async (req, res) => {
   }
 });
 
-// ==================== PRODUCT ENDPOINTS ====================
-app.get('/api/products', async (req, res) => {
-  try {
-    const products = await Product.getAll(req.query);
-    res.json({
-      success: true,
-      products,
-      data: products // for compatibility
-    });
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching products',
-      error: error.message
-    });
-  }
-});
-
-app.get('/api/products/:id', async (req, res) => {
-  try {
-    const product = await Product.getById(req.params.id);
-    if (!product) {
-      return res.status(404).json({
-        success: false,
-        message: 'Product not found'
-      });
-    }
-    res.json({
-      success: true,
-      data: product
-    });
-  } catch (error) {
-    console.error('Error fetching product:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching product',
-      error: error.message
-    });
-  }
-});
+// ==================== PRODUCT ENDPOINTS (POS list) ====================
+const productsRouter = require('./routes/products');
+app.use('/api/products', productsRouter);
 
 app.post('/api/products', async (req, res) => {
   try {
@@ -356,6 +318,19 @@ app.delete('/api/products/:id', async (req, res) => {
 // Import remaining endpoints from old server
 // This includes providers, stores, analytics, etc.
 require('./routes/remaining-endpoints')(app);
+
+// Include missing endpoints temporarily
+require('./routes/missing-endpoints')(app);
+
+// Load POS endpoints  
+require('./routes/pos-endpoints')(app);
+
+// Admin Codes routes
+require('./routes/adminCodes')(app);
+
+// Sales router (POST /api/sales and related)
+const salesRouter = require('./routes/sales');
+app.use('/api/sales', salesRouter);
 
 // 404 handler
 app.use((req, res) => {

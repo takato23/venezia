@@ -15,7 +15,7 @@ import {
   Settings,
   LogOut
 } from 'lucide-react';
-import { useAuthStore } from '../../store/authStore';
+import { useAuthStore } from '../../store/authStore.supabase';
 import { useToast } from '../../hooks/useToast';
 import Button from '../ui/Button';
 import Input from '../ui/Input';

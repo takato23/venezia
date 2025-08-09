@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Agregar Producción</h2>
+    <form method="POST" action="{{ url_for('add_production') }}" class="needs-validation" novalidate>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label for="flavor">Sabor:</label>
+                    <select class="form-control" id="flavor" name="flavor" required>
+                        <option value="">Seleccionar sabor...</option>
+                        {% for flavor in flavors %}
+                        <option value="{{ flavor }}">{{ flavor }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="quantity">Cantidad (kg):</label>
+                    <input type="number" step="0.01" class="form-control" id="quantity" name="quantity" required>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="operator">Operador:</label>
+                    <input type="text" class="form-control" id="operator" name="operator" required>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label for="notes">Notas:</label>
+                    <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                </div>
+
+                <div id="ingredients-info" class="mt-3">
+                    <h4>Ingredientes Necesarios:</h4>
+                    <div id="ingredients-list"></div>
+                    <div id="production-cost" class="mt-2">
+                        <strong>Costo de Producción Estimado: $<span id="cost-value">0.00</span></strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">Registrar Producción</button>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const flavorSelect = document.getElementById('flavor');
+    const quantityInput = document.getElementById('quantity');
+    const ingredientsList = document.getElementById('ingredients-list');
+    const costValue = document.getElementById('cost-value');
+    
+    // Recipe data structure (to be populated from backend)
+    const recipes = {
+        {% for flavor, recipe in recipes.items() %}
+        "{{ flavor }}": {
+            ingredients: [
+                {% for ingredient in recipe.ingredients %}
+                {
+                    name: "{{ ingredient.name }}",
+                    quantity: {{ ingredient.quantity }},
+                    unit: "{{ ingredient.unit }}",
+                    cost: {{ ingredient.cost }}
+                },
+                {% endfor %}
+            ]
+        },
+        {% endfor %}
+    };
+
+    function updateIngredientsAndCost() {
+        const selectedFlavor = flavorSelect.value;
+        const quantity = parseFloat(quantityInput.value) || 0;
+        
+        if (selectedFlavor && recipes[selectedFlavor]) {
+            const recipe = recipes[selectedFlavor];
+            let totalCost = 0;
+            let html = '<ul class="list-group">';
+            
+            recipe.ingredients.forEach(ingredient => {
+                const adjustedQuantity = (ingredient.quantity * quantity).toFixed(2);
+                const ingredientCost = ingredient.cost * adjustedQuantity;
+                totalCost += ingredientCost;
+                
+                html += `
+                    <li class="list-group-item">
+                        ${ingredient.name}: ${adjustedQuantity} ${ingredient.unit}
+                        <span class="float-end">$${ingredientCost.toFixed(2)}</span>
+                    </li>`;
+            });
+            
+            html += '</ul>';
+            ingredientsList.innerHTML = html;
+            costValue.textContent = totalCost.toFixed(2);
+        } else {
+            ingredientsList.innerHTML = '<p>Seleccione un sabor para ver los ingredientes</p>';
+            costValue.textContent = '0.00';
+        }
+    }
+
+    flavorSelect.addEventListener('change', updateIngredientsAndCost);
+    quantityInput.addEventListener('input', updateIngredientsAndCost);
+});
+</script>
+{% endblock %}

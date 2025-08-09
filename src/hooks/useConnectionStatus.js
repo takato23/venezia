@@ -15,7 +15,8 @@ const useConnectionStatus = (checkInterval = 30000) => {
       
       try {
         // Usar un endpoint que sabemos que existe para verificar conexión
-        const response = await axios.get('/api/deliveries', {
+        const apiUrl = import.meta.env.VITE_API_URL || '/api';
+        const response = await axios.get(`${apiUrl}/deliveries`, {
           timeout: 5000, // 5 segundos de timeout
           validateStatus: (status) => status < 500 // Aceptar cualquier respuesta que no sea error del servidor
         });

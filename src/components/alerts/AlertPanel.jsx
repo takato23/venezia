@@ -114,6 +114,10 @@ const AlertPanel = () => {
   };
 
   const updateUnreadCount = (alertsList) => {
+    if (!alertsList || !Array.isArray(alertsList)) {
+      setUnreadCount(0);
+      return;
+    }
     const unread = alertsList.filter(alert => !alert.read).length;
     setUnreadCount(unread);
   };

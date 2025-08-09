@@ -260,7 +260,7 @@ export const FormField = ({
               transition-colors duration-200
               ${hasError 
                 ? 'border-red-300 dark:border-red-600 focus:border-red-500 focus:ring-red-500' 
-                : 'border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500'
+                : 'border-gray-300 dark:border-gray-600 focus:border-accent-500 focus:ring-accent-500'
               }
               dark:bg-gray-700 dark:text-white
               focus:outline-none focus:ring-1

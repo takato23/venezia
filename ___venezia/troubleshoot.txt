@@ -1,0 +1,44 @@
+TypeError
+TypeError: '<=' not supported between instances of 'NoneType' and 'int'
+
+Traceback (most recent call last)
+File "C:\Users\pauol\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 2213, in __call__
+return self.wsgi_app(environ, start_response)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "C:\Users\pauol\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 2193, in wsgi_app
+response = self.handle_exception(e)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+File "C:\Users\pauol\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 2190, in wsgi_app
+response = self.full_dispatch_request()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "C:\Users\pauol\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1486, in full_dispatch_request
+rv = self.handle_user_exception(e)
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "C:\Users\pauol\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+rv = self.dispatch_request()
+     ^^^^^^^^^^^^^^^^^^^^^^^
+File "C:\Users\pauol\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\app.py", line 1469, in dispatch_request
+return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "G:\_OneDrive\OneDrive\Desktop\___venezia\routes\webshop.py", line 56, in index
+return render_template('webshop/index.html', category_products=category_products)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "C:\Users\pauol\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 151, in render_template
+return _render(app, template, context)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "C:\Users\pauol\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\templating.py", line 132, in _render
+rv = template.render(context)
+     ^^^^^^^^^^^^^^^^^^^^^^^^
+File "C:\Users\pauol\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 1304, in render
+self.environment.handle_exception()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "C:\Users\pauol\AppData\Local\Programs\Python\Python312\Lib\site-packages\jinja2\environment.py", line 939, in handle_exception
+raise rewrite_traceback_stack(source=source)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "G:\_OneDrive\OneDrive\Desktop\___venezia\templates\webshop\index.html", line 1, in top-level template code
+{% extends 'base.html' %}
+File "G:\_OneDrive\OneDrive\Desktop\___venezia\templates\base.html", line 236, in top-level template code
+{% block content %}{% endblock %}
+File "G:\_OneDrive\OneDrive\Desktop\___venezia\templates\webshop\index.html", line 58, in block 'content'
+{% if product.stock <= 0 %}disabled{% endif %}>
+TypeError: '<=' not supported between instances of 'NoneType' and 'int'

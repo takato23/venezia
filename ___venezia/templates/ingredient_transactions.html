@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Transacciones de Ingredientes - Sistema de Gestión de Helados{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>Transacciones de Ingredientes</h2>
+                <a href="{{ url_for('add_ingredient_transaction') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Nueva Transacción
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <form method="GET" class="form-inline">
+                            <div class="form-group mr-2">
+                                <select class="form-control" name="ingredient_id">
+                                    <option value="">Todos los Ingredientes</option>
+                                    {% for ingredient in ingredients %}
+                                        <option value="{{ ingredient.id }}" 
+                                                {% if request.args.get('ingredient_id')|int == ingredient.id %}selected{% endif %}>
+                                            {{ ingredient.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group mr-2">
+                                <select class="form-control" name="transaction_type">
+                                    <option value="">Todos los Tipos</option>
+                                    <option value="entrada" {% if request.args.get('transaction_type') == 'entrada' %}selected{% endif %}>
+                                        Entrada
+                                    </option>
+                                    <option value="salida" {% if request.args.get('transaction_type') == 'salida' %}selected{% endif %}>
+                                        Salida
+                                    </option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-info">Filtrar</button>
+                        </form>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Ingrediente</th>
+                                    <th>Tipo</th>
+                                    <th>Cantidad</th>
+                                    <th>Costo</th>
+                                    <th>Motivo</th>
+                                    <th>Usuario</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in transactions %}
+                                <tr>
+                                    <td>{{ transaction.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>{{ transaction.ingredient.name }}</td>
+                                    <td>
+                                        {% if transaction.transaction_type == 'entrada' %}
+                                            <span class="badge badge-success">Entrada</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">Salida</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ "%.2f"|format(transaction.quantity) }} {{ transaction.ingredient.unit }}</td>
+                                    <td>${{ "%.2f"|format(transaction.unit_cost if transaction.unit_cost is not none else 0.0) }}</td>
+                                    <td>{{ transaction.notes }}</td>
+                                    <td>{{ transaction.user.username if transaction.user else 'Sistema' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if not transactions %}
+                    <div class="text-center py-3">
+                        <p class="text-muted">No se encontraron transacciones</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

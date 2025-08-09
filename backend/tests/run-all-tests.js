@@ -88,6 +88,22 @@ async function runAllTests() {
       file: path.join(__dirname, 'api.test.js'),
       name: 'API Endpoint Tests',
       critical: false
+    },
+    {
+      file: path.join(__dirname, 'admin_codes.list.test.js'),
+      name: 'Admin Codes List & Disable',
+      critical: false
+    },
+    {
+      file: path.join(__dirname, 'sales.admin_code.test.js'),
+      name: 'Sales + Admin Code',
+      critical: false
+    }
+    ,
+    {
+      file: path.join(__dirname, 'pos.flow.test.js'),
+      name: 'POS Flow (lite)',
+      critical: false
     }
   ];
   

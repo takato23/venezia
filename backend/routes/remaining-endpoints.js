@@ -400,86 +400,7 @@ module.exports = (app) => {
   });
 
   // ==================== SALES ====================
-  app.post('/api/sales', async (req, res) => {
-    try {
-      const { items, customer, payment_method, discount, total } = req.body;
-      
-      // Create or find customer
-      let customerId = null;
-      if (customer && customer.name) {
-        const existingCustomer = await getAsync(
-          'SELECT id FROM customers WHERE name = ? OR phone = ?',
-          [customer.name, customer.phone || '']
-        );
-        
-        if (existingCustomer) {
-          customerId = existingCustomer.id;
-        } else {
-          const result = await runAsync(
-            'INSERT INTO customers (name, phone, email) VALUES (?, ?, ?)',
-            [customer.name, customer.phone || '', customer.email || '']
-          );
-          customerId = result.id;
-        }
-      }
-      
-      // Create sale
-      const saleResult = await runAsync(
-        'INSERT INTO sales (customer_id, store_id, user_id, total, payment_method) VALUES (?, ?, ?, ?, ?)',
-        [customerId, 1, 1, total, payment_method || 'cash']
-      );
-      
-      // Add sale items and update stock
-      for (const item of items) {
-        await runAsync(
-          'INSERT INTO sale_items (sale_id, product_id, quantity, unit_price, subtotal) VALUES (?, ?, ?, ?, ?)',
-          [saleResult.id, item.product_id, item.quantity, item.price || 0, (item.price || 0) * item.quantity]
-        );
-        
-        // Update product stock
-        await runAsync(
-          'UPDATE products SET current_stock = current_stock - ? WHERE id = ?',
-          [item.quantity, item.product_id]
-        );
-      }
-      
-      // Update customer stats if applicable
-      if (customerId) {
-        await runAsync(
-          `UPDATE customers 
-           SET total_orders = total_orders + 1,
-               total_spent = total_spent + ?,
-               last_order_date = CURRENT_TIMESTAMP
-           WHERE id = ?`,
-          [total, customerId]
-        );
-      }
-      
-      // Add to cash flow if payment is cash
-      if (payment_method === 'cash') {
-        const CashFlow = require('../models/CashFlow');
-        await CashFlow.addMovement(1, 1, 'income', total, `Venta #${saleResult.id}`, saleResult.id);
-      }
-      
-      res.json({
-        success: true,
-        message: 'Venta procesada exitosamente',
-        receipt_number: `VEN-${saleResult.id.toString().padStart(6, '0')}`,
-        sale: {
-          id: saleResult.id,
-          total,
-          payment_method
-        }
-      });
-    } catch (error) {
-      console.error('Error processing sale:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Error al procesar venta',
-        error: error.message
-      });
-    }
-  });
+  // Nota: El endpoint principal POST /api/sales fue movido a router dedicado (routes/sales.js)
 
   app.get('/api/sales/recent', async (req, res) => {
     try {
@@ -620,6 +541,48 @@ module.exports = (app) => {
       res.status(500).json({
         success: false,
         message: 'Error fetching customer analytics',
+        error: error.message
+      });
+    }
+  });
+
+  app.get('/api/analytics/kpis', async (req, res) => {
+    try {
+      // Calculate key performance indicators
+      const kpis = await getAsync(`
+        SELECT 
+          COUNT(DISTINCT s.id) as total_orders,
+          COUNT(DISTINCT s.customer_id) as unique_customers,
+          COALESCE(SUM(s.total), 0) as total_revenue,
+          COALESCE(AVG(s.total), 0) as avg_order_value,
+          COUNT(DISTINCT CASE WHEN s.created_at >= datetime('now', '-7 days') THEN s.id END) as weekly_orders,
+          COUNT(DISTINCT CASE WHEN s.created_at >= datetime('now', '-1 days') THEN s.id END) as daily_orders
+        FROM sales s
+        WHERE s.created_at >= datetime('now', '-30 days')
+      `);
+      
+      // Calculate conversion rate (mock data for now)
+      const conversionRate = 3.2; // percentage
+      const customerRetention = 65.5; // percentage
+      
+      res.json({
+        success: true,
+        data: {
+          conversion_rate: conversionRate,
+          customer_retention: customerRetention,
+          avg_order_value: kpis.avg_order_value || 0,
+          total_revenue: kpis.total_revenue || 0,
+          total_orders: kpis.total_orders || 0,
+          unique_customers: kpis.unique_customers || 0,
+          weekly_orders: kpis.weekly_orders || 0,
+          daily_orders: kpis.daily_orders || 0
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching KPIs:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error fetching KPIs',
         error: error.message
       });
     }

@@ -1,0 +1,224 @@
+# Venezia Web Shop Development Roadmap
+
+## Current Status
+- Development Phase: Planning
+- Environment: Local Development (/webshop route)
+- Future Deployment: www.venezia.com.ar
+
+## Phase 0: Database Analysis & Setup
+1. [ ] Export current database structure to JSON for analysis
+2. [ ] Document all table relationships and dependencies
+3. [ ] Identify potential conflicts with existing POS system
+4. [ ] Design new tables needed for web shop
+5. [ ] Create database migration plan
+
+## Phase 1: Basic Infrastructure (Local Development)
+1. [ ] Set up /webshop route in current Flask app
+2. [ ] Create basic templates structure
+3. [ ] Implement product catalog viewing
+4. [ ] Set up basic session management
+5. [ ] Implement shopping cart functionality
+
+## Phase 2: Core Features
+1. [ ] User authentication system
+2. [ ] Product search and filtering
+3. [ ] Shopping cart persistence
+4. [ ] Checkout process
+5. [ ] Order management system
+6. [ ] Basic reporting system
+
+## Phase 3: Advanced Features
+1. [ ] Multiple payment methods integration
+2. [ ] Delivery zone management
+3. [ ] Customer accounts and profiles
+4. [ ] Order tracking system
+5. [ ] Email notifications
+
+## Phase 4: Integration & Testing
+1. [ ] Integration with existing POS system
+2. [ ] Inventory sync system
+3. [ ] Order sync between web and POS
+4. [ ] Performance testing
+5. [ ] Security testing
+
+## Phase 5: Production Preparation
+1. [ ] Domain setup (www.venezia.com.ar)
+2. [ ] SSL certificate setup
+3. [ ] Production environment configuration
+4. [ ] Backup system setup
+5. [ ] Monitoring system implementation
+
+## Phase 6: Launch & Maintenance
+1. [ ] Soft launch (beta testing)
+2. [ ] Full public launch
+3. [ ] Monitoring and analytics setup
+4. [ ] Regular backup verification
+5. [ ] Performance optimization
+
+## Notes
+- Development will be done on /webshop route first
+- All features will be tested locally before production
+- Database structure will be analyzed before any modifications
+- Existing POS functionality must remain unaffected
+
+## Database Analysis Plan
+1. Current tables to analyze:
+   - Products
+   - Categories
+   - Orders
+   - Order_items
+   - Customers
+   - Delivery_info
+   - Inventory
+   - Stores
+
+2. New tables needed:
+   - web_sessions
+   - web_cart_items
+   - web_orders
+   - web_user_preferences
+   - web_delivery_zones
+
+## Database Analysis Results
+
+### Existing Tables to Use:
+1. products
+   - Core product information
+   - Already has necessary fields: id, name, description, price, image
+   - Need to add: web_visible (boolean) field
+
+2. product_categories
+   - Already handles product categorization
+   - No changes needed
+
+3. stocks
+   - Manages inventory levels
+   - Will need to sync with web orders
+
+4. delivery_orders
+   - Can be extended for web orders
+   - Already handles delivery information
+
+5. stores
+   - Contains store locations and information
+   - Will be used for pickup locations
+
+### New Tables Needed:
+
+1. web_users
+   ```sql
+   CREATE TABLE web_users (
+       id INTEGER PRIMARY KEY,
+       email VARCHAR(120) UNIQUE NOT NULL,
+       password_hash VARCHAR(200) NOT NULL,
+       first_name VARCHAR(50),
+       last_name VARCHAR(50),
+       phone VARCHAR(20),
+       is_active BOOLEAN DEFAULT true,
+       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+   )
+   ```
+
+2. web_addresses
+   ```sql
+   CREATE TABLE web_addresses (
+       id INTEGER PRIMARY KEY,
+       user_id INTEGER NOT NULL,
+       address VARCHAR(200) NOT NULL,
+       city VARCHAR(100),
+       postal_code VARCHAR(10),
+       notes TEXT,
+       latitude FLOAT,
+       longitude FLOAT,
+       is_default BOOLEAN DEFAULT false,
+       FOREIGN KEY (user_id) REFERENCES web_users(id)
+   )
+   ```
+
+3. web_sessions
+   ```sql
+   CREATE TABLE web_sessions (
+       id INTEGER PRIMARY KEY,
+       user_id INTEGER,
+       session_id VARCHAR(100) UNIQUE NOT NULL,
+       cart_data TEXT,
+       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+       expires_at DATETIME,
+       FOREIGN KEY (user_id) REFERENCES web_users(id)
+   )
+   ```
+
+4. web_orders
+   ```sql
+   CREATE TABLE web_orders (
+       id INTEGER PRIMARY KEY,
+       user_id INTEGER,
+       delivery_order_id INTEGER,
+       session_id VARCHAR(100),
+       order_status VARCHAR(20),
+       payment_status VARCHAR(20),
+       payment_method VARCHAR(20),
+       total_amount DECIMAL(10,2),
+       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+       FOREIGN KEY (user_id) REFERENCES web_users(id),
+       FOREIGN KEY (delivery_order_id) REFERENCES delivery_orders(id)
+   )
+   ```
+
+### Required Modifications to Existing Tables:
+
+1. products
+   ```sql
+   ALTER TABLE products
+   ADD COLUMN web_visible BOOLEAN DEFAULT false,
+   ADD COLUMN web_description TEXT,
+   ADD COLUMN web_price DECIMAL(10,2)
+   ```
+
+2. delivery_orders
+   ```sql
+   ALTER TABLE delivery_orders
+   ADD COLUMN web_order_id INTEGER,
+   ADD COLUMN session_id VARCHAR(100),
+   ADD FOREIGN KEY (web_order_id) REFERENCES web_orders(id)
+   ```
+
+### Integration Points:
+
+1. Inventory Management
+   - Real-time stock updates between POS and web shop
+   - Reservation system for web orders
+   - Stock threshold notifications
+
+2. Order Processing
+   - Web orders will create entries in delivery_orders
+   - Unified order numbering system
+   - Status synchronization between systems
+
+3. Customer Management
+   - Optional linking between POS customers and web users
+   - Shared delivery address database
+   - Unified customer history
+
+4. Payment Processing
+   - Reuse existing MercadoPago integration
+   - Add web-specific payment flow
+   - Unified payment reporting
+
+### Data Migration Plan:
+
+1. Product Data
+   - Copy existing product data
+   - Add web-specific fields
+   - Set initial web_visible flags
+
+2. Customer Data
+   - Optional import of existing customer data
+   - Customer consent required for data migration
+
+3. Historical Orders
+   - Keep systems separate initially
+   - Implement unified view for reporting

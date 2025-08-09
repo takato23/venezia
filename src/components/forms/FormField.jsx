@@ -230,7 +230,7 @@ const FormField = ({
               className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none"
             >
               {isValidating && (
-                <div className="animate-spin h-4 w-4 border-2 border-primary-500 border-t-transparent rounded-full" />
+                <div className="animate-spin h-4 w-4 border-2 border-accent-500 border-t-transparent rounded-full" />
               )}
               {hasError && !isValidating && (
                 <X className="h-4 w-4 text-red-500" />

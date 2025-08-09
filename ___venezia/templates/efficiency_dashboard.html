@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Panel de Eficiencia de Producción</h2>
+    
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Tasa de Éxito</h5>
+                    <h3 class="text-success">{{ "%.1f"|format(success_rate * 100) }}%</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Calidad Promedio</h5>
+                    <h3 class="text-primary">{{ "%.1f"|format(avg_quality) }}/100</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Costo Total</h5>
+                    <h3 class="text-danger">${{ "%.2f"|format(total_cost) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Uso de Recursos</h5>
+                    <h3 class="text-warning">{{ "%.1f"|format(total_resource) }} kWh</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Production Time Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Tiempos de Producción</h5>
+                    <canvas id="productionTimeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Efficiency Score Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Puntuación de Eficiencia (kg/hora)</h5>
+                    <canvas id="efficiencyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Productions Table -->
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Producciones Recientes</h5>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Lote</th>
+                            <th>Sabor</th>
+                            <th>Tiempo (horas)</th>
+                            <th>Eficiencia (kg/h)</th>
+                            <th>Calidad</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prod in productions[:10] %}
+                        <tr>
+                            <td>{{ prod.batch_number }}</td>
+                            <td>{{ prod.flavor }}</td>
+                            <td>{{ "%.2f"|format(prod.production_time) if prod.production_time else 'N/A' }}</td>
+                            <td>{{ "%.2f"|format(prod.efficiency_score) if prod.efficiency_score else 'N/A' }}</td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: {{ prod.quality_score }}%"
+                                         aria-valuenow="{{ prod.quality_score }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">{{ prod.quality_score }}%</div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if prod.success_status == 'success' %}
+                                    <span class="badge bg-success">Éxito</span>
+                                {% elif prod.success_status == 'failed' %}
+                                    <span class="badge bg-danger">Fallido</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Parcial</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Production Time Chart
+const timeCtx = document.getElementById('productionTimeChart').getContext('2d');
+const timeData = {{ production_times|tojson }};
+
+new Chart(timeCtx, {
+    type: 'line',
+    data: {
+        labels: timeData.map(d => d.batch),
+        datasets: [{
+            label: 'Tiempo de Producción (horas)',
+            data: timeData.map(d => d.time),
+            borderColor: 'rgb(75, 192, 192)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Efficiency Score Chart
+const effCtx = document.getElementById('efficiencyChart').getContext('2d');
+new Chart(effCtx, {
+    type: 'bar',
+    data: {
+        labels: timeData.map(d => d.batch),
+        datasets: [{
+            label: 'Eficiencia (kg/hora)',
+            data: timeData.map(d => d.efficiency),
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgb(54, 162, 235)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

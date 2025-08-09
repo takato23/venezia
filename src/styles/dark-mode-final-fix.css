@@ -1,0 +1,108 @@
+/* DARK MODE FINAL FIX - MÁXIMA PRIORIDAD */
+
+/* Reset CSS variables when dark mode is active */
+:root:has(.dark),
+.dark,
+html.dark,
+body.dark {
+  --sb-bg: rgba(17, 24, 39, 0.95) !important;
+  --sb-bg-weak: rgba(17, 24, 39, 0.85) !important;
+  --venezia-light: #1f2937 !important;
+  --venezia-dark: #fef7ed !important;
+}
+
+/* Force dark background on sidebar with maximum specificity */
+:is(html.dark, body.dark, .dark) aside.sb-glass,
+:is(html.dark, body.dark, .dark) .sb-glass,
+.dark aside.sb-glass,
+.dark .sb-glass {
+  background: rgba(17, 24, 39, 0.95) !important;
+  background-color: rgba(17, 24, 39, 0.95) !important;
+  background-image: linear-gradient(180deg, rgba(17, 24, 39, 0.95) 0%, rgba(17, 24, 39, 0.85) 100%) !important;
+}
+
+/* Force dark background on sidebar container */
+html.dark aside[class*="sb-glass"],
+body.dark aside[class*="sb-glass"],
+.dark aside[class*="sb-glass"] {
+  background: rgba(17, 24, 39, 0.95) !important;
+  background-color: rgba(17, 24, 39, 0.95) !important;
+  background-image: linear-gradient(180deg, rgba(17, 24, 39, 0.95) 0%, rgba(17, 24, 39, 0.85) 100%) !important;
+}
+
+/* Override any inline styles on sidebar */
+.dark aside[style*="background"],
+body.dark aside[style*="background"] {
+  background: rgba(17, 24, 39, 0.95) !important;
+  background-color: rgba(17, 24, 39, 0.95) !important;
+  background-image: linear-gradient(180deg, rgba(17, 24, 39, 0.95) 0%, rgba(17, 24, 39, 0.85) 100%) !important;
+}
+
+/* Force dark colors on all sidebar elements */
+.dark aside *,
+body.dark aside * {
+  --sb-bg: rgba(17, 24, 39, 0.95) !important;
+  --sb-bg-weak: rgba(17, 24, 39, 0.85) !important;
+}
+
+/* Force dark background on nav element */
+.dark aside nav,
+body.dark aside nav {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* Force dark text colors */
+.dark aside .sb-group-title,
+.dark aside .sb-label,
+.dark aside .sb-item,
+.dark aside a,
+.dark aside span {
+  color: #e5e7eb !important;
+}
+
+/* Force icon colors */
+.dark aside svg,
+.dark aside .sb-icon {
+  color: #9ca3af !important;
+}
+
+/* Active item colors */
+.dark aside .sb-item[aria-current="page"],
+.dark aside .sb-item.active {
+  background: rgba(96, 165, 250, 0.18) !important;
+  color: #93c5fd !important;
+}
+
+.dark aside .sb-item[aria-current="page"] svg,
+.dark aside .sb-item[aria-current="page"] .sb-icon {
+  color: #60a5fa !important;
+}
+
+/* Hover states */
+.dark aside .sb-item:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Header fix */
+.dark header.frost-overlay,
+body.dark header.frost-overlay {
+  background: rgba(31, 41, 55, 0.95) !important;
+  background-color: rgba(31, 41, 55, 0.95) !important;
+}
+
+/* Remove any white backgrounds */
+.dark .bg-white:not(.scoop-button),
+body.dark .bg-white:not(.scoop-button) {
+  background-color: #374151 !important;
+}
+
+/* Final override with !important on everything */
+.dark aside.sb-glass * {
+  background-image: none !important;
+}
+
+.dark aside.sb-glass {
+  --tw-bg-opacity: 1 !important;
+  background-color: rgb(17 24 39 / var(--tw-bg-opacity)) !important;
+}
