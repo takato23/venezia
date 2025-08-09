@@ -147,6 +147,13 @@ class Sale(db.Model):
     mp_approved_at = db.Column(db.DateTime)
     mp_last_updated = db.Column(db.DateTime)
 
+    # POS API additive fields (all optional, added without breaking existing code)
+    sale_number = db.Column(db.String(50), unique=True)
+    subtotal_amount = db.Column(db.Float)
+    discount_amount = db.Column(db.Float)
+    currency = db.Column(db.String(10), default='ARS')
+    idempotency_key = db.Column(db.String(100), unique=True)
+
 class SaleItem(db.Model):
     __tablename__ = 'sale_items'
     id = db.Column(db.Integer, primary_key=True)
@@ -193,6 +200,24 @@ class Product(db.Model):
     stocks = db.relationship('Stock', backref='product', lazy=True)
     recipe = db.relationship('Recipe', backref='product', lazy=True, uselist=False)
     category = db.relationship('ProductCategory', backref=db.backref('products', lazy=True, overlaps="category,category_ref"), lazy=True)
+
+class AdminCode(db.Model):
+    __tablename__ = 'admin_codes'
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(32), unique=True, nullable=False, index=True)
+    kind = db.Column(db.String(20), nullable=False)  # 'percent' | 'amount'
+    value = db.Column(db.Float, nullable=False)
+    description = db.Column(db.String(255))
+    expires_at = db.Column(db.DateTime)
+    store_id = db.Column(db.Integer, db.ForeignKey('stores.id'))  # Optional restriction to a store
+    min_total = db.Column(db.Float, default=0.0)  # Minimum subtotal required
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    store = db.relationship('Store', backref=db.backref('admin_codes', lazy=True))
+
+    def is_expired(self) -> bool:
+        return self.expires_at is not None and datetime.utcnow() > self.expires_at
 
 class Recipe(db.Model):
     __tablename__ = 'recipes'

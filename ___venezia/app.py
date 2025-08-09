@@ -16,6 +16,7 @@ import qrcode
 from io import BytesIO
 import re
 from sqlalchemy import or_, select, cast, String
+from decimal import Decimal, ROUND_HALF_EVEN
 
 print("Current working directory:", os.getcwd())
 print("Loading environment variables...")
@@ -30,10 +31,11 @@ from models import (
     Stock, StockHistory, GeneralMinimum, ProductCategory, Product,
     Sale, SaleItem, Ingredient, Recipe, RecipeIngredient,
     IngredientTransaction, DeliveryAddress, DeliveryOrder, DeliveryStatus, DeliveryStatusHistory,
-    ProductionOrder, ProductionOrderStatus, ProductionOrderHistory
+    ProductionOrder, ProductionOrderStatus, ProductionOrderHistory,
+    AdminCode
 )
 from payment_routes import payment
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest  # noqa: F401
 
 app = Flask(__name__, static_url_path='/static', static_folder='static')
 # Secret y DB desde variables de entorno (fallbacks seguros para dev)
@@ -111,6 +113,17 @@ def init_db():
                     connection.execute(text("ALTER TABLE products ADD COLUMN track_stock BOOLEAN DEFAULT 1"))
                 if 'sales_format' not in product_columns:
                     connection.execute(text("ALTER TABLE products ADD COLUMN sales_format VARCHAR(50)"))
+                # Optional additive columns for POS
+                if 'type' not in product_columns:
+                    try:
+                        connection.execute(text("ALTER TABLE products ADD COLUMN type VARCHAR(20)"))
+                    except Exception:
+                        pass
+                if 'sku' not in product_columns:
+                    try:
+                        connection.execute(text("ALTER TABLE products ADD COLUMN sku VARCHAR(64)"))
+                    except Exception:
+                        pass
                 connection.commit()
         
         db.create_all()
@@ -236,6 +249,43 @@ def init_db():
             ]
             db.session.add_all(statuses)
             db.session.commit()
+
+        # Dev seeds (idempotent)
+        try:
+            if Product.query.count() == 0:
+                helado_cat = ProductCategory(name='Helados')
+                otros_cat = ProductCategory(name='Otros')
+                db.session.add_all([helado_cat, otros_cat])
+                db.session.flush()
+                sample_products = [
+                    Product(name='Dulce de leche', price=5000.0, category_id=helado_cat.id, sales_format='1 KG', active=True),
+                    Product(name='Agua 500ml', price=3000.0, category_id=otros_cat.id, active=True)
+                ]
+                db.session.add_all(sample_products)
+                # Ensure there is at least one store and stock
+                if Store.query.count() == 0:
+                    store = Store(name='Sucursal Centro')
+                    db.session.add(store)
+                    db.session.flush()
+                else:
+                    store = Store.query.first()
+                for p in sample_products:
+                    db.session.add(Stock(store_id=store.id, product_id=p.id, quantity=9999))
+                db.session.commit()
+        except Exception:
+            db.session.rollback()
+        try:
+            from models import AdminCode
+            if AdminCode.query.count() == 0:
+                store = Store.query.first()
+                now = datetime.utcnow()
+                ac_percent = AdminCode(code='ABC123', kind='percent', value=10, description='10% de descuento', expires_at=now.replace(year=now.year+1), store_id=store.id, min_total=3000)
+                ac_amount = AdminCode(code='FIJO50', kind='amount', value=50, description='$50 de descuento', expires_at=now.replace(year=now.year+1))
+                ac_expired = AdminCode(code='VENCIDO', kind='percent', value=5, description='Expirado', expires_at=now.replace(year=now.year-1))
+                db.session.add_all([ac_percent, ac_amount, ac_expired])
+                db.session.commit()
+        except Exception:
+            db.session.rollback()
 
 @app.route('/')
 def index():
@@ -3642,6 +3692,272 @@ def get_all_products():
             'status': 'error',
             'message': str(e)
         }), 500
+
+def bank_round(value: float) -> float:
+    d = Decimal(str(value)).quantize(Decimal('0.01'), rounding=ROUND_HALF_EVEN)
+    return float(d)
+
+# New POS stable API endpoints
+@app.route('/api/products', methods=['GET'])
+def api_products():
+    try:
+        _enforce_pos_role()
+        # Envelope always
+        page = max(int(request.args.get('page', 1)), 1)
+        page_size = min(max(int(request.args.get('pageSize', 24)), 1), 100)
+        search = (request.args.get('search') or '').strip()
+        category = (request.args.get('category') or '').strip()
+        ptype = (request.args.get('type') or '').strip()
+        store_id = request.args.get('store_id')
+        if store_id is None:
+            return jsonify({
+                'success': False,
+                'data': None,
+                'error': {'code': 'STORE_ID_REQUIRED', 'message': 'store_id es requerido'}
+            }), 400
+
+        try:
+            store_id_int = int(store_id)
+        except Exception:
+            return jsonify({
+                'success': False,
+                'data': None,
+                'error': {'code': 'STORE_ID_INVALID', 'message': 'store_id inválido'}
+            }), 400
+
+        base_q = Product.query.filter(Product.active == True)
+        if category:
+            base_q = base_q.join(ProductCategory).filter(ProductCategory.name.ilike(f"%{category}%"))
+        if ptype:
+            try:
+                col = Product.__table__.c['type']
+                base_q = base_q.filter(col == ptype)  # type is additive/optional
+            except Exception:
+                pass
+        if search:
+            like = f"%{search}%"
+            base_q = base_q.filter(or_(Product.name.ilike(like), Product.description.ilike(like)))
+
+        total = base_q.count()
+        items = base_q.order_by(Product.name).offset((page - 1) * page_size).limit(page_size).all()
+
+        response_items = []
+        for p in items:
+            # stock per store if available
+            stock_row = Stock.query.filter_by(store_id=store_id_int, product_id=p.id).first()
+            available = float(stock_row.quantity) if stock_row and stock_row.quantity is not None else 0.0
+            supported_formats = None
+            if p.sales_format and 'KG' in (p.sales_format or '').upper():
+                supported_formats = ['1/4', '1/2', '1kg', 'cono_s', 'cono_d']
+            # Determine product type
+            category_name = p.category.name if p.category else None
+            inferred_type = 'helados' if (category_name and category_name.lower().startswith('helad')) or (p.sales_format and 'KG' in p.sales_format.upper()) else 'otros'
+            prod_type = getattr(p, 'type', None) or inferred_type
+            response_items.append({
+                'id': p.id,
+                'name': p.name,
+                'sku': getattr(p, 'sku', None),
+                'price': float(p.price),
+                'currency': 'ARS',
+                'category': category_name,
+                'type': prod_type,
+                'stock': {'available': available},
+                'supported_formats': supported_formats
+            })
+
+        return jsonify({
+            'success': True,
+            'data': {
+                'items': response_items,
+                'page': page,
+                'pageSize': page_size,
+                'total': total
+            },
+            'error': None
+        }), 200
+    except Exception as e:
+        app.logger.error('[API] /api/products error %s', e)
+        return jsonify({'success': False, 'data': None, 'error': {'code': 'INTERNAL_ERROR', 'message': 'Error interno'}}), 500
+
+@app.route('/api/admin/admin_codes/validate', methods=['POST'])
+def validate_admin_code():
+    try:
+        _enforce_pos_role()
+        payload = request.get_json(force=True) or {}
+        code = (payload.get('code') or '').strip()
+        store_id = payload.get('store_id')
+        if not code or store_id is None:
+            return jsonify({'success': False, 'data': None, 'error': {'code': 'BAD_REQUEST', 'message': 'code y store_id son requeridos'}}), 400
+        try:
+            store_id_int = int(store_id)
+        except Exception:
+            return jsonify({'success': False, 'data': None, 'error': {'code': 'STORE_ID_INVALID', 'message': 'store_id inválido'}}), 400
+
+        admin_code = AdminCode.query.filter(AdminCode.code == code).first()
+        if not admin_code:
+            return jsonify({'success': False, 'data': None, 'error': {'code': 'ADMIN_CODE_INVALID', 'message': 'Código inválido o vencido.'}}), 404
+
+        if admin_code.is_expired():
+            return jsonify({'success': False, 'data': None, 'error': {'code': 'ADMIN_CODE_EXPIRED', 'message': 'Código inválido o vencido.'}}), 400
+
+        if admin_code.store_id and admin_code.store_id != store_id_int:
+            return jsonify({'success': False, 'data': None, 'error': {'code': 'ADMIN_CODE_STORE_MISMATCH', 'message': 'Código restringido a otra sucursal.'}}), 400
+
+        data = {
+            'code': admin_code.code,
+            'kind': admin_code.kind,
+            'value': float(admin_code.value),
+            'description': admin_code.description,
+            'expires_at': admin_code.expires_at.strftime('%Y-%m-%dT%H:%M:%SZ') if admin_code.expires_at else None,
+            'constraints': {'min_total': float(admin_code.min_total) if admin_code.min_total is not None else 0.0}
+        }
+        return jsonify({'success': True, 'data': data, 'error': None}), 200
+    except Exception as e:
+        app.logger.error('[API] validate admin code error %s', e)
+        return jsonify({'success': False, 'data': None, 'error': {'code': 'INTERNAL_ERROR', 'message': 'Error interno'}}), 500
+
+
+def generate_sale_number() -> str:
+    today = datetime.utcnow()
+    prefix = f"POS-{today.year}-"
+    last = Sale.query.filter(Sale.sale_number.like(prefix + '%')).order_by(Sale.sale_number.desc()).first()
+    if last and last.sale_number:
+        try:
+            seq = int(last.sale_number.split('-')[-1]) + 1
+        except Exception:
+            seq = 1
+    else:
+        seq = 1
+    return f"{prefix}{seq:06d}"
+
+@app.route('/api/sales', methods=['POST'])
+def create_sale():
+    try:
+        _enforce_pos_role()
+        payload = request.get_json(force=True) or {}
+        store_id = payload.get('store_id')
+        items = payload.get('items') or []
+        admin_code_str = (payload.get('admin_code') or '').strip() or None
+        idempotency_key = payload.get('client_idempotency_key')
+
+        if store_id is None:
+            return jsonify({'success': False, 'data': None, 'error': {'code': 'STORE_ID_REQUIRED', 'message': 'store_id es requerido'}}), 400
+        try:
+            store_id_int = int(store_id)
+        except Exception:
+            return jsonify({'success': False, 'data': None, 'error': {'code': 'STORE_ID_INVALID', 'message': 'store_id inválido'}}), 400
+
+        if idempotency_key:
+            existing = Sale.query.filter_by(idempotency_key=idempotency_key).first()
+            if existing:
+                # Return existing sale envelope
+                return jsonify({'success': True, 'data': _serialize_sale(existing), 'error': None}), 200
+
+        if not items or not isinstance(items, list):
+            return jsonify({'success': False, 'data': None, 'error': {'code': 'ITEMS_REQUIRED', 'message': 'items requeridos'}}), 400
+
+        # Validate and price items
+        sale_items: list[SaleItem] = []
+        subtotal = 0.0
+        for it in items:
+            product_id = it.get('product_id')
+            qty = it.get('qty')
+            if not product_id or qty is None:
+                return jsonify({'success': False, 'data': None, 'error': {'code': 'BAD_ITEM', 'message': 'product_id y qty son requeridos'}}), 400
+            try:
+                qty = int(qty)
+            except Exception:
+                return jsonify({'success': False, 'data': None, 'error': {'code': 'BAD_QTY', 'message': 'qty inválida'}}), 400
+            if qty <= 0:
+                return jsonify({'success': False, 'data': None, 'error': {'code': 'BAD_QTY', 'message': 'qty debe ser positiva'}}), 400
+
+            product = Product.query.get(product_id)
+            if not product or not product.active:
+                return jsonify({'success': False, 'data': None, 'error': {'code': 'PRODUCT_NOT_FOUND', 'message': 'Producto inexistente o inactivo'}}), 404
+
+            unit_price = float(product.price)
+            line_subtotal = unit_price * qty
+            subtotal += line_subtotal
+            sale_item = SaleItem(product_id=product.id, quantity=qty, unit_price=unit_price, total_price=bank_round(line_subtotal))
+            sale_items.append((sale_item, product))
+
+        # Apply admin code if present
+        discount = 0.0
+        if admin_code_str:
+            ac = AdminCode.query.filter_by(code=admin_code_str).first()
+            if not ac or ac.is_expired() or (ac.store_id and ac.store_id != store_id_int):
+                return jsonify({'success': False, 'data': None, 'error': {'code': 'ADMIN_CODE_INVALID', 'message': 'Código inválido o vencido.'}}), 400
+            if ac.min_total and subtotal < float(ac.min_total):
+                return jsonify({'success': False, 'data': None, 'error': {'code': 'ADMIN_CODE_MIN_TOTAL', 'message': 'No alcanza el mínimo para aplicar el código.'}}), 400
+            if ac.kind == 'percent':
+                discount = subtotal * (float(ac.value) / 100.0)
+            else:
+                discount = float(ac.value)
+            if discount < 0:
+                discount = 0.0
+            if discount > subtotal:
+                discount = subtotal
+
+        subtotal = bank_round(subtotal)
+        discount = bank_round(discount)
+        total_final = bank_round(subtotal - discount)
+
+        sale = Sale(
+            store_id=store_id_int,
+            payment_method='pos',
+            payment_status='paid',
+            total_amount=total_final,
+            subtotal_amount=subtotal,
+            discount_amount=discount,
+            currency='ARS',
+            idempotency_key=idempotency_key
+        )
+        sale.sale_number = generate_sale_number()
+        db.session.add(sale)
+        db.session.flush()
+
+        # Persist line items
+        for si, product in sale_items:
+            si.sale_id = sale.id
+            db.session.add(si)
+        db.session.commit()
+
+        return jsonify({'success': True, 'data': _serialize_sale(sale), 'error': None}), 200
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error('[API] /api/sales error %s', e)
+        return jsonify({'success': False, 'data': None, 'error': {'code': 'INTERNAL_ERROR', 'message': 'Error interno'}}), 500
+
+
+def _serialize_sale(sale: Sale) -> dict:
+    items = []
+    for si in SaleItem.query.filter_by(sale_id=sale.id).all():
+        items.append({
+            'product_id': si.product_id,
+            'name': si.product.name if si.product else None,
+            'qty': si.quantity,
+            'unit_price': float(si.unit_price),
+            'line_subtotal': bank_round(float(si.unit_price) * si.quantity),
+            'line_discount': 0.0,  # discount prorrata opcional (omitimos para no romper)
+            'line_total': float(si.total_price)
+        })
+    store = Store.query.get(sale.store_id)
+    return {
+        'sale_number': sale.sale_number,
+        'created_at': sale.created_at.strftime('%Y-%m-%dT%H:%M:%SZ') if sale.created_at else None,
+        'totals': {
+            'subtotal': float(sale.subtotal_amount or 0.0),
+            'discount': float(sale.discount_amount or 0.0),
+            'total_final': float(sale.total_amount or 0.0)
+        },
+        'items': items,
+        'store': {'id': store.id if store else None, 'name': store.name if store else None}
+    }
+
+def _enforce_pos_role():
+    # Placeholder for role checks (admin/manager) - kept permissive to avoid breaking
+    # TODO: integrate with flask-login if available
+    return
 
 if __name__ == '__main__':
     with app.app_context():
