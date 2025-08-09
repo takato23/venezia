@@ -49,67 +49,41 @@ import VIPCustomerManager from '../components/pos/VIPCustomerManager';
 import receiptService from '../services/receiptService';
 import PaymentModal from '../components/pos/PaymentModal';
 import clsx from 'clsx';
+import PosShell from '../components/pos/PosShell';
+import PosTabs from '../components/pos/PosTabs';
+import HeladosCatalog from '../components/pos/HeladosCatalog';
+import OtrosCatalog from '../components/pos/OtrosCatalog';
+import CartList from '../components/pos/CartList';
+import TotalsPanel from '../components/pos/TotalsPanel';
+import TicketView from '../components/pos/TicketView';
+import { usePosStore } from '../stores/posStore';
+import useOfflineQueue from '../hooks/useOfflineQueue';
 
 const POSPage = () => {
   const location = useLocation();
   const { success, error, warning } = useToast();
-  
-  // Cart State
-  const [cart, setCart] = useState([]);
-  const [customer, setCustomer] = useState(null);
-  const [paymentMethod, setPaymentMethod] = useState('cash');
-  const [discount, setDiscount] = useState(0);
-  const [discountType, setDiscountType] = useState('percent'); // 'percent' | 'fixed'
-  
-  // UI State
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [showCheckout, setShowCheckout] = useState(false);
+  const [activeTab, setActiveTab] = useState('helados');
   const [showCustomerForm, setShowCustomerForm] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const [orderType, setOrderType] = useState('pickup'); // 'pickup' | 'delivery'
-  const [deliveryData, setDeliveryData] = useState({
-    address: '',
-    phone: '',
-    estimatedTime: '30-45 minutos',
-    notes: ''
-  });
+  const [orderType, setOrderType] = useState('pickup');
+  const [deliveryData, setDeliveryData] = useState({ address: '', phone: '', estimatedTime: '30-45 minutos', notes: '' });
+  const [customer, setCustomer] = useState(null);
   const [lastSale, setLastSale] = useState(null);
-  const [showReceiptModal, setShowReceiptModal] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [adminCode, setAdminCode] = useState('');
-  const [adminCodeInfo, setAdminCodeInfo] = useState(null);
-  const [adminCodeStatus, setAdminCodeStatus] = useState(null); // 'valid' | 'invalid' | 'expired' | 'capacity' | 'disabled' | 'store_mismatch'
+  const [showTicket, setShowTicket] = useState(false);
+  const [online, setOnline] = useState(navigator.onLine);
+  const codeInputRef = useRef(null);
+  const searchInputRef = useRef(null);
+
+  const { items, subtotal, discount, total, code, codeInfo, selectedItemId, addItem, removeItem, setQty, applyCode, removeCode, setSelected, resetSale } = usePosStore();
+  const { addToQueue, retryAll, queueSize } = useOfflineQueue();
   
   // API Data
-  const { 
-    data: products, 
-    loading: loadingProducts, 
-    refetch: refetchProducts 
-  } = useApiCache('/api/products');
+  const { data: products, loading: loadingProducts } = useApiCache('/api/products');
   
-  const { 
-    data: categories, 
-    loading: loadingCategories 
-  } = useApiCache('/api/categories');
-  
-  const { 
-    data: customers, 
-    loading: loadingCustomers 
-  } = useApiCache('/api/customers');
-  
-  const { 
-    data: recentSales, 
-    loading: loadingRecentSales 
-  } = useApiCache('/api/sales/recent?limit=5');
-  
-  const { 
-    data: cashStatus, 
-    loading: loadingCashStatus 
-  } = useApiCache('/api/cashflow/status');
+  const { data: customers } = useApiCache('/api/customers');
   
   // Loading state
-  const loading = loadingProducts || loadingCategories || loadingCustomers || loadingRecentSales || loadingCashStatus;
+  const loading = loadingProducts;
 
   // Safe data with proper API response structure handling
   const safeProducts = Array.isArray(products?.data) ? products.data : 
@@ -125,36 +99,27 @@ const POSPage = () => {
                          Array.isArray(recentSales) ? recentSales : [];
   const safeCashStatus = cashStatus?.data || cashStatus || { available: 0 };
   
-  // Filter products
-  const filteredProducts = useMemo(() => {
-    if (!Array.isArray(safeProducts)) {
-      return [];
-    }
-    
-    return safeProducts.filter(product => {
-      const matchesSearch = product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           product.description?.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = selectedCategory === 'all' || product.category_id === parseInt(selectedCategory);
-      return matchesSearch && matchesCategory;
-    });
-  }, [safeProducts, searchTerm, selectedCategory]);
-  
-  // Cart calculations
-  const cartStats = useMemo(() => {
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const discountAmount = discountType === 'percent' 
-      ? subtotal * (discount / 100)
-      : discount;
-    const total = Math.max(0, subtotal - discountAmount);
-    const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-    
-    return {
-      subtotal: subtotal.toFixed(2),
-      discountAmount: discountAmount.toFixed(2),
-      total: total.toFixed(2),
-      itemCount
+  // Estado de red
+  useEffect(() => {
+    const onOnline = () => setOnline(true);
+    const onOffline = () => setOnline(false);
+    window.addEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+    return () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
     };
-  }, [cart, discount, discountType]);
+  }, []);
+  
+  // Atajos de teclado
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === 'F1') { e.preventDefault(); /* search */ }
+      if (e.key === 'F2') { e.preventDefault(); /* code */ }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   const validateAdminCode = async () => {
     try {

@@ -30,20 +30,26 @@ const disableAdminCode = async (id) => {
   return res.json();
 };
 
-const validateAdminCode = async (payload) => {
-  const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin/admin_codes/validate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-  return res.json();
+export const validateCode = async ({ code, store_id }) => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin/admin_codes/validate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, store_id })
+    });
+    const json = await res.json();
+    return json;
+  } catch (error) {
+    console.error('[adminCodesApi] validateCode error', error);
+    return { success: false, error: { code: 'NETWORK' } };
+  }
 };
 
 export default {
   listAdminCodes,
   createAdminCode,
   disableAdminCode,
-  validateAdminCode
+  validateAdminCode: validateCode
 };
 
 

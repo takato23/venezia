@@ -45,7 +45,7 @@ const Products = React.lazy(() => import('./pages/Products'));
 const Login = React.lazy(() => import('./pages/Login'));
 const Deliveries = React.lazy(() => import('./pages/Deliveries'));
 const Reports = React.lazy(() => import('./pages/Reports'));
-const POS = React.lazy(() => import('./pages/SimplePOS'));
+const POS = React.lazy(() => import('./pages/POS'));
 const Stores = React.lazy(() => import('./pages/Stores'));
 const StoreDetails = React.lazy(() => import('./pages/StoreDetails'));
 const Transactions = React.lazy(() => import('./pages/Transactions'));
